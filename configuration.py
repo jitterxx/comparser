@@ -8,5 +8,5 @@
 
 db_host = "localhost"
 db_user = "comparser"
-db_pass = "Cthutq123"
+db_pass = "Qazcde123"
 maildir_path = "/home/comparser/Maildir"
