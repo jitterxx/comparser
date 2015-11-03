@@ -6,9 +6,8 @@ from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from configuration import *
 import re
-from email import MIMEMultipart
-from email import MIMEText
-import smtplib
+import email
+from smtplib import SMTP_SSL
 
 import sys
 reload(sys)
@@ -76,22 +75,25 @@ def send_email(category, orig_msg):
     :return:
     """
 
+    msg = email.MIMEMultipart.MIMEMultipart()
     from_addr = "comparser@reshim.com"
     to_addr = orig_msg.sender
-    msg = MIMEMultipart()
+
     msg['From'] = from_addr
     msg['To'] = to_addr
-    msg['Subject'] = "Communication parser email"
-    body = "test mail \n" + " ".join(category)
-    msg.attach(MIMEText(body, 'plain'))
-    server = smtplib.SMTP("smtp.gmail.com", 587)
-    server.ehlo()
-    server.starttls()
-    server.ehlo()
-    server.login("compareser@reshim.com", "Qazcde123")
-    text = msg.as_string()
-    server.sendmail(from_addr, to_addr, text)
+    msg['Subject'] = email.header.Header("Сообщение от Communication parser", "utf8")
+    body = "Проверочное письмо \n" + " ".join(category)
+    msg.preamble = "This is a multi-part message in MIME format."
+    msg.epilogue = "End of message"
 
+    msg.attach(email.MIMEText.MIMEText(body, "plain", "UTF-8"))
+
+    smtp = SMTP_SSL()
+    smtp.connect("smtp.gmail.com")
+    smtp.login("comparser@reshim.com", "Qazcde123")
+    text = msg.as_string()
+    smtp.sendmail(from_addr, to_addr, text)
+    smtp.quit()
 
 
 notify()
