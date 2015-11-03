@@ -56,8 +56,10 @@ def notify():
             m = re.split("-", cat)
             l[m[0]] = float(m[1])
 
-        category[msg.message_id] = l
-        print category
+        category[msg.id] = l
+
+        if category[msg.id]['normal'] >= 0.7:
+            print category[msg.id]
 
 
     session.close()
