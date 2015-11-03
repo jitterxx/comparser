@@ -281,7 +281,8 @@ for key in inbox.iterkeys():
     else:
         if debug:
             print 'Сообщение уже обработано...\n'
-        continue
+
+    print inbox.values()
   
 
 db.close()
