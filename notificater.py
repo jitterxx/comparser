@@ -49,9 +49,16 @@ def notify():
 
     query = session.query(Msg).filter(Msg.isclassified == 1).all()
     for msg in query:
-        print msg.message_id
+        category = dict()
         cats = re.split(":", msg.category)
-        print cats
+        l = dict()
+        for cat in cats:
+            m = re.split("-", cat)
+            l[m[1]] = float(m[0])
+
+        category[msg.message_id] = l
+        print category
+
 
     session.close()
 
