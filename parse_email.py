@@ -144,12 +144,8 @@ def get_clear_text(entry,data):
 
 #отсеиваем ненужные сообщения (каледарные, нотификации, исключения пользователей и т.д.)
 def exception(entry,data):
-    emails = u'all@jcp.spb.ru|directum@jcp.spb.ru|servicedesk@chpp.ru|undisclosed-recipients|'
-    emails += u'valery@chpp.ru|st@chpp.ru|vp@alt-ego.ru|noreply@spb.hh.ru|'
-    emails += u'loc3@jcp.spb.ru|loc2@jcp.spb.ru|valery@jcp.spb.ru|st@jcp.spb.ru|'
-    emails += u'ckr@|fsa@|hr@chpp.ru|hr@jcp.spb.ru|@sigir.ru|eau@|cha@'
-    emails += u'kiy@|aar@|vaa@|@avito.ru|its@|tech_notifications@|@7n.spb.ru'
-              
+    emails = u'root@rework.reshim.com|undisclosed-recipients'
+
     title_start = u"""Принять:|Прочтено:|Принято:|Read-Receipt:|Отменено:|Предложено новое время:"""
     text_start = u"""Тема:|Следующее собрание изменилось:|Запрос на новую встречу:|
                      Это собрание переслано:|Предложено новое время:|

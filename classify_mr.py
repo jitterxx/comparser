@@ -77,7 +77,7 @@ if not args.db == None:
                     print('От: {}\nКому: {}\nТема: {}'.format(row['sender'],row['recipients'],row['message_title']))
                     print 'Текст: \n',row['message_text'],'\n'
                     
-                answer = f_cl.classify_mr(row,default='unknown')
+                answer = f_cl.classify_mr(row,default='0')
                 answer.reverse()
                 last = 3
                 if len(answer) < 3: last = len(answer)
