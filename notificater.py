@@ -64,7 +64,7 @@ def notify():
 
         if category[msg.id]['normal'] >= 0.7:
             print category[msg.id]
-            send_email(msg.category, msg)
+            send_email(l, msg)
 
     session.close()
 
@@ -80,17 +80,21 @@ def send_email(category, orig_msg):
     from_addr = "comparser@reshim.com"
     to_addr = orig_msg.sender
 
-    orig_text = "\n---------------- Исходное сообщение -------------------\n"
-    orig_text += "От кого: %s (%s)" % (orig_msg.sender_name, orig_msg.sender)
+    orig_text = "\n\n---------------- Исходное сообщение -------------------\n"
+    orig_text += "От кого: %s (%s)\n" % (orig_msg.sender_name, orig_msg.sender)
     orig_text += "Кому: %s (%s) \n" % (orig_msg.recipients_name, orig_msg.recipients)
-    orig_text += "Тема: %s\n" % orig_msg.message_title
-    orig_text += "%s\n" % orig_msg.message_text
+    orig_text += "Тема: %s" % orig_msg.message_title
+    orig_text += "%s" % orig_msg.message_text
     orig_text += "\n------------------------------------------------------\n"
+
+    text = "Категории: \n"
+    for cat in category.keys():
+        text += "\t %s - %.2f%% \n" % (cat, category[cat])
 
     msg['From'] = from_addr
     msg['To'] = to_addr
     msg['Subject'] = Header("Сообщение от Communication parser", "utf8")
-    body = "Проверочное письмо \n" + category + orig_text
+    body = "Проверочное письмо \n" + text + orig_text
     msg.preamble = "This is a multi-part message in MIME format."
     msg.epilogue = "End of message"
 
@@ -98,7 +102,7 @@ def send_email(category, orig_msg):
 
     smtp = SMTP_SSL()
     smtp.connect("smtp.gmail.com")
-    smtp.login("comparser@reshim.com", "Qazcde123")
+    smtp.login("comparser@reshim.com", "Cthutq123")
     text = msg.as_string()
     smtp.sendmail(from_addr, to_addr, text)
     smtp.quit()
