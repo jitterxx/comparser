@@ -54,7 +54,7 @@ def notify():
         l = dict()
         for cat in cats:
             m = re.split("-", cat)
-            l[m[1]] = float(m[0])
+            l[m[0]] = float(m[1])
 
         category[msg.message_id] = l
         print category
