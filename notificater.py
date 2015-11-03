@@ -6,6 +6,10 @@ from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from configuration import *
 import re
+from email import MIMEMultipart
+from email import MIMEText
+import smtplib
+
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -60,9 +64,34 @@ def notify():
 
         if category[msg.id]['normal'] >= 0.7:
             print category[msg.id]
-
+            send_email(category[msg.id], msg)
 
     session.close()
+
+
+def send_email(category, orig_msg):
+    """
+    Отправка оповещений на адрес отправителя с результатами классификации.
+
+    :return:
+    """
+
+    from_addr = "comparser@reshim.com"
+    to_addr = orig_msg.sender
+    msg = MIMEMultipart()
+    msg['From'] = from_addr
+    msg['To'] = to_addr
+    msg['Subject'] = "Communication parser email"
+    body = "test mail \n" + " ".join(category)
+    msg.attach(MIMEText(body, 'plain'))
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login("compareser@reshim.com", "Qazcde123")
+    text = msg.as_string()
+    server.sendmail(from_addr, to_addr, text)
+
 
 
 notify()
