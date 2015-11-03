@@ -14,6 +14,7 @@ import MySQLdb
 import datetime
 from dateutil.parser import *
 import argparse
+from configuration import *
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -135,8 +136,8 @@ parser.add_argument('-d', action='store_true', dest='debug', help='print debug i
 args = parser.parse_args()
 debug = args.debug
 
-inbox = mailbox.Maildir('/home/eater/Maildir', factory=None)
-db = MySQLdb.connect(host="192.168.77.15", user="extractor", passwd="Qazcde123", db="Raw_data",use_unicode=True,charset="utf8")
+inbox = mailbox.Maildir(maildir_path, factory=None)
+db = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db="Raw_data",use_unicode=True,charset="utf8")
 db.set_character_set('utf8')
 cur = db.cursor() 
 cur.execute('SET NAMES utf8;')
@@ -144,14 +145,13 @@ cur.close()
 db.commit()
 
 
-
 for key in inbox.iterkeys():
     try:
-     msg = inbox[key]
+        msg = inbox[key]
     except email.errors.MessageParseError:
-     continue                # The message is malformed. Just leave it.
- 
- 
+        # The message is malformed. Just leave it.
+        continue
+
     msg_id = ""
     subject = ""
     cc = ""
@@ -195,10 +195,7 @@ for key in inbox.iterkeys():
             from_ = "empty"
             broken_msg = True
         from_ = line_decoder(from_)
- 
-     
-     
-     
+
         maintype = msg.get_content_maintype()
         main_charset = msg.get_content_charset()
          
@@ -211,7 +208,6 @@ for key in inbox.iterkeys():
             print 'Subj: ',subject
             print 'Date: ',date_hdr
 
-        
         if maintype == 'multipart':
             #Если это мультипарт, ищем тестовую часть письма
             for part in msg.get_payload():

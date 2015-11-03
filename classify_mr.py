@@ -11,6 +11,7 @@ import argparse
 import mod_classifier as cl
 import mysql.connector
 import math
+from configuration import *
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -59,10 +60,7 @@ if not args.db == None:
 
     if not args.show:
         #Открываем базу с реальными данными
-        real_db = mysql.connector.connect(host="192.168.77.15",
-                                                   user="extractor",
-                                                   password="Qazcde123",
-                                                   database="clear_data")
+        real_db = mysql.connector.connect(host=db_host, user=db_user, passwd=db_pass, database="clear_data")
         con = real_db.cursor(buffered=True)
         con_update = real_db.cursor(buffered=True)
 

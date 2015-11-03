@@ -11,6 +11,7 @@ from email.utils import parseaddr
 import mysql.connector
 import re
 import html2text
+from configuration import *
 import datetime
 import sys
 reload(sys)
@@ -204,11 +205,11 @@ if not args.limit: limit = 100
 else: limit = args.limit
 
 #Открываем грязную базу
-dirty_db = mysql.connector.connect(host="192.168.77.15", user="extractor", password="Qazcde123", database="Raw_data")
+dirty_db = mysql.connector.connect(host=db_host, user=db_user, passwd=db_pass, database="Raw_data")
 dirty_con = dirty_db.cursor(buffered=True)
 
 #Открываем чистую базу и базу ошибок
-clear_db = mysql.connector.connect(host="192.168.77.15", user="extractor", password="Qazcde123", database="clear_data")
+clear_db = mysql.connector.connect(host=db_host, user=db_user, passwd=db_pass, database="clear_data")
 clear_con = clear_db.cursor(buffered=True)
 err_con = clear_db.cursor(buffered=True)
 

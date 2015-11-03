@@ -12,6 +12,7 @@ import re
 import mysql.connector
 import math
 import decimal
+from configuration import *
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -248,10 +249,7 @@ class fisherclassifier(classifier):
     
     #Подключаем БД классификатора. DB = имя_схемы в Mysql
     def setdb(self,db):
-        self.db = mysql.connector.connect(host="192.168.77.15",
-                                           user="extractor",
-                                           password="Qazcde123",
-                                           database=db)
+        self.db = mysql.connector.connect(host=db_host, user=db_user, passwd=db_pass, database=db)
         self.con = self.db.cursor(buffered=True)
         
         query = ('CREATE TABLE IF NOT EXISTS cc ('
