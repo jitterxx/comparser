@@ -68,6 +68,9 @@ def notify():
             print category[msg.id]
             send_email(l, msg)
 
+        session.delete(msg)
+        session.commit()
+
     session.close()
 
 
