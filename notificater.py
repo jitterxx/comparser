@@ -58,6 +58,8 @@ def notify():
         l = dict()
         for cat in cats:
             m = re.split("-", cat)
+            if m[1] == "unknown":
+                m[1] = 0
             l[m[0]] = float(m[1])
 
         category[msg.id] = l
