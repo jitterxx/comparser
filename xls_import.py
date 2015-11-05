@@ -22,7 +22,7 @@ def xls_import(db,xls_file):
     sheet = rb.sheet_by_index(0)
 
     #Открываем базу с тренировочными данными
-    train_db = mysql.connector.connect(host=db_host, user="root", passwd="OO00zZOK", port="33066", database=db)
+    train_db = mysql.connector.connect(host=db_host, user=db_user, passwd=db_pass, port=db_port, database=db)
     con = train_db.cursor(buffered=True)
 
     for rownum in range(sheet.nrows):
