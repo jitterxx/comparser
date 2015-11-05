@@ -48,31 +48,36 @@ class classifier:
     def incf(self,f,cat):
         #self.fc.setdefault(f,{})
         #self.fc[f].setdefault(cat,0)
-        #self.fc[f][cat]+=1
-        count=self.fcount(f,cat)
-        if count==0:
+
+        count=self.fcount(f, cat)
+        if count == 0:
             query = ('insert into fc (feature,category,count) values (%s,%s,1);')
             self.con.execute(query,(f,cat))
             self.db.commit()
+            self.fc[f] = {cat: 1}
         else:
             query = ('update fc set count=%s where feature=%s and category=%s;')
             self.con.execute(query,(count+1,f,cat))
             self.db.commit()
+            self.fc[f][cat] += 1
         #print 'incf :',f,cat,count,'\n'
     
     # Увеличить счетчик применений категории
     def incc(self,cat):
-        #self.cc.setdefault(cat,0)
-        #self.cc[cat]+=1
-        count=self.catcount(cat)
-        if count==0:
+
+        count = self.catcount(cat)
+        print 'incc :', cat, count,'\n'
+
+        if count == 0:
             query = ('insert into cc (category,count) values (%s,1);')
             self.con.execute(query,(cat,))
+            self.cc[cat] = 1
         else:
             query = ('update cc set count=%s where category=%s;')
             self.con.execute(query,(count+1,cat))
+            self.cc[cat] += 1
         self.db.commit()
-        #print 'incc :',cat,count,'\n'
+
 
     # Сколько раз признак появлялся в данной категории
     def fcount(self,f,cat):
@@ -164,10 +169,13 @@ class fisherclassifier(classifier):
     #Метод train принимает образец (в данном случае документ) и классификацию
     def train(self,item,cat):
         features=self.getfeatures(item,self.specwords)
+        print "Category: %s" % cat
+        print "Features: %s" % features
         
         # Увеличить счетчики для каждого признака в данной классификации
         for f in features:
-            self.incf(f,cat)
+            #print "Word: %s" % f
+            self.incf(f, cat)
         
         # Увеличить счетчик применений этой классификации
         self.incc(cat)
@@ -249,7 +257,7 @@ class fisherclassifier(classifier):
     
     #Подключаем БД классификатора. DB = имя_схемы в Mysql
     def setdb(self,db):
-        self.db = mysql.connector.connect(host=db_host, user=db_user, passwd=db_pass, database=db)
+        self.db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database=db)
         self.con = self.db.cursor(buffered=True)
         
         query = ('CREATE TABLE IF NOT EXISTS cc ('
@@ -362,6 +370,7 @@ class fisherclassifier(classifier):
 
     #Функция тренировки классификатора
     def sql_train(self):
+
         con = self.db.cursor(buffered=True)
         query = ('SELECT * FROM train_data;')
         con.execute(query)
@@ -385,7 +394,7 @@ class fisherclassifier(classifier):
             #    cl.incf(f,cat)
             # Увеличить счетчик применений этой классификации
             #cl.incc(cat)
-        
+
         con.close()
                 
         

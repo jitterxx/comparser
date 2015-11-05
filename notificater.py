@@ -62,11 +62,9 @@ def notify():
                 m[1] = 0
             l[m[0]] = float(m[1])
 
-        category[msg.id] = l
-
-        if category[msg.id]['normal'] >= 0.7:
-            print category[msg.id]
-            send_email(l, msg)
+        category[msg.id] = sorted(l.items(), key=lambda (k, v): v, reverse=True)
+        print category[msg.id]
+        send_email(l, msg)
 
         session.delete(msg)
         session.commit()
