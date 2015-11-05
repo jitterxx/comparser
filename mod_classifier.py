@@ -196,7 +196,7 @@ class fisherclassifier(classifier):
         #Функция классификации возвращает набор из всех результатов (category, probability)
         #отсортированных по убыванию
         #Цикл для поиска наилучшего результата
-        best_mr = [{'default':'unknown'}]
+        best_mr = [{'default': 0}]
         best=default
         max=0.0
         for c in self.categories():
@@ -337,7 +337,7 @@ class fisherclassifier(classifier):
         
         #загружаем категории, минимумы
         con = self.db.cursor(buffered=True)
-        query = ('SELECT code,minimum,category FROM category;')
+        query = ('SELECT code, minimum, category FROM category;')
         con.execute(query)
         for d in con:
             self.setminimum(d[0],d[1])
@@ -347,7 +347,7 @@ class fisherclassifier(classifier):
         self.load_specwords()
         
         #Загружаем cколько раз признак появлялся в данной категории для fcount
-        query = ('select feature,category,count from fc group by feature,category;')
+        query = ('select feature, category, count from fc group by feature, category;')
         self.con.execute(query)
         for f in self.con:
             
@@ -399,7 +399,7 @@ class fisherclassifier(classifier):
                 
         
 """ Функция извлечения признаков """
-def specfeatures(entry,specwords):
+def specfeatures(entry, specwords):
     """ Функция для получения признаков(features) из текста
     Выделяет следующие признаки:
     1. email отправителя
