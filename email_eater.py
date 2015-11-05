@@ -281,6 +281,7 @@ for key in inbox.iterkeys():
             print 'Битое: ', broken_msg
     else:
         if debug:
-            print 'Сообщение уже обработано...\n'
+            #print 'Сообщение уже обработано...\n'
+            pass
 
 db.close()

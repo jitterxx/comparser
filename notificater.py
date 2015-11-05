@@ -63,6 +63,8 @@ def notify():
             l[m[0]] = float(m[1])
 
         category[msg.id] = sorted(l.items(), key=lambda (k, v): v)
+        print "От: %s (%s)" % (msg.sender, msg.sender_name)
+        print "\n%s\n" % msg.message_text
         print category[msg.id]
         send_email(l, msg)
 
