@@ -10,6 +10,7 @@ import re
 import argparse
 import mysql.connector
 import math
+from configuration import *
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -21,10 +22,7 @@ def xls_import(db,xls_file):
     sheet = rb.sheet_by_index(0)
 
     #Открываем базу с тренировочными данными
-    train_db = mysql.connector.connect(host="192.168.77.15",
-                                           user="extractor",
-                                           password="Qazcde123",
-                                           database=db)
+    train_db = mysql.connector.connect(host=db_host, user="root", passwd="OO00zZOK", port="33066", database=db)
     con = train_db.cursor(buffered=True)
 
     for rownum in range(sheet.nrows):
@@ -48,6 +46,6 @@ parser.add_argument("-f", action="store", help="Имя файла для имп�
 
 args = parser.parse_args()
 
-xls_import('crm',args.xfile)
+xls_import(db_name, args.xfile)
 
 

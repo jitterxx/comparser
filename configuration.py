@@ -9,4 +9,5 @@
 db_host = "localhost"
 db_user = "comparser"
 db_pass = "Qazcde123"
+db_name = "classifier"
 maildir_path = "/home/comparser/Maildir"
