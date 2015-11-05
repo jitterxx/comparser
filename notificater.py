@@ -62,7 +62,7 @@ def notify():
                 m[1] = 0
             l[m[0]] = float(m[1])
 
-        category[msg.id] = sorted(l.items(), key=lambda (k, v): v, reverse=True)
+        category[msg.id] = sorted(l.items(), key=lambda (k, v): v)
         print category[msg.id]
         send_email(l, msg)
 
@@ -92,7 +92,7 @@ def send_email(category, orig_msg):
 
     text = "Категории: \n"
     for cat in category.keys():
-        text += "\t %s - %.2f%% \n" % (cat, category[cat])
+        text += "\t %s - %.2f%% \n" % (cat, category[cat]*100)
 
     msg['From'] = from_addr
     msg['To'] = to_addr
