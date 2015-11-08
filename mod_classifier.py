@@ -425,6 +425,7 @@ def specfeatures(entry, specwords):
         f['Title:'+w]=1
     
     # Извлечь и аннотировать слова из recipients
+    """
     recipients=[s.lower( ) for s in splitter1.split(entry['recipients']) 
                 if len(s)>2 and len(s)<20]
     for w in recipients: 
@@ -437,6 +438,7 @@ def specfeatures(entry, specwords):
     for w in recipients_name: 
         #print 'Recipit name: ',w,'\n'
         f['Recipients_name:'+w]=1                
+    """
 
     # Извлечь слова из резюме
     summarywords=[s for s in splitter.split(entry['message_text'])
@@ -458,8 +460,10 @@ def specfeatures(entry, specwords):
             f[twowords]=1
             
     # Оставить информацию об авторе без изменения
+    """
     f['Sender:'+entry['sender']]=1
     f['Sender_name:'+entry['sender_name']]=1
+    """
     
     # UPPERCASE – специальный признак, описывающий степень "крикливости"
     if (len(summarywords)) and (float(uc)/len(summarywords)>0.3): f['UPPERCASE']=1
