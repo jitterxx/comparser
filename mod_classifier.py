@@ -442,7 +442,7 @@ def specfeatures(entry, specwords):
 
     # Извлечь слова из резюме
     summarywords=[s for s in splitter.split(entry['message_text'])
-                  if len(s)>2 and len(s)<20]
+                  if len(s)>2 and len(s)<20 and s not in STOP_WORDS]
     #print 'sum words: ',summarywords
 
     # Подсчитать количество слов, написанных заглавными буквами
@@ -481,5 +481,5 @@ def specfeatures(entry, specwords):
 
     return f
 
-
-
+STOP_WORDS = ["как", "или", "который", "которых", "тот", "около", "они", "для", "Для", "Это", "это", "При", "при",
+             "Кроме", "того", "чем", "под", "них", "его", "лат"]
