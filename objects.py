@@ -76,18 +76,18 @@ class UserTrainData(Base):
     category = Column(sqlalchemy.String(255))
 
     def __init__(self):
-        message_id = ""
-        sender = ""
-        sender_name = ""
-        recipients = ""
-        recipients_name = ""
-        cc_recipients = ""
-        cc_recipients_name = ""
-        message_title = ""
-        message_text = ""
-        orig_date = datetime.datetime.now()
-        create_date = datetime.datetime.now()
-        category = ""
+        self.message_id = ""
+        self.sender = ""
+        self.sender_name = ""
+        self.recipients = ""
+        self.recipients_name = ""
+        self.cc_recipients = ""
+        self.cc_recipients_name = ""
+        self.message_title = ""
+        self.message_text = ""
+        self.orig_date = datetime.datetime.now()
+        self.create_date = datetime.datetime.now()
+        self.category = ""
 
 
 
@@ -125,12 +125,13 @@ def set_user_train_data(uuid, category):
 
     try:
         query = session.query(TrainAPIRecords).filter(TrainAPIRecords.uuid == uuid).one()
+    except sqlalchemy.orm.exc.NoResultFound:
+        session.close()
+        return [False, "Сообщение не найдено."]
     except Exception as e:
         session.close()
         raise e
     else:
-        if not query:
-            return [False, "Сообщение не найдено."]
 
         if query.user_action == 0:
             message_id = query.message_id
@@ -140,8 +141,14 @@ def set_user_train_data(uuid, category):
         else:
             return [False, "Для этого сообщения ответ был получен ранее."]
 
+    try:
+        query = session.query(Msg).filter(Msg.message_id == message_id).one()
+    except Exception as e:
+        session.close()
+        raise e
+
     train_data = UserTrainData()
-    train_data.message_id = query.message_id
+    train_data.message_id = message_id
     train_data.category = category
     train_data.message_text = query.message_text
     train_data.message_title = query.message_title
