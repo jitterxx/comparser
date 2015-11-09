@@ -88,8 +88,8 @@ def send_email(category, orig_msg):
     \n
     Спасибо за участие,
     команда Conversation Parser.
-    \n""" % (CATEGORY["edible"].category, main_link + "%s/%s" % (orig_msg.message_id, CATEGORY["edible"].code),
-             CATEGORY["inedible"].category, main_link + "%s/%s" % (orig_msg.message_id, CATEGORY["inedible"].code))
+    \n""" % (CATEGORY["edible"].category, main_link + "%s/%s" % (orig_msg.uuid, CATEGORY["edible"].code),
+             CATEGORY["inedible"].category, main_link + "%s/%s" % (orig_msg.uuid, CATEGORY["inedible"].code))
 
     msg['From'] = from_addr
     msg['To'] = to_addr
