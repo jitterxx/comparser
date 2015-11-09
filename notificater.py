@@ -4,6 +4,7 @@
 import sqlalchemy
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import and_
 from configuration import *
 import re
 import email
@@ -46,12 +47,13 @@ class Msg(Base):
     create_date = Column(sqlalchemy.DATETIME())
     isclassified = Column(sqlalchemy.Integer)
     category = Column(sqlalchemy.String(256))
+    notified = Column(sqlalchemy.Integer)
 
 
 def notify():
     session = Session()
 
-    query = session.query(Msg).filter(Msg.isclassified == 1).all()
+    query = session.query(Msg).filter(and_(Msg.isclassified == 1, Msg.notified == 0)).all()
     for msg in query:
         category = dict()
         cats = re.split(":", msg.category)
@@ -67,6 +69,8 @@ def notify():
         print "\n%s\n" % msg.message_text
         print category[msg.id]
         send_email(l, msg)
+        msg.notified = 1
+        session.commit()
 
         # Чистые сообщения используются для переобучения системы, если была совершена ошибка и пользователь об этом
         # сообщил. При отправке результатов не чистим.
