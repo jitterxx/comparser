@@ -30,7 +30,16 @@ def notify():
     session = Session()
 
     query = session.query(Msg).filter(and_(Msg.isclassified == 1, Msg.notified == 0)).all()
+
     for msg in query:
+        try:
+            query1 = session.query(TrainAPIRecords).filter(TrainAPIRecords.message_id == msg.message_id).one()
+        except Exception as e:
+            print "Ошибка получения uuid для сообщения %s." % msg.message_id
+            msg_uuid = ""
+        else:
+            msg_uuid = query1.uuid
+
         category = dict()
         cats = re.split(":", msg.category)
         l = dict()
@@ -44,7 +53,7 @@ def notify():
         print "От: %s (%s)" % (msg.sender, msg.sender_name)
         print "\n%s\n" % msg.message_text
         print category[msg.id]
-        send_email(l, msg)
+        send_email(l, msg, msg_uuid)
         msg.notified = 1
         session.commit()
 
@@ -56,7 +65,7 @@ def notify():
     session.close()
 
 
-def send_email(category, orig_msg):
+def send_email(category, orig_msg, msg_uuid):
     """
     Отправка оповещений на адрес отправителя с результатами классификации.
 
@@ -88,8 +97,8 @@ def send_email(category, orig_msg):
     \n
     Спасибо за участие,
     команда Conversation Parser.
-    \n""" % (CATEGORY["edible"].category, main_link + "%s/%s" % (orig_msg.uuid, CATEGORY["edible"].code),
-             CATEGORY["inedible"].category, main_link + "%s/%s" % (orig_msg.uuid, CATEGORY["inedible"].code))
+    \n""" % (CATEGORY["edible"].category, main_link + "%s/%s" % (msg_uuid, CATEGORY["edible"].code),
+             CATEGORY["inedible"].category, main_link + "%s/%s" % (msg_uuid, CATEGORY["inedible"].code))
 
     msg['From'] = from_addr
     msg['To'] = to_addr
