@@ -205,7 +205,8 @@ dirty_db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, pas
 dirty_con = dirty_db.cursor(buffered=True)
 
 #Открываем чистую базу и базу ошибок
-clear_db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database="clear_data")
+#clear_db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database="clear_data")
+clear_db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database=db_name)
 clear_con = clear_db.cursor(buffered=True)
 err_con = clear_db.cursor(buffered=True)
 

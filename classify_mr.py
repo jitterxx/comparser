@@ -60,7 +60,7 @@ if not args.db == None:
 
     if not args.show:
         #Открываем базу с реальными данными
-        real_db = mysql.connector.connect(host=db_host, user=db_user, passwd=db_pass, database="clear_data")
+        real_db = mysql.connector.connect(host=db_host, user=db_user, passwd=db_pass, database=db_name)
         con = real_db.cursor(buffered=True)
         con_update = real_db.cursor(buffered=True)
 

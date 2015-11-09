@@ -68,8 +68,10 @@ def notify():
         print category[msg.id]
         send_email(l, msg)
 
-        session.delete(msg)
-        session.commit()
+        # Чистые сообщения используются для переобучения системы, если была совершена ошибка и пользователь об этом
+        # сообщил. При отправке результатов не чистим.
+        # session.delete(msg)
+        # session.commit()
 
     session.close()
 
@@ -92,14 +94,30 @@ def send_email(category, orig_msg):
     orig_text += "%s" % orig_msg.message_text
     orig_text += "\n------------------------------------------------------\n"
 
-    text = "Категории: \n"
+    text = "Результат: \n"
     for cat in category.keys():
         text += "\t %s - %.2f%% \n" % (cat, category[cat]*100)
 
+    link1 = "#"
+    link2 = "#"
+    links_block = """\n
+                Если сообщение было определено неправильно, вы можете указать правильный ответ.
+                Щелкните по ссылке с правильным ответом: \n
+                1. Съедобное - %s
+                2. Несъедобное - %s
+                \n
+                Ваш ответ будет использован для повышения точности анализа.
+                \n
+                \n
+                Спасибо за участие,
+                команда Conversation Parser.
+
+                    \n""" % (link1, link2)
+
     msg['From'] = from_addr
     msg['To'] = to_addr
-    msg['Subject'] = Header("Сообщение от Communication parser", "utf8")
-    body = "Проверочное письмо \n" + text + orig_text
+    msg['Subject'] = Header("Сообщение от Conversation parser", "utf8")
+    body = "Отправленное вами описание было проанализовано. \n" + text + links_block + orig_text
     msg.preamble = "This is a multi-part message in MIME format."
     msg.epilogue = "End of message"
 
