@@ -66,7 +66,7 @@ def GetCategory():
         for one in query:
             category[one.code] = one
     finally:
-        session.clsoe()
+        session.close()
 
     return category
 

@@ -79,8 +79,8 @@ def send_email(category, orig_msg):
         text += "\t %s - %.2f%% \n" % (CATEGORY[cat].category, category[cat]*100)
 
     links_block = """\n
-    Если сообщение было определено неправильно, вы можете указать правильный ответ.
-    Щелкните по ссылке с правильным ответом: \n
+    Если сообщение было определено неправильно, вы можете указать правильный вариант.
+    Перейдите по ссылке: \n
         %s - %s
         %s - %s
     \n
@@ -89,7 +89,7 @@ def send_email(category, orig_msg):
     Спасибо за участие,
     команда Conversation Parser.
     \n""" % (CATEGORY["edible"].category, main_link + "%s/%s" % (orig_msg.message_id, CATEGORY["edible"].code),
-             CATEGORY["inedible"].category + "%s/%s" % (orig_msg.message_id, CATEGORY["inedible"].code))
+             CATEGORY["inedible"].category, main_link + "%s/%s" % (orig_msg.message_id, CATEGORY["inedible"].code))
 
     msg['From'] = from_addr
     msg['To'] = to_addr
