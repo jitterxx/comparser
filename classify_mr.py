@@ -102,6 +102,7 @@ if not args.db == None:
                 query = ('UPDATE email_cleared_data SET isclassified=%s,category=%s WHERE id=%s;')
                 data = (1, answer_str, row['id'])
                 con_update.execute(query,data)
+                real_db.commit()
 
                 # Добавлем запись в таблицу train_api для работы API и функции переобучения
                 query = ('INSERT INTO train_api (message_id, category, date, user_action, user_answer) VALUES '

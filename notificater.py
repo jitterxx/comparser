@@ -6,6 +6,7 @@ from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import and_
 from configuration import *
+from objects import *
 import re
 import email
 from email.header import Header
@@ -17,37 +18,12 @@ sys.setdefaultencoding("utf-8")
 
 __author__ = 'sergey'
 
-sql_uri = "mysql://%s:%s@%s/%s?charset=utf8" % (db_user, db_pass, db_host, db_name)
-
-Base = declarative_base()
-Engine = sqlalchemy.create_engine(sql_uri, pool_size=20)
-Session = sqlalchemy.orm.sessionmaker(bind=Engine)
-
 """
 1. Читаем результаты классификации из базы
 2. Если классификация попадает в условия, то формируем сообщение в адрес менеджера
 """
 
-
-class Msg(Base):
-
-    __tablename__ = "email_cleared_data"
-
-    id = Column(sqlalchemy.Integer, primary_key=True)
-    message_id = Column(sqlalchemy.String(256))
-    sender = Column(sqlalchemy.String(256))
-    sender_name = Column(sqlalchemy.String(256))
-    recipients = Column(sqlalchemy.TEXT())
-    recipients_name = Column(sqlalchemy.TEXT())
-    cc_recipients = Column(sqlalchemy.TEXT())
-    cc_recipients_name = Column(sqlalchemy.TEXT())
-    message_title = Column(sqlalchemy.TEXT())
-    message_text = Column(sqlalchemy.TEXT())
-    orig_date = Column(sqlalchemy.DATETIME())
-    create_date = Column(sqlalchemy.DATETIME())
-    isclassified = Column(sqlalchemy.Integer)
-    category = Column(sqlalchemy.String(256))
-    notified = Column(sqlalchemy.Integer)
+CATEGORY = GetCategory()
 
 
 def notify():
@@ -100,23 +76,20 @@ def send_email(category, orig_msg):
 
     text = "Результат: \n"
     for cat in category.keys():
-        text += "\t %s - %.2f%% \n" % (cat, category[cat]*100)
+        text += "\t %s - %.2f%% \n" % (CATEGORY[cat].category, category[cat]*100)
 
-    link1 = "#"
-    link2 = "#"
     links_block = """\n
-                Если сообщение было определено неправильно, вы можете указать правильный ответ.
-                Щелкните по ссылке с правильным ответом: \n
-                1. Съедобное - %s
-                2. Несъедобное - %s
-                \n
-                Ваш ответ будет использован для повышения точности анализа.
-                \n
-                \n
-                Спасибо за участие,
-                команда Conversation Parser.
-
-                    \n""" % (link1, link2)
+    Если сообщение было определено неправильно, вы можете указать правильный ответ.
+    Щелкните по ссылке с правильным ответом: \n
+        %s - %s
+        %s - %s
+    \n
+    Ваш ответ будет использован для повышения точности анализа.
+    \n
+    Спасибо за участие,
+    команда Conversation Parser.
+    \n""" % (CATEGORY["edible"].category, main_link + "%s/%s" % (orig_msg.message_id, CATEGORY["edible"].code),
+             CATEGORY["inedible"].category + "%s/%s" % (orig_msg.message_id, CATEGORY["inedible"].code))
 
     msg['From'] = from_addr
     msg['To'] = to_addr
