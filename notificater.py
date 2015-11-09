@@ -16,7 +16,7 @@ sys.setdefaultencoding("utf-8")
 
 __author__ = 'sergey'
 
-sql_uri = "mysql://%s:%s@%s/clear_data?charset=utf8" % (db_user, db_pass, db_host)
+sql_uri = "mysql://%s:%s@%s/%s?charset=utf8" % (db_user, db_pass, db_host, db_name)
 
 Base = declarative_base()
 Engine = sqlalchemy.create_engine(sql_uri, pool_size=20)
