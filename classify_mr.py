@@ -11,6 +11,7 @@ import argparse
 import mod_classifier as cl
 import mysql.connector
 import math
+import datetime
 from configuration import *
 import sys
 reload(sys)
@@ -99,11 +100,16 @@ if not args.db == None:
 
                 #Устанавливаем/обновляем классификацию реальных данных
                 query = ('UPDATE email_cleared_data SET isclassified=%s,category=%s WHERE id=%s;')
-                data = (1,answer_str,row['id'])
+                data = (1, answer_str, row['id'])
                 con_update.execute(query,data)
+
+                # Добавлем запись в таблицу train_api для работы API и функции переобучения
+                query = ('INSERT INTO train_api (message_id, category, date, user_action, user_answer) VALUES '
+                         '(%s, %s, %s, %s, %s);')
+                data = (row["message_id"], answer_str, datetime.datetime.now(), 0, "")
+                con_update.execute(query, data)
                 real_db.commit()
 
-            
 
         else:
             if args.debug: print 'Новых сообщений нет.'
