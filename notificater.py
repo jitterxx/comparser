@@ -40,7 +40,6 @@ def notify():
         else:
             msg_uuid = query1.uuid
 
-        category = dict()
         cats = re.split(":", msg.category)
         l = dict()
         for cat in cats:
@@ -49,11 +48,11 @@ def notify():
                 m[1] = 0
             l[m[0]] = float(m[1])
 
-        category[msg.id] = sorted(l.items(), key=lambda (k, v): v)
+        category = sorted(l.items(), key=lambda (k, v): v, reverse=True)
         print "От: %s (%s)" % (msg.sender, msg.sender_name)
         print "\n%s\n" % msg.message_text
-        print category[msg.id]
-        send_email(l, msg, msg_uuid)
+        print category
+        send_email(category, msg, msg_uuid)
         msg.notified = 1
         session.commit()
 
@@ -84,8 +83,8 @@ def send_email(category, orig_msg, msg_uuid):
     orig_text += "\n------------------------------------------------------\n"
 
     text = "Результат: \n"
-    for cat in category.keys():
-        text += "\t %s - %.2f%% \n" % (CATEGORY[cat].category, category[cat]*100)
+    for cat, val in category:
+        text += "\t %s - %.2f%% \n" % (CATEGORY[cat].category, val*100)
 
     links_block = """\n
     Если сообщение было определено неправильно, вы можете указать правильный вариант.

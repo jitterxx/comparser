@@ -17,3 +17,11 @@ db_port = 33066
 maildir_path = "/home/comparser/Maildir"
 
 main_link = "http://conparser.reshim.com/api/message/"
+
+
+
+aa = [(u'edible', 0.863784657224), (u'default', 0.0)]
+
+for v,k in aa:
+    print v
+    print k
