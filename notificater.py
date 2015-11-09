@@ -84,7 +84,8 @@ def send_email(category, orig_msg, msg_uuid):
 
     text = "Результат: \n"
     for cat, val in category:
-        text += "\t %s - %.2f%% \n" % (CATEGORY[cat].category, val*100)
+        if val != 0:
+            text += "\t %s - %.2f%% \n" % (CATEGORY[cat].category, val*100)
 
     links_block = """\n
     Если сообщение было определено неправильно, вы можете указать правильный вариант.
