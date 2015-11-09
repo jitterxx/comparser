@@ -108,7 +108,7 @@ if not args.db == None:
                 # Добавлем запись в таблицу train_api для работы API и функции переобучения
                 query = ('INSERT INTO train_api (uuid, message_id, category, date, user_action, user_answer) VALUES '
                          '(%s, %s, %s, %s, %s, %s);')
-                data = (uuid.uuid4(), row["message_id"], answer_str, datetime.datetime.now(), 0, "")
+                data = (uuid.uuid4().__str__(), row["message_id"], answer_str, datetime.datetime.now(), 0, "")
                 con_update.execute(query, data)
                 real_db.commit()
 
