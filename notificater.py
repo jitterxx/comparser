@@ -72,7 +72,7 @@ def send_email(category, orig_msg, msg_uuid):
     """
 
     msg = email.MIMEMultipart.MIMEMultipart()
-    from_addr = "comparser@reshim.com"
+    from_addr = "conparser@reshim.com"
     to_addr = orig_msg.sender
 
     orig_text = "\n\n---------------- Исходное сообщение -------------------\n"
@@ -83,13 +83,15 @@ def send_email(category, orig_msg, msg_uuid):
     orig_text += "\n------------------------------------------------------\n"
 
     text = "Результат: \n"
-    for cat, val in category:
-        if val != 0:
-            text += "\t %s - %.2f%% \n" % (CATEGORY[cat].category, val*100)
+    cat, val = category[0]
+    if val != 0:
+        text += "\t %s - %.2f%% \n" % (CATEGORY[cat].category, val*100)
+    else:
+        text += "\t Затрудняюсь определить. \n"
 
     links_block = """\n
-    Если сообщение было определено неправильно, вы можете указать правильный вариант.
-    Перейдите по ссылке: \n
+    Если результат неверный, укажите пожалуйста правильный ответ.
+    Для этого перейдите по одной из ссылок: \n
         %s - %s
         %s - %s
     \n
@@ -111,7 +113,7 @@ def send_email(category, orig_msg, msg_uuid):
 
     smtp = SMTP_SSL()
     smtp.connect("smtp.gmail.com")
-    smtp.login("comparser@reshim.com", "Cthutq123")
+    smtp.login("conparser@reshim.com", "Cthutq123")
     text = msg.as_string()
     smtp.sendmail(from_addr, to_addr, text)
     smtp.quit()
