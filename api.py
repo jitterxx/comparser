@@ -93,7 +93,9 @@ class Root(object):
 
     @cherrypy.expose
     def index(self):
-        return "index page"
+        tmpl = lookup.get_template("index.html")
+
+        return tmpl.render()
 
 
 cherrypy.config.update("server.config")
