@@ -86,10 +86,35 @@ class API(object):
         return ShowNotification().index("Неверный адрес api.")
 
 
+class Demo(object):
+
+    @cherrypy.expose
+    def index(self, description=None):
+        tmpl = lookup.get_template("demo.html")
+        if not description:
+            return tmpl.render()
+        else:
+            return "Анализируем"
+
+        try:
+            pass
+            # demo_classify(description)
+        except Exception as e:
+            print "Ошибка ((("
+
+        return message
+
+    @cherrypy.expose
+    def train(self, answer=None):
+
+        pass
+        return "Спасибо за ответ!"
+
 
 class Root(object):
 
     api = API()
+    demo = Demo()
 
     @cherrypy.expose
     def index(self):
