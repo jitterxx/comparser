@@ -162,3 +162,40 @@ def set_user_train_data(uuid, category):
         session.close()
 
     return [True, "Ваш ответ принят. Спасибо за участие!"]
+
+
+def landing_customer_contacts(customer_email, customer_phone, customer_session):
+    """
+    Функция отправки контактных данных полученных с лендинга.
+
+    :return:
+    """
+
+    msg = email.MIMEMultipart.MIMEMultipart()
+    from_addr = "info@conparser.ru"
+    to_addr = "sergey@reshim.com, ramil@reshim.com"
+
+    msg['From'] = from_addr
+    msg['To'] = to_addr
+    text = "\tE-mail: %s \n\tТелефон: %s \n" % (customer_email, customer_phone)
+    text += "\tДата и время: %s \n" % datetime.datetime.now()
+    text += "Параметры сессии: \n "
+    for a,b in customer_session.items():
+        text += "\t%s : %s \n" % (a, b)
+
+    msg['Subject'] = Header("Контакты с лендинга Conversation parser", "utf8")
+    body = "Оставлены контакты. \n" + text
+    msg.preamble = "This is a multi-part message in MIME format."
+    msg.epilogue = "End of message"
+
+    msg.attach(email.MIMEText.MIMEText(body, "plain", "UTF-8"))
+
+    smtp = SMTP_SSL()
+    smtp.connect(smtp_server)
+    smtp.login(from_addr, "Cthutq123")
+    text = msg.as_string()
+    smtp.sendmail(from_addr, to_addr.split(","), text)
+    smtp.quit()
+
+
+

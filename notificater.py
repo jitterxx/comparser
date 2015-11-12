@@ -72,7 +72,7 @@ def send_email(category, orig_msg, msg_uuid):
     """
 
     msg = email.MIMEMultipart.MIMEMultipart()
-    from_addr = "conparser@reshim.com"
+    from_addr = "edible@conparser.ru"
     to_addr = orig_msg.sender
 
     orig_text = "\n\n---------------- Исходное сообщение -------------------\n"
@@ -112,8 +112,8 @@ def send_email(category, orig_msg, msg_uuid):
     msg.attach(email.MIMEText.MIMEText(body, "plain", "UTF-8"))
 
     smtp = SMTP_SSL()
-    smtp.connect("smtp.gmail.com")
-    smtp.login("conparser@reshim.com", "Cthutq123")
+    smtp.connect(smtp_server)
+    smtp.login(from_addr, smtp_pass)
     text = msg.as_string()
     smtp.sendmail(from_addr, to_addr, text)
     smtp.quit()

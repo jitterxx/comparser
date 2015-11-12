@@ -97,6 +97,22 @@ class Root(object):
 
         return tmpl.render()
 
+    @cherrypy.expose
+    def landing(self, customer_email=None, customer_phone=None):
+        if not customer_email:
+            customer_email = "не указан"
+        if not customer_phone or customer_phone == "+7":
+            customer_phone = "не указан"
+
+        try:
+            landing_customer_contacts(customer_email, customer_phone, cherrypy.request.headers)
+        except Exception as e:
+            print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
+
+        print customer_email, customer_phone,  cherrypy.request.headers
+
+        raise cherrypy.HTTPRedirect("/")
+
 
 cherrypy.config.update("server.config")
 
