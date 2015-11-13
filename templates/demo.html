@@ -69,8 +69,24 @@
                         col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2" align="center">
                     <form method="post" action="/demo/analyze">
                         <hr style="width: 0px; margin: 30px">
-                        <p class="lead">Предмет</p>
-                        <textarea class="form-control" rows="5" name="description" id="description"></textarea>
+                        <p class="lead">Опишите предмет</p>
+                        <textarea class="form-control" rows="5" name="description" id="description"
+                                aria-describedby="help1 help2 help3"></textarea>
+                        <span class="help-block text-left" id="help3">
+                            <i>Напишите два три предложения. Опишите свойства предмета и как он
+                            используется.</i>
+                        </span>
+                        <span class="help-block text-left" id="help2"><i>
+                            Пример: <br>
+                            Из металла. Обычно имеет четыре колеса. Используется для перевозки людей и
+                            грузов по дорогам. Потребляет бензин или солярку.
+                        </i></span>
+                        <span class="help-block text-left" id="help1"><i>Просим вас не загадывать загадки и не давать
+                            двусмысленных
+                            описаний. В основе
+                        лежит статистика и математика, и "догадаться" или "сообразить", как это доступно человеку,
+                        сервис не сможет :-)</i>
+                        </span>
                         <hr style="width: 60%; margin: 10px">
                         <div style="width: 40%;">
                             <button type="submit" class="btn btn-success btn-block">Отправить</button>
