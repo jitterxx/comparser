@@ -31,10 +31,12 @@ class ShowNotification(object):
         return self
 
     @cherrypy.expose
-    def index(self, error=None):
+    def index(self, error=None, url=None):
         tmpl = lookup.get_template("error.html")
+        if not url:
+            url = "/demo"
         print str(error)
-        return tmpl.render(error=error)
+        return tmpl.render(error=error, url=url)
 
 
 class UserTrain(object):
@@ -148,8 +150,14 @@ class Root(object):
             print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
 
         print customer_email, customer_phone,  cherrypy.request.headers
+        text = """
+        <br>
+        <p class="lead text-left">Мы получили ваши контакты и в ближайшее время с вами свяжемся.</p>
+        <br>
+        <div class="lead text-left">С уважением,<br> команда Conversation Parser.</div>
+        """
 
-        raise cherrypy.HTTPRedirect("/")
+        return ShowNotification().index(text, "/")
 
 
 cherrypy.config.update("server.config")
