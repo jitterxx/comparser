@@ -10,6 +10,9 @@ import datetime
 import email
 from email.header import Header
 from smtplib import SMTP_SSL
+from mod_classifier import fisherclassifier, specfeatures
+import uuid
+import re
 
 import sys
 reload(sys)
@@ -17,10 +20,10 @@ sys.setdefaultencoding("utf-8")
 
 __author__ = 'sergey'
 
-sql_uri = "mysql://%s:%s@%s/%s?charset=utf8" % (db_user, db_pass, db_host, db_name)
+sql_uri = "mysql://%s:%s@%s:%s/%s?charset=utf8" % (db_user, db_pass, db_host, db_port, db_name)
 
 Base = declarative_base()
-Engine = sqlalchemy.create_engine(sql_uri, pool_size=20)
+Engine = sqlalchemy.create_engine(sql_uri, pool_size=20, pool_recycle=3600)
 Session = sqlalchemy.orm.sessionmaker(bind=Engine)
 
 
@@ -198,4 +201,105 @@ def landing_customer_contacts(customer_email, customer_phone, customer_session):
     smtp.quit()
 
 
+def demo_classify(description):
+
+    answer = ["", 0]
+
+    #Указана БД классификатора, работаем используя лимит
+    #Создаем объект классификатора
+    f_cl = fisherclassifier(specfeatures)
+
+    #Подключаем данные обучения
+    f_cl.setdb(db_name)
+    f_cl.loaddb()
+    f_cl.unsetdb()
+
+    row = dict()
+    row['message_title'] = ""
+    row['message_text'] = description
+
+    msg = Msg()
+    msg.message_id = uuid.uuid4().__str__()
+    msg.cc_recipients = msg.cc_recipients_name = msg.sender_name = msg.sender = msg.message_title = msg.recipients = \
+        msg.recipients_name = ""
+    msg.message_text = description
+    msg.isclassified = 1
+    msg.notified = 1
+    msg.orig_date = datetime.datetime.now()
+    msg.create_date = datetime.datetime.now()
+    msg.category = ""
+
+    try:
+        cats = f_cl.classify_mr(row, default='0')
+        print "Полный ответ классификатора: %s" % cats
+    except Exception as e:
+        print str(e)
+        raise e
+
+    for one in cats:
+        if answer[1] <= float(one.values()[0]):
+            answer[0] = one.keys()[0]
+            answer[1] = float(one.values()[0])
+
+    msg.category = str(answer[0]) + "-" + str(answer[1])
+
+    print "Обработанный ответ классификатора: %s" % answer
+
+    record = TrainAPIRecords()
+    record.message_id = msg.message_id
+    record.date = datetime.datetime.now()
+    record.uuid = record_uid = uuid.uuid4().__str__()
+    record.category = msg.category
+    record.user_action = 0
+    record.user_answer = ""
+
+    session = Session()
+    try:
+        session.add(msg)
+        session.commit()
+    except Exception as e:
+        session.close()
+        print "Ошибка записи MSG." + str(e)
+        raise e
+    else:
+        print "Новый MSG записан."
+
+    try:
+        session.add(record)
+        session.commit()
+    except Exception as e:
+        print "Ошибка записи TRAIN_API ." + str(e)
+        raise e
+    finally:
+        session.close()
+
+    return answer, record_uid
+
+
+def get_message_for_train(msg_uuid):
+    session = Session()
+    try:
+        query = session.query(TrainAPIRecords).filter(TrainAPIRecords.uuid == msg_uuid).one()
+    except sqlalchemy.orm.exc.NoResultFound:
+        session.close()
+        return [False, "API. Описание не найдено."]
+    except Exception as e:
+        session.close()
+        raise e
+    else:
+        try:
+            msg = session.query(Msg).filter(Msg.message_id == query.message_id).one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            session.close()
+            return [False, "MSG. Описание не найдено."]
+        except Exception as e:
+            session.close()
+            raise e
+        else:
+            desc = msg.message_text
+            answer = re.split("-", msg.category)
+
+    session.close()
+
+    return [True, desc, answer]
 

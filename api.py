@@ -32,9 +32,9 @@ class ShowNotification(object):
 
     @cherrypy.expose
     def index(self, error=None):
-        print "Show Notification class"
+        tmpl = lookup.get_template("error.html")
         print str(error)
-        return str(error)
+        return tmpl.render(error=error)
 
 
 class UserTrain(object):
@@ -57,7 +57,7 @@ class UserTrain(object):
                 print str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
 
-        return status[1]
+        return ShowNotification().index(status[1])
 
 
 class API(object):
@@ -77,7 +77,7 @@ class API(object):
         else:
             print "FALSE. PATH : %s" % (vpath)
             cherrypy.request.params['error'] = "Неверный адрес."
-            return ShowNotification()
+            return ShowNotification().index("Неверный адрес.")
 
         return []
 
@@ -89,26 +89,39 @@ class API(object):
 class Demo(object):
 
     @cherrypy.expose
-    def index(self, description=None):
+    def index(self):
         tmpl = lookup.get_template("demo.html")
-        if not description:
-            return tmpl.render()
-        else:
-            return "Анализируем"
-
-        try:
-            pass
-            # demo_classify(description)
-        except Exception as e:
-            print "Ошибка ((("
-
-        return message
+        return tmpl.render(action="show")
 
     @cherrypy.expose
-    def train(self, answer=None):
+    def analyze(self, description=None):
+        print "Desc: %s" % description
+        result = ["", 0]
 
-        pass
-        return "Спасибо за ответ!"
+        try:
+            result, train_uuid = demo_classify(description)
+        except Exception as e:
+            print "Ошибка. %s" % str(e)
+            return ShowNotification().index("Что-то сломалось, будем чинить.")
+
+        raise cherrypy.HTTPRedirect("/demo/train?msg_uuid=%s" % train_uuid)
+
+    @cherrypy.expose
+    def train(self, msg_uuid=None):
+        tmpl = lookup.get_template("demo.html")
+        try:
+            result = get_message_for_train(msg_uuid)
+            print result
+        except Exception as e:
+            print "Ошибка. %s" % str(e)
+            return ShowNotification().index("Что-то сломалось, будем чинить.")
+
+        if not result[0]:
+            print "Ошибка. %s" % str(result[1])
+            return ShowNotification().index(result[1])
+
+        return tmpl.render(action="show_classify", description=result[1], result=result[2], train_uuid=msg_uuid,
+                           main_link=main_link)
 
 
 class Root(object):

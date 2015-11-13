@@ -7,13 +7,11 @@
 """
 
 db_host = "localhost"
-#db_user = "comparser"
-#db_pass = "Qazcde123"
-#db_port = 3306
-db_user = "root"
-db_pass = "OO00zZOK"
+db_user = "comparser"
+db_pass = "Qazcde123"
+db_port = 3306
 db_name = "classifier"
-db_port = 33066
+
 maildir_path = "/home/comparser/Maildir"
 
 main_link = "http://conparser.ru/api/message/"

@@ -27,7 +27,7 @@
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-
+    <meta http-equiv="refresh" content="5;URL=http://conparser.ru/demo" />
 </head>
 
 <body>
@@ -63,57 +63,15 @@
     <div class="content-section-a">
 
         <div class="container">
-            % if action == "show":
-            <div class="row">
-                <div
-                        class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2" align="center">
-                    <form method="post" action="/demo/analyze">
-                        <hr style="width: 0px; margin: 30px">
-                        <p class="lead">Предмет</p>
-                        <textarea class="form-control" rows="5" name="description" id="description"></textarea>
-                        <hr style="width: 60%; margin: 10px">
-                        <div style="width: 40%;">
-                            <button type="submit" class="btn btn-success btn-lg btn-block">Отправить</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            % elif action == "show_classify":
             <div class="row">
                 <div
                         class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2" align="center">
                         <hr style="width: 0px; margin: 30px">
-                        <p class="lead">Вы написали:</p>
-                        <p class="lead">${description}</p>
+                        <p class="lead">${error}</p>
                         <hr style="width: 60%; margin: 10px">
-                        % if result[0] == "edible":
-                            <h3>это Съедобный предмет</h3>
-                        % elif result[0] == "inedible":
-                            <h3>это Несъедобный предмет</h3>
-                        % else:
-                            <h3>не могу определить</h3>
-                        % endif
-                        <hr style="width: 60%; margin: 20px">
-                    <p class="lead">Независимо от результата, укажите пожалуйста, правильный вариант.</p>
-                    <p class="lead">Ваш ответ мы используем для повышения точности анализа.</p>
+                        <p class="lead">Через 5 секунд вы будете переадресованы.</p>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" align="center">
-                    </div>
-                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" align="center">
-                    <a href="${main_link}${train_uuid}/edible" class="btn btn-default btn-block" role="button">Съедобный
-                    </a>
-                </div>
-                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" align="center">
-                    <a href="${main_link}${train_uuid}/inedible" class="btn btn-default btn-block" role="button">
-                        Несъедобный</a>
-                </div>
-            </div>
-            % elif action == "train":
-            train
-            % endif
-
         </div>
         <!-- /.container -->
 
