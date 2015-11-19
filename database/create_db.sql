@@ -1,6 +1,6 @@
-CREATE DATABASE  IF NOT EXISTS `` /*!40100 DEFAULT CHARACTER SET utf8 */;
+CREATE DATABASE  IF NOT EXISTS `vipct` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
-USE ``;
+USE `vipct`;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -229,5 +229,28 @@ CREATE TABLE `user_train_data` (
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+--
+-- Table structure for table `email_raw_data`
+--
+
+DROP TABLE IF EXISTS `email_raw_data`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `email_raw_data` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `message_id` varchar(255) DEFAULT NULL,
+  `sender` varchar(255) DEFAULT NULL,
+  `recipient` text,
+  `cc_recipient` text,
+  `message_title` text,
+  `message_text` mediumtext,
+  `orig_date` datetime DEFAULT NULL,
+  `create_date` datetime DEFAULT NULL,
+  `iscleared` int(11) NOT NULL DEFAULT '0',
+  `isbroken` int(11) NOT NULL DEFAULT '0' COMMENT 'message have broken params. Loaded as is.',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 -- Dump completed on 2015-11-19 19:50:52
