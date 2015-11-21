@@ -126,10 +126,7 @@ class Demo(object):
                            main_link=main_link)
 
 
-class Root(object):
-
-    api = API()
-    demo = Demo()
+class MainSite(object):
 
     @cherrypy.expose
     def index(self):
@@ -137,8 +134,21 @@ class Root(object):
 
         return tmpl.render()
 
+
+class Root(object):
+
+    api = API()
+    demo = Demo()
+    connect = MainSite()
+
     @cherrypy.expose
-    def landing(self, customer_email=None, customer_phone=None):
+    def index(self):
+        tmpl = lookup.get_template("landing.html")
+
+        return tmpl.render()
+
+    @cherrypy.expose
+    def send_contacts(self, customer_email=None, customer_phone=None):
         if not customer_email:
             customer_email = "не указан"
         if not customer_phone or customer_phone == "+7":
