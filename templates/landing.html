@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Conversation parser landing page">
+    <meta name="description" content="Conversation parser">
     <meta name="author" content="Sergey Fomin, Ramil Galiullin">
 
     <title>Conversation parser</title>
@@ -27,6 +27,7 @@
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+
 
 </head>
 
@@ -71,7 +72,9 @@
                         <h3>Работайте с жалобами и проблемами оперативно</h3>
                         <hr style="width: 60%; margin: 50px">
                         <div style="width: 60%;">
-                            <a href="#connect" class="btn btn-success btn-lg btn-block">Позвоните мне</a>
+                            <a href="#connect" class="btn btn-success btn-lg btn-block">
+                                Свяжитесь со мной
+                            </a>
                         </div>
 
                     </div>
@@ -102,7 +105,7 @@
                     <p class="lead">
                        Работайте с жалобами и проблемами, это позволит вам сохранить доверительные отношения c клиентами.</p>
                     <p class="lead">
-                        Привлечь нового нового клиента стоит в 6-7 раз дороже, чем удержать уже существующего.
+                        Привлечь нового клиента стоит в 6-7 раз дороже, чем удержать уже существующего.
                         </p>
                 </div>
             </div>
@@ -151,6 +154,9 @@
                     <div class="clearfix"></div>
                     <h2 class="section-heading">Инструменты</h2>
                     <hr style="width: 150px; margin: 50px">
+                    <p class="lead">
+                        Отвечайте самостоятельно или передайте функции по работе с обращениями клиентов службе качества.
+                    </p>
                     <p class="lead">
                         Автоматическое определение эмоциональной окраски обращения.
                     </p>
@@ -241,6 +247,9 @@
                     <h2 class="section-heading">Узнать больше</h2>
                     <hr style="width: 150px; margin: 50px">
                     <p class="lead">
+                        Про технические подробности, стоимость и как подключиться.
+                    </p>
+                    <p class="lead">
                         Оставьте, пожалуйста, e-mail или телефон, <br>
                         мы с вами свяжемся и ответим на все вопросы
                     </p>
@@ -312,8 +321,22 @@
             })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
           ga('create', 'UA-70024318-1', 'auto');
           ga('send', 'pageview');
-     </script>
+    </script>
+    <script type="text/javascript">
 
+        var ZCallbackWidgetLinkId  = '6de5c0ba26b1c478e8e8ac357cc37274';
+        var ZCallbackWidgetDomain  = 'ss.zadarma.com';
+        (function() {
+            var lt = document.createElement('script');
+            lt.type ='text/javascript';
+            lt.charset = 'utf-8';
+            lt.async = true;
+            lt.src = 'https://' + ZCallbackWidgetDomain + '/callbackWidget/js/main.min.js?unq='+Math.floor(Math.random(0,1000)*1000);
+            var sc = document.getElementsByTagName('script')[0];
+            if (sc) sc.parentNode.insertBefore(lt, sc);
+            else document.documentElement.firstChild.appendChild(lt);
+        })();
+    </script>
 </body>
 
 </html>
