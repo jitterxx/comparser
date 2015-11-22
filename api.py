@@ -130,7 +130,7 @@ class MainSite(object):
 
     @cherrypy.expose
     def index(self):
-        tmpl = lookup.get_template("landing.html")
+        tmpl = lookup.get_template("index.html")
 
         return tmpl.render()
 
@@ -143,7 +143,7 @@ class Root(object):
 
     @cherrypy.expose
     def index(self):
-        tmpl = lookup.get_template("index.html")
+        tmpl = lookup.get_template("landing.html")
 
         return tmpl.render()
 
