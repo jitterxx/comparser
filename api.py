@@ -13,6 +13,7 @@ from objects import *
 import cherrypy
 from bs4 import BeautifulSoup
 from mako.lookup import TemplateLookup
+from user_agents import parse
 
 
 __author__ = 'sergey'
@@ -145,7 +146,13 @@ class Root(object):
     def index(self):
         tmpl = lookup.get_template("landing.html")
 
-        return tmpl.render()
+        try:
+            user_agent = parse(cherrypy.request.headers['User-Agent'])
+        except Exception as e:
+            print "Ошибка определения типа клиента. %s" % str(e)
+            user_agent = ""
+
+        return tmpl.render(user_agent=user_agent)
 
     @cherrypy.expose
     def send_contacts(self, customer_email=None, customer_phone=None):
