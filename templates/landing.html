@@ -79,8 +79,13 @@
                 <div class="col-lg-12 col-xs-12 col-md-12 col-sm-12" align="center">
                     <div class="intro-message">
 
-                        <h1>Контролируйте переписку с клиентами</h1>
-                        <h3>Работайте с жалобами и проблемами оперативно</h3>
+                        % if user_agent.is_mobile or user_agent.is_tablet:
+                            <h2>Контролируйте переписку с клиентами</h2>
+                            <h4>Работайте с жалобами и проблемами оперативно</h4>
+                        % else:
+                            <h1>Контролируйте переписку с клиентами</h1>
+                            <h3>Работайте с жалобами и проблемами оперативно</h3>
+                        % endif
                         <hr style="width: 60%; margin: 50px">
                         <div style="width: 60%;">
                             <a href="#connect" class="btn btn-success btn-lg btn-block">
@@ -263,18 +268,18 @@
 
                     % if user_agent.is_mobile or user_agent.is_tablet:
                             <a href="fb-messenger://user-thread/1647147275565715" class="btn btn-success btn-lg">
-                                 <h3 class="section-heading">Узнать больше</h3>
+                                 <h4>Узнать больше</h4>
                             </a>
                         % else:
                             <a href="https://www.facebook.com/messages/1647147275565715" class="btn btn-success btn-lg" target="_blank">
-                                 <h>Узнать больше</h>
+                                 <h4>Узнать больше</h4>
                             </a>
                         % endif
 
                     <hr style="width: 150px; margin: 50px">
                     <p class="lead">
-                        Про технические подробности,
-                        стоимость и как подключиться.
+                        Про стоимость, технические подробности
+                        и как подключиться.
 
                         <!--
                         <a href="/technics">технические подробности</a>,
