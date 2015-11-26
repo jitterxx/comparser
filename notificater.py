@@ -24,6 +24,8 @@ __author__ = 'sergey'
 """
 
 CATEGORY = GetCategory()
+code1, code2 = CATEGORY.keys()
+
 
 
 def notify():
@@ -72,8 +74,8 @@ def send_email(category, orig_msg, msg_uuid):
     """
 
     msg = email.MIMEMultipart.MIMEMultipart()
-    from_addr = "edible@conparser.ru"
-    to_addr = orig_msg.sender
+    from_addr = smtp_email
+    to_addr = to_address
 
     orig_text = "\n\n---------------- Исходное сообщение -------------------\n"
     orig_text += "От кого: %s (%s)\n" % (orig_msg.sender_name, orig_msg.sender)
@@ -99,8 +101,8 @@ def send_email(category, orig_msg, msg_uuid):
     \n
     Спасибо за участие,
     команда Conversation Parser.
-    \n""" % (CATEGORY["edible"].category, main_link + "%s/%s" % (msg_uuid, CATEGORY["edible"].code),
-             CATEGORY["inedible"].category, main_link + "%s/%s" % (msg_uuid, CATEGORY["inedible"].code))
+    \n""" % (CATEGORY[code1].category, main_link + "%s/%s" % (msg_uuid, CATEGORY[code1].code),
+             CATEGORY[code2].category, main_link + "%s/%s" % (msg_uuid, CATEGORY[code2].code))
 
     msg['From'] = from_addr
     msg['To'] = to_addr

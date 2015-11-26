@@ -139,21 +139,15 @@ class MainSite(object):
 class Root(object):
 
     api = API()
-    demo = Demo()
-    connect = MainSite()
+
+    #demo = Demo()
+    #connect = MainSite()
 
     @cherrypy.expose
     def index(self):
-        tmpl = lookup.get_template("landing.html")
+        cherrypy.HTTPRedirect("/api")
 
-        try:
-            user_agent = parse(cherrypy.request.headers['User-Agent'])
-        except Exception as e:
-            print "Ошибка определения типа клиента. %s" % str(e)
-            user_agent = ""
-
-        return tmpl.render(user_agent=user_agent)
-
+    """
     @cherrypy.expose
     def send_contacts(self, customer_email=None, customer_phone=None):
         if not customer_email:
@@ -167,15 +161,15 @@ class Root(object):
             print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
 
         print customer_email, customer_phone,  cherrypy.request.headers
-        text = """
-        <br>
-        <p class="lead text-left">Мы получили ваши контакты и в ближайшее время с вами свяжемся.</p>
-        <br>
-        <div class="lead text-left">С уважением,<br> команда Conversation Parser.</div>
         """
+        #text = """
+        #<br>
+        #<p class="lead text-left">Мы получили ваши контакты и в ближайшее время с вами свяжемся.</p>
+        #<br>
+        #<div class="lead text-left">С уважением,<br> команда Conversation Parser.</div>
+        #"""
 
-        return ShowNotification().index(text, "/")
-
+        #return ShowNotification().index(text, "/")
 
 cherrypy.config.update("server.config")
 

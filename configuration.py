@@ -7,15 +7,23 @@
 """
 
 db_host = "localhost"
-db_user = "comparser"
+db_user = "vipct"
 db_pass = "Qazcde123"
 db_port = 3306
-db_name = "classifier"
+db_name = "vipct"
 
-maildir_path = "/home/comparser/Maildir"
+# Каталог отккда забираются сообщения для анализа после доставки.
+maildir_path = "/home/vipct/Maildir"
 
-main_link = "http://conparser.ru/api/message/"
+# Ссылка для работы с обучением системы
+main_link = "http://vipct.conparser.ru/api/message/"
+
+# Параметры аккаунта откуда будут забираться сообщения для доставки в каталог.
+smtp_email = "vipct@conparser.ru"
 smtp_server = "smtp.yandex.ru"
-smtp_pass = "Cthutq123"
+smtp_pass = "Qazcde123"
+
+# Кому будут направляться сообщения о классификации от имени аккаунта анализатора. см. выше.
+to_address = "sergey@reshim.com"
 
 
