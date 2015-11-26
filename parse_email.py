@@ -201,7 +201,7 @@ if not args.limit: limit = 100
 else: limit = args.limit
 
 #Открываем грязную базу
-dirty_db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database="Raw_data")
+dirty_db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database=db_name)
 dirty_con = dirty_db.cursor(buffered=True)
 
 #Открываем чистую базу и базу ошибок
