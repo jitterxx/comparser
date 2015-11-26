@@ -22,7 +22,7 @@ sys.setdefaultencoding("utf-8")
 f_cl = cl.fisherclassifier(cl.specfeatures)
 
 # Подключаем данные обучения
-f_cl.setdb("classifier")
+f_cl.setdb(db_name)
 
 
 f_cl.loaddb()
