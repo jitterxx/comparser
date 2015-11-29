@@ -176,7 +176,15 @@ def exception(entry,data):
         #print str
         #print email_re.group(0)
         data['isexception'] = 1
-    
+
+    # Не обрабатываем сообщения, если адрес отправителя это адрес аккаунта используещегося системой.
+    # Т.е. письмо или отправлено само себе или переслано по правилам пересылки от кого-то.
+    str = data['sender']
+    email = re.compile(from_email, re.I|re.U)
+    email_re = email.search(str)
+    if email_re:
+        data['isexception'] = 1
+
     return data
 
     
