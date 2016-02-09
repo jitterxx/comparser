@@ -162,7 +162,8 @@ class Root(object):
             customer_phone = "не указан"
 
         try:
-            landing_customer_contacts(customer_email, customer_phone, cherrypy.request.headers)
+            landing_customer_contacts(customer_email=customer_email, customer_phone=customer_phone,
+                                      customer_session=cherrypy.request.headers)
         except Exception as e:
             print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
 
@@ -176,6 +177,28 @@ class Root(object):
 
         return ShowNotification().index(text, "/")
 
+    @cherrypy.expose
+    def send_contacts_demo(self, customer_email=None, customer_name=None):
+        if not customer_email:
+            customer_email = "не указан"
+        if not customer_name:
+            customer_name = "не указано"
+
+        try:
+            landing_customer_contacts(customer_email=customer_email, customer_name=customer_name,
+                                      customer_session=cherrypy.request.headers)
+        except Exception as e:
+            print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
+
+        print customer_email, customer_name,  cherrypy.request.headers
+        text = """
+        <br>
+        <p class="lead text-left">%s, мы записали email и в ближайшее время свяжемся с Вами.</p>
+        <br>
+        <div class="lead text-left">С уважением,<br> команда Conversation Parser.</div>
+        """ % customer_name
+
+        return ShowNotification().index(text, "/")
 
 cherrypy.config.update("server.config")
 

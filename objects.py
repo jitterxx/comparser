@@ -167,10 +167,14 @@ def set_user_train_data(uuid, category):
     return [True, "Ваш ответ принят. Спасибо за участие!"]
 
 
-def landing_customer_contacts(customer_email, customer_phone, customer_session):
+def landing_customer_contacts(customer_email, customer_phone=None, customer_name=None, customer_session=None):
     """
     Функция отправки контактных данных полученных с лендинга.
 
+    :param customer_email:
+    :param customer_phone:
+    :param customer_name:
+    :param customer_session:
     :return:
     """
 
@@ -180,7 +184,8 @@ def landing_customer_contacts(customer_email, customer_phone, customer_session):
 
     msg['From'] = from_addr
     msg['To'] = to_addr
-    text = "\tE-mail: %s \n\tТелефон: %s \n" % (customer_email, customer_phone)
+    text = "\tИмя: %s \n" % customer_name
+    text += "\tE-mail: %s \n\tТелефон: %s \n" % (customer_email, customer_phone)
     text += "\tДата и время: %s \n" % datetime.datetime.now()
     text += "Параметры сессии: \n "
     for a,b in customer_session.items():
