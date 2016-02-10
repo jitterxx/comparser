@@ -167,7 +167,7 @@ def set_user_train_data(uuid, category):
     return [True, "Ваш ответ принят. Спасибо за участие!"]
 
 
-def landing_customer_contacts(customer_email, customer_phone=None, customer_name=None, customer_session=None,
+def landing_customer_contacts(customer_email=None, customer_phone=None, customer_name=None, customer_session=None,
                               pd=None):
     """
     Функция отправки контактных данных полученных с лендинга.
@@ -176,6 +176,7 @@ def landing_customer_contacts(customer_email, customer_phone=None, customer_name
     :param customer_phone:
     :param customer_name:
     :param customer_session:
+    :param pd:
     :return:
     """
 
