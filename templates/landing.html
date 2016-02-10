@@ -84,10 +84,11 @@
                     <div class="intro-message">
                         % if user_agent.is_mobile or user_agent.is_tablet:
                             <h2>
-                                Вовремя узнайте о письмах от клиентов, <br>оставшихся без ответа, <br>
-                                и переписке приводящей к конфликту
+                                Вовремя узнайте о письмах от клиентов, оставшихся без ответа
+
                             </h2>
                             <h4>
+                                узнайте о переписке приводящей к конфликту, <br>
                                 возьмите ситуацию под контроль и сохраните клиента
                             </h4>
                             <hr style="width: 60%; margin: 50px">
@@ -98,10 +99,11 @@
                             </div>
                         % else:
                             <h1>
-                                Вовремя узнайте о письмах от клиентов, <br>оставшихся без ответа, <br>
-                                и переписке приводящей к конфликту
+                                Вовремя узнайте <br>о письмах от клиентов, <br> оставшихся без ответа
+
                             </h1>
                             <h3>
+                                узнайте о переписке приводящей к конфликту, <br>
                                 возьмите ситуацию под контроль и сохраните клиента
                             </h3>
                             <hr style="width: 60%; margin: 50px">
@@ -132,26 +134,37 @@
                         class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2" align="center">
                     <div class="clearfix"></div>
                     <h2 class="section-heading">
-                        100% писем клиентов получат ответ
+                        100% клиентов получают ответ
                     </h2>
                     <hr style="width: 150px; margin: 50px">
                     <p class="lead">
-                       Ничего не оставляет настолько сильного отрицательного впечатления у клиента, <br>
-                        как  оставленное без ответа письмо.
+                       Ничего не оставляет настолько отрицательного впечатления у клиента, <br>
+                        как письмо без ответа.
                     </p>
                     <p class="lead">
-                        Мы знаем, как с этим бороться.
+                        Мы знаем, как с этим <a href="#connect">бороться</a>.
                     </p>
                     <p class="lead">
                         Если ответа нет дольше необходимого времени, мы напоминаем и сообщаем о этом тем, <br>
                         кто в силах повлиять на ситуацию.
                     </p>
                     <p class="lead">
-                        И через 3 часа*, мы отправляем клиенту сообщение, чтобы он не чувствовал себя забытым.
+                        И через
+                        <a tabindex="0" role="button" data-toggle="popover"
+                           data-trigger="focus" data-placement="top"
+                           data-content="Время ответа по стандартным настройкам. Вы можете указать свое.">
+                            3 часа
+                        </a>
+                        , мы отправляем клиенту
+                        <a tabindex="0" role="button" data-toggle="popover"
+                           data-trigger="focus" data-placement="top"
+                           data-content="Ответ соответствует смыслу и контексту исходного письма. Если задан вопрос,
+                           от имени сотрудника сообщаем, что вопрос получен и ответ скоро будет отправлен.
+                           Если это информационное письмо, отправляем благодарность и т.д.">
+                            персональное сообщение
+                        </a>
+                        , чтобы он не чувствовал себя забытым.
                     </p>
-                    <p>
-                    * - <small class="text-muted">время ответа по стандартным настройкам. Вы можете указать свое.</small>
-                   </p>
                 </div>
             </div>
 
@@ -168,16 +181,39 @@
             <div class="row">
                 <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2" align="center">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">Решите 80% конфликтов до начала</h2>
+                    <h2 class="section-heading">
+                        Решите 80% конфликтов до их начала
+                    </h2>
                     <hr style="width: 150px; margin: 50px">
                     <p class="lead">
-                        Грубость, неадекватность или не соответствие определенным правилам, становятся причиной конфликта.
+                        Грубость, неадекватность или не соответствие писем
+                        <a tabindex="0" role="button" data-toggle="popover"
+                           data-trigger="focus" data-placement="top" data-html="true"
+                           data-content="Стиль ведения деловой переписки оказывают серьезное влияние на имидж компании,
+                           отношение клиентов к Вам. <br> Мы учитываем это при анализе.">
+
+                           <!--
+                           data-content="Стиль ведения деловой переписки оказывают серьезное влияние на имидж компании,
+                           отношение клиентов к вам. Мы подготовили <a href='#'>памятку с правилами</a>,
+                           используйте ее в своей работе.">
+                           -->
+                            правилам переписки
+                        </a>
+                        , становятся причиной конфликта.
                     </p>
                     <p class="lead">
                         Мы определяем 80% писем приводящих к активному конфликту на ранней стадии.
                     </p>
                     <p class="lead">
-                        Уведомим вас, задержим отправку сообщения и вы сохраните клиента.
+                        Уведомим вас,
+                        <a tabindex="0" role="button" data-toggle="popover"
+                           data-trigger="focus" data-placement="top" data-html="true"
+                           data-content="Для этой функции требуется тесная интеграция с электронной почтой.<br>
+                                         Мы реализуем эту функцию для каждого клиента индивидуально.
+                                        ">
+                            задержим отправку
+                        </a>
+                        сообщения и вы сохраните клиента.
                     </p>
                 </div>
             </div>
@@ -197,16 +233,18 @@
                 <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2
                  col-sm-offset-2 col-xs-offset-2" align="center">
                     <div class="clearfix"></div>
-                    <h2 class="section-heading">Проверяйте всю переписку без исключений</h2>
+                    <h2 class="section-heading">
+                        Проверяем всю переписку без исключений
+                    </h2>
                     <hr style="width: 150px; margin: 50px">
                     <p class="lead">
-                        Мы проверяем 100% поступающих сообщений в автоматическом режиме, <br>
-                        вы не тратите время на ручной анализ писем.
+                        100% поступающих сообщений проверяется в автоматическом режиме, <br>
+                        вы <mark>не тратите время</mark> на ручной анализ писем.
                     </p>
                     <p class="lead">
-                       Вы получаете уведомление через <mark>ДВЕ</mark> минуты.</p>
+                       Вы получите уведомление через <mark>ДВЕ</mark> минуты.</p>
                     <p class="lead">
-                        Определяете конфликт на ранней стадии и сохраняете клиента.
+                        Определите конфликты на ранней стадии и сохраните клиентов.
                     </p>
                 </div>
             </div>
@@ -216,71 +254,6 @@
 
     </div>
     <!-- /.content-section-a -->
-
-<%doc>
-    <div class="content-section-b">
-
-        <div class="container">
-
-            <div class="row">
-                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2" align="center">
-
-                    <div class="clearfix"></div>
-                    <h2 class="section-heading">0 рублей - взять переписку под контроль</h2>
-                    <hr style="width: 150px; margin: 50px">
-                    <p class="lead">
-                        Работайте в ознакомительным режиме через 30 минут после подключения.
-                    </p>
-                    <p class="lead">
-                        14 дней мы будем анализировать переписку и сообщать вам:
-                    </p>
-                    <div align="left">
-                    <ul>
-                        <li class="lead">
-                            о письмах без ответа (или если ответ отправлен через 3 часа и больше); <br>
-                        </li>
-                        <li class="lead">
-                            о подозрениях на грубые и неадекватные сообщения;
-                        </li>
-                        <li class="lead">
-                            о сообщениях потенциально приводящих к конфликту;
-                        </li>
-                        <li class="lead">
-                            о несоответствии правилам деловой переписки*.
-                        </li>
-                    </ul>
-                    </div>
-
-                    <p class="lead">
-                        Информация предоставляется на следующий день после получения сообщений.
-                    </p>
-
-                    <div class="clearfix"></div>
-                    <h2 class="section-heading">30 минут - подключение</h2>
-                    <hr style="width: 150px; margin: 50px">
-                    <p class="lead">
-                        Взаимодействие с сервисом происходит по электронной почте, <br>
-                        вам не требуется переучивать персонал, менять рабочие инструкции и процессы.
-
-                    </p>
-                    <p class="lead">
-                       Для подключения не нужны сложные изменения в инфраструктуре, <br>
-                        настройте переадресацию и получайте информацию о письмах.
-                    </p>
-                    <a href="#" class="btn btn-success btn-lg" target="_blank">
-                        <h4>Взять переписку под контроль</h4>
-                    </a>
-
-
-                </div>
-            </div>
-
-        </div>
-        <!-- /.container -->
-
-    </div>
-    <!-- /.content-section-b -->
-</%doc>
 
 	<a  name="connect"></a>
     <div class="content-section-b">
@@ -315,10 +288,10 @@
 
                 <div class="col-lg-7 col-md-7 col-sm-7 col-xs-7 col-lg-offset-1 col-md-offset-1 col-sm-offset-1 col-xs-offset-1">
                     <p class="lead">
-                        2-х недельный ознакомительный режим <mark>бесплатно.</mark>
+                        2-х недельный <mark>бесплатный</mark> ознакомительный режим для 5 адресов.
                     </p>
                     <p class="lead">
-                        <mark>14 дней</mark> мы будем анализировать письма и сообщать* вам:
+                        <mark>14 дней</mark> мы будем анализировать письма и сообщать вам:
                     </p>
                     <ul>
                         <li class="lead">
@@ -334,8 +307,24 @@
                             о несоответствии правилам деловой переписки*.
                         </li>
                     </ul>
-                    <p class="text-muted">
-                        * - Информация предоставляется на следующий день после получения сообщений.
+                    <p>
+                        <a tabindex="0" role="button" data-toggle="popover" class="text-muted"
+                           data-trigger="focus" data-placement="top" data-html="true"
+                           data-content="
+                                Информация предоставляется через <b>3 часа</b> после получения сообщений.<br>
+                                Форма отчетности: документ в GoogleDoc с анализом каждого письма по признакам:<br>
+                           <ul>
+                                <li>время прошедшее до ответа;</li>
+                                <li>подозрение на конфликт;</li>
+                                <li>наличие грубости и неадекватность;</li>
+                                <li>отсутствие темы;</li>
+                                <li>отсутствие приветствия;</li>
+                                <li>отсутствие подписи;</li>
+                                <li>наличие жаргона и канцеляризмов.</li>
+                                </ul>
+                                ">
+                            Что включено в ознакомительный режим
+                        </a>
                     </p>
                 </div>
             </div>
@@ -358,88 +347,92 @@
         </div>
     </div>
 
-<!-- /.
-	<a  name="contact"></a>
-
-    <div class="banner">
-
+	<a  name="services"></a>
+    <div class="content-section-a">
         <div class="container">
-
             <div class="row">
-                <div class="col-lg-6">
-                    <h2>Connect to Start Bootstrap:</h2>
-                </div>
-                <div class="col-lg-6">
-                    <ul class="list-inline banner-social-buttons">
-                        <li>
-                            <a href="https://twitter.com/SBootstrap" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
-                        </li>
-                        <li>
-                            <a href="https://github.com/IronSummitMedia/startbootstrap" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
-                        </li>
-                        <li>
-                            <a href="#" class="btn btn-default btn-lg"><i class="fa fa-linkedin fa-fw"></i> <span class="network-name">Linkedin</span></a>
-                        </li>
-                    </ul>
+                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2
+                 col-sm-offset-2 col-xs-offset-2" align="center">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">
+                        Тарифы
+                    </h2>
+                    <hr style="width: 150px; margin: 50px">
+                    <p class="lead">
+                        Наблюдение за перепиской с 1 адреса - 1 500 рублей в месяц.
+                    </p>
+                    <p class="lead">
+                       Без ограничения количества адресов - 30 000 рублей в месяц.
+                    </p>
                 </div>
             </div>
 
         </div>
         <!-- /.container -->
-
     </div>
-    <!-- /.banner -->
-    <%doc>
-	<a  name="connect"></a>
+
     <div class="content-section-b">
         <div class="container">
             <div class="row">
-                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2" align="center">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" align="center">
                     <div class="clearfix"></div>
-
-                    % if user_agent.is_mobile or user_agent.is_tablet:
-                            <a href="fb-messenger://user-thread/1647147275565715" class="btn btn-success btn-lg">
-                                 <h4>Узнать больше</h4>
-                            </a>
-                        % else:
-                            <a href="https://www.facebook.com/messages/1647147275565715" class="btn btn-success btn-lg" target="_blank">
-                                 <h4>Узнать больше</h4>
-                            </a>
-                        % endif
-
-                    <h2 class="section-heading">Не теряйте клиентов, напишите нам</h2>
-
-                    <p class="lead">
-                        оставьте, пожалуйста, e-mail или телефон, <br>
-                        мы с вами свяжемся
-                    </p>
+                    <h2 class="section-heading">
+                        Блог
+                    </h2>
                     <hr style="width: 150px; margin: 50px">
-                    <div class="col-lg-6 col-sx-6 col-lg-offset-3 col-sx-offset-3">
-                    <form action="/send_contacts" method="post">
-                        <div class="form-group">
-                            <label for="email">E-mail</label>
-                            <input type="email" class="form-control" id="email" name="customer_email">
+                    <div id="blog-carousel" class="carousel slide" data-ride="carousel">
+                        <ol class="carousel-indicators">
+                            <li data-target="#blog-carousel" data-slide-to="0" class="active"></li>
+                            <li data-target="#blog-carousel" data-slide-to="1"></li>
+                        </ol>
+                        <div class="carousel-inner" role="listbox">
+                            <div class="item active">
+                                <a target="_blank"
+                                        href="https://www.facebook.com/notes/conversation-parser-conparser/%D0%BD%D0%BE%D0%B2%D1%8B%D0%B5-%D0%B8%D0%BD%D1%81%D1%82%D1%80%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D1%8B-%D0%B1%D0%B8%D0%B7%D0%BD%D0%B5%D1%81-%D0%B0%D0%BD%D0%B0%D0%BB%D0%B8%D1%82%D0%B8%D0%BA%D0%B8/1672279149719194">
+                                <img src="/static/img/blog_post1_title.jpg" alt="Новые инструменты бизнес-аналитики">
+                                <div class="carousel-caption">
+                                    <h3>Новые инструменты бизнес-аналитики</h3>
+                                    <p>
+                                        В современных условиях ведения бизнеса многие компании сталкиваются с
+                                        проблемами качества коммуникации. На первый взгляд, автоматически
+                                        контролировать качество общения не представляется возможным.
+                                        Тем не менее использование интеллектуального анализа данных
+                                        дает такие инструменты
+                                    </p>
+                                </div>
+                                </a>
+                            </div>
+                            <!--
+                            <div class="item">
+                                <img src="/static/img/blog_post2_title.jpg"
+                                     alt="Дисциплина в email. Отвечаем на письма вовремя.">
+                                <div class="carousel-caption">
+                                    <h3>Дисциплина в email. Отвечаем на письма вовремя.</h3>
+                                    <p>
+                                        Электронной почте уже более 50 лет. С уверенностью можно сказать, что это одна
+                                        из самых архаичных технологий, которая до сих пор с нами и не собирается
+                                        меняться.
+                                        По факту, электронную почту нечем заменить.
+                                        Мы используем почту в работе и пишем десятки писем ежедневно.
+                                    </p>
+                                </div>
+                            </div>
+                            -->
                         </div>
-                        <div class="form-group">
-                            <label for="phone">Телефон</label>
-                            <input type="text" class="form-control" id="phone" value="+7" name="customer_phone">
-                        </div>
-                        <br>
-                        <button type="submit" class="btn btn-link btn-lg btn-block">
-                            <span class="text-success">Свяжитесь со мной</span>
-                        </button>
-                    </form>
+                        <a class="left carousel-control" href="#blog-carousel" role="button" data-slide="prev">
+                            <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                            <span class="sr-only">Назад</span>
+                        </a>
+                        <a class="right carousel-control" href="#blog-carousel" role="button" data-slide="next">
+                            <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                            <span class="sr-only">Вперед</span>
+                        </a>
                     </div>
-                </>
+
+                </div>
             </div>
-
         </div>
-        <!-- /.container -->
-
     </div>
-    <!-- /.content-section-b -->
-    </%doc>
-
 
     <!-- Footer -->
     <footer>
@@ -451,7 +444,7 @@
                             <a href="#">Наверх</a>
                         </li>
                     </ul>
-                    <p class="copyright text-muted small">&copy; Conversation parser 2015</p>
+                    <p class="copyright text-muted small">&copy; Conversation parser 2016</p>
                 </div>
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6" align="center">
                     <a href="mailto:info@conparser.ru">info@conparser.ru</a>
@@ -513,6 +506,11 @@
       js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.5&appId=186105774764654";
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
+    </script>
+    <script>
+        $(function () {
+          $('[data-toggle="popover"]').popover()
+        })
     </script>
 </body>
 

@@ -136,11 +136,29 @@ class MainSite(object):
         return tmpl.render()
 
 
+class Blog(object):
+
+    @cherrypy.expose
+    def post1(self):
+        tmpl = lookup.get_template("blog_post1_page.html")
+        return tmpl.render()
+
+    @cherrypy.expose
+    def post2(self):
+        tmpl = lookup.get_template("blog_post2_page.html")
+        return tmpl.render()
+
+    @cherrypy.expose
+    def index(self):
+        raise cherrypy.HTTPRedirect("/")
+
+
 class Root(object):
 
     api = API()
     demo = Demo()
     connect = MainSite()
+    blog = Blog()
 
     @cherrypy.expose
     def index(self):
@@ -199,6 +217,7 @@ class Root(object):
         """ % customer_name
 
         return ShowNotification().index(text, "/")
+
 
 cherrypy.config.update("server.config")
 
