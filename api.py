@@ -196,7 +196,7 @@ class Root(object):
         return ShowNotification().index(text, "/")
 
     @cherrypy.expose
-    def send_contacts_demo(self, customer_email=None, customer_name=None):
+    def send_contacts_demo(self, customer_email=None, customer_name=None, pd=None):
         if not customer_email:
             customer_email = "не указан"
         if not customer_name:
@@ -204,11 +204,11 @@ class Root(object):
 
         try:
             landing_customer_contacts(customer_email=customer_email, customer_name=customer_name,
-                                      customer_session=cherrypy.request.headers)
+                                      customer_session=cherrypy.request.headers, pd=pd)
         except Exception as e:
             print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
 
-        print customer_email, customer_name,  cherrypy.request.headers
+        print customer_email, customer_name,  cherrypy.request.headers, pd
         text = """
         <br>
         <p class="lead text-left">%s, мы записали email и в ближайшее время свяжемся с Вами.</p>
