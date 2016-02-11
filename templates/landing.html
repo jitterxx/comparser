@@ -109,7 +109,7 @@
                             <hr style="width: 60%; margin: 50px">
                             <div style="width: 60%;">
                                 <a href="#connect" class="btn btn-success btn-lg btn-block">
-                                    Взять ситуацию под контроль
+                                    14 дней бесплатно
                                 </a>
                             </div>
                         % else:
@@ -123,7 +123,7 @@
                             <hr style="width: 60%; margin: 50px">
                             <div style="width: 60%;">
                                 <a href="#connect" class="btn btn-success btn-lg btn-block" type="button">
-                                    Взять ситуацию под контроль
+                                    14 дней бесплатно
                                 </a>
                             </div>
                         % endif
@@ -267,6 +267,111 @@
     <!-- /.content-section-a -->
 
 	<a  name="connect"></a>
+    % if user_agent.is_mobile or user_agent.is_tablet:
+    <div class="content-section-b">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2" align="center">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Взять переписку под контроль - 0 рублей</h2>
+                    <hr style="width: 150px; margin: 50px">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2">
+                    <br>
+                    <p class="lead">
+                        2-х недельный <mark>бесплатный</mark> ознакомительный режим для 5 адресов.
+                    </p>
+                    <p class="lead">
+                        <mark>14 дней</mark> мы будем анализировать письма и сообщать вам:
+                    </p>
+                    <ul>
+                        <li class="lead">
+                            о письмах без ответа (или если ответ отправлен через 3 часа и больше); <br>
+                        </li>
+                        <li class="lead">
+                            о подозрениях на грубые и неадекватные сообщения;
+                        </li>
+                        <li class="lead">
+                            о сообщениях потенциально приводящих к конфликту;
+                        </li>
+                        <li class="lead">
+                            о несоответствии правилам деловой переписки*.
+                        </li>
+                    </ul>
+                    <p>
+                        <a tabindex="0" role="button" data-toggle="popover" class="text-muted"
+                           data-trigger="focus" data-placement="top" data-html="true"
+                           data-content="
+                                Информация предоставляется через <b>3 часа</b> после получения сообщений.<br>
+                                Форма отчетности: документ в GoogleDoc с анализом каждого письма по признакам:<br>
+                           <ul>
+                                <li>время прошедшее до ответа;</li>
+                                <li>подозрение на конфликт;</li>
+                                <li>наличие грубости и неадекватность;</li>
+                                <li>отсутствие темы;</li>
+                                <li>отсутствие приветствия;</li>
+                                <li>отсутствие подписи;</li>
+                                <li>наличие жаргона и канцеляризмов.</li>
+                                </ul>
+                                ">
+                            Что включено в ознакомительный режим
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2" align="center">
+                    <form action="/send_contacts_demo" method="post">
+                        <div class="form-group">
+                            <label for="name">Ваше имя</label>
+                            <input type="text" class="form-control" id="name" name="customer_name">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">E-mail</label>
+                            <input type="email" class="form-control" id="email" name="customer_email">
+                        </div>
+                        <div class="checkbox" align="left">
+                            <label>
+                                <input type="checkbox" required name="pd">
+                                <span style="font-size: 10px; align: left;" class="text-muted">
+                                    Указывая имя, адрес электронной почты и нажимая «Взять переписку под контроль»,
+                                        вы соглашаетесь с политикой
+                                    конфиденциальности, а так же даёте согласие на обработку персональных данных
+                                    в соответсвии с ФЗ от 27.07.2006 года № 152-ФЗ "О персональных данных"
+                                </span>
+                            </label>
+                        </div>
+                        <br>
+                        <button type="submit" class="btn btn-block btn-success">
+                              <b>Взять переписку под контроль</b>
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2" align="center">
+                    <hr style="width: 150px; margin: 50px">
+                    <p class="lead">
+                        Взаимодействие с сервисом происходит по электронной почте,
+                        вам не требуется переучивать персонал, менять рабочие инструкции и процессы.
+
+                    </p>
+                    <p class="lead">
+                       Для подключения не нужны сложные изменения в инфраструктуре,
+                        настройте переадресацию и получайте информацию о письмах.
+                    </p>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    %else:
     <div class="content-section-b">
         <div class="container">
             <div class="row">
@@ -368,6 +473,7 @@
 
         </div>
     </div>
+    % endif
 
 	<a  name="services"></a>
     <div class="content-section-a">
