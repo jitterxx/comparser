@@ -94,7 +94,6 @@
     <a name="about"></a>
     <div class="intro-header">
         <div class="container">
-
             <div class="row">
                 <div class="col-lg-12 col-xs-12 col-md-12 col-sm-12" align="center">
                     <div class="intro-message">
@@ -268,6 +267,7 @@
 
 	<a  name="connect"></a>
     % if user_agent.is_mobile or user_agent.is_tablet:
+    <!-- mobile & tablet section -->
     <div class="content-section-b">
         <div class="container">
             <div class="row">
@@ -279,7 +279,6 @@
             </div>
             <div class="row">
                 <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2">
-                    <br>
                     <p class="lead">
                         2-х недельный <mark>бесплатный</mark> ознакомительный режим для 5 адресов.
                     </p>
@@ -324,6 +323,7 @@
 
             <div class="row">
                 <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-2 col-md-offset-2 col-sm-offset-2 col-xs-offset-2" align="center">
+                    <hr style="width: 150px; margin: 50px">
                     <form action="/send_contacts_demo" method="post">
                         <div class="form-group">
                             <label for="name">Ваше имя</label>
@@ -372,6 +372,7 @@
     </div>
 
     %else:
+    <!-- desktop section -->
     <div class="content-section-b">
         <div class="container">
             <div class="row">
