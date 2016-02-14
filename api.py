@@ -173,6 +173,7 @@ class Root(object):
 
         if not ads:
             ads = "organic"
+        print "ads :", ads
 
         try:
             user_agent = parse(cherrypy.request.headers['User-Agent'])
