@@ -161,8 +161,18 @@ class Root(object):
     blog = Blog()
 
     @cherrypy.expose
-    def index(self):
+    def index(self, ads=None):
+        """
+        Основная страница лендинга.
+
+        :param ads: код объявления по которому произошел переход.
+        :return:
+        """
+
         tmpl = lookup.get_template("landing.html")
+
+        if not ads:
+            ads = "organic"
 
         try:
             user_agent = parse(cherrypy.request.headers['User-Agent'])
@@ -170,7 +180,7 @@ class Root(object):
             print "Ошибка определения типа клиента. %s" % str(e)
             user_agent = ""
 
-        return tmpl.render(user_agent=user_agent)
+        return tmpl.render(user_agent=user_agent, ads_code=ads)
 
     @cherrypy.expose
     def send_contacts(self, customer_email=None, customer_phone=None):
@@ -196,7 +206,7 @@ class Root(object):
         return ShowNotification().index(text, "/")
 
     @cherrypy.expose
-    def send_contacts_demo(self, customer_email=None, customer_name=None, pd=None):
+    def send_contacts_demo(self, customer_email=None, customer_name=None, pd=None, ads_code=None):
         if not customer_email:
             customer_email = "не указан"
         if not customer_name:
@@ -204,7 +214,7 @@ class Root(object):
 
         try:
             landing_customer_contacts(customer_email=customer_email, customer_name=customer_name,
-                                      customer_session=cherrypy.request.headers, pd=pd)
+                                      customer_session=cherrypy.request.headers, pd=pd, ads_code=ads_code)
         except Exception as e:
             print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
 

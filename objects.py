@@ -26,7 +26,6 @@ Base = declarative_base()
 Engine = sqlalchemy.create_engine(sql_uri, pool_size=20, pool_recycle=3600)
 Session = sqlalchemy.orm.sessionmaker(bind=Engine)
 
-
 class Msg(Base):
 
     __tablename__ = "email_cleared_data"
@@ -168,7 +167,7 @@ def set_user_train_data(uuid, category):
 
 
 def landing_customer_contacts(customer_email=None, customer_phone=None, customer_name=None, customer_session=None,
-                              pd=None):
+                              pd=None, ads_code=None):
     """
     Функция отправки контактных данных полученных с лендинга.
 
@@ -176,7 +175,8 @@ def landing_customer_contacts(customer_email=None, customer_phone=None, customer
     :param customer_phone:
     :param customer_name:
     :param customer_session:
-    :param pd:
+    :param pd: соглашение о перс данных
+    :param ads_code: код объявления
     :return:
     """
 
@@ -190,6 +190,7 @@ def landing_customer_contacts(customer_email=None, customer_phone=None, customer
     text += "\tE-mail: %s \n\tТелефон: %s \n" % (customer_email, customer_phone)
     text += "\tОтметка об обработке персональных данных: %s \n" % pd
     text += "\tДата и время: %s \n" % datetime.datetime.now()
+    text += "\tКод объявления: %s \n" % str(ads_code)
     text += "Параметры сессии: \n "
     for a,b in customer_session.items():
         text += "\t%s : %s \n" % (a, b)
