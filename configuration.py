@@ -7,16 +7,16 @@
 """
 
 db_host = "localhost"
-db_user = "vipct"
+db_user = "conparser"
 db_pass = "Qazcde123"
 db_port = 3306
-db_name = "vipct"
+db_name = "conparser"
 
-# Каталог отккда забираются сообщения для анализа после доставки.
+# Каталог анализатора, из которого беруться сообщения для анализа
 maildir_path = "/home/vipct/Maildir"
 
-# Ссылка для работы с обучением системы
-main_link = "http://vipct.conparser.ru/api/message/"
+# Сслыка для работы системы обучения
+main_link = "http://localhost:8585/api/message/"
 
 # Параметры аккаунта откуда будут забираться сообщения для доставки в каталог.
 smtp_email = "vipct@conparser.ru"
