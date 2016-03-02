@@ -7,16 +7,16 @@
 """
 
 db_host = "localhost"
-db_user = "comparser"
+db_user = "conparser"
 db_pass = "Qazcde123"
 db_port = 3306
-db_name = "classifier"
+db_name = "conparser"
 
 # Каталог анализатора, из которого беруться сообщения для анализа
-maildir_path = "/home/comparser/Maildir"
+maildir_path = "/home/vipct/Maildir"
 
 # Сслыка для работы системы обучения
-main_link = "http://conparser.ru/api/message/"
+main_link = "http://localhost:8585/api/message/"
 
 # Настройки для аккаунта на которые приходят сообщения для помещения в каталог анализатора
 from_email = "edible@conparser.ru"
