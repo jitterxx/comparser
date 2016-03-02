@@ -99,36 +99,36 @@ def get_first_text_block(email_message_instance):
 
 
 def remove_tags(data):
- # remove the newlines
- data = data.replace("\n", " ")
- data = data.replace("\r", " ")
-   
+    # remove the newlines
+    data = data.replace("\n", " ")
+    data = data.replace("\r", " ")
+
     # replace consecutive spaces into a single one
- data = " ".join(data.split())
-   
+    data = " ".join(data.split())
+
     # get only the body content
- bodyPat = re.compile(r'<body[^<>]*?>(.*?)</body>', re.I)
- if re.findall(bodyPat, data) :
-  result = re.findall(bodyPat, data)
-  data = result[0]
-   
+    bodyPat = re.compile(r'<body[^<>]*?>(.*?)</body>', re.I)
+    if re.findall(bodyPat, data) :
+        result = re.findall(bodyPat, data)
+        data = result[0]
+
     # now remove the java script
- p = re.compile(r'<script[^<>]*?>.*?</script>')
- data = p.sub('', data)
-   
+    p = re.compile(r'<script[^<>]*?>.*?</script>')
+    data = p.sub('', data)
+
     # remove the css styles
- p = re.compile(r'<style[^<>]*?>.*?</style>')
- data = p.sub('', data)
-   
+    p = re.compile(r'<style[^<>]*?>.*?</style>')
+    data = p.sub('', data)
+
     # remove html comments
- p = re.compile(r'')
- data = p.sub('', data)
-   
+    p = re.compile(r'')
+    data = p.sub('', data)
+
     # remove all the tags
- p = re.compile(r'<[^<]*?>')
- data = p.sub('', data)
-   
- return data
+    p = re.compile(r'<[^<]*?>')
+    data = p.sub('', data)
+
+    return data
 
  
 parser = argparse.ArgumentParser(description='Debug option')
@@ -177,22 +177,22 @@ for key in inbox.iterkeys():
          
         text = ''
 
-        #Проверяем параметры сообщения
+        # Проверяем параметры сообщения
         broken_msg = False
-        #Если параметр не определен, ставим empty
+        # Если параметр не определен, ставим empty
         cc = msg.get('Cc')
-        if not cc :
+        if not cc:
             cc = "empty"
         cc = line_decoder(cc)
 
         to = msg.get('To')
-        if not to :
+        if not to:
             to = "empty"
             broken_msg = True
         to = line_decoder(to)
 
         from_ = msg.get('From')
-        if not from_ : 
+        if not from_:
             from_ = "empty"
             broken_msg = True
         from_ = line_decoder(from_)
@@ -210,7 +210,8 @@ for key in inbox.iterkeys():
             print 'Date: ',date_hdr
 
         if maintype == 'multipart':
-            #Если это мультипарт, ищем тестовую часть письма
+            # Если это мультипарт, ищем текстовую часть письма
+            print "** Multipart message **"
             for part in msg.get_payload():
                 part_type = part.get_content_type()
                 part_charset = part.get_param('charset')
@@ -218,34 +219,45 @@ for key in inbox.iterkeys():
                 part_is_attach = part.has_key('Content-Disposition')
                 skip_part = False
            
-            if (part_charset == 'None') or (part_is_attach):
-                skip_part = True
-           
-            if debug:
-                print 'attach: ',part.values()
-                print 'Part type: ',part_type
-                print 'Part charset: ',part_charset
-                print 'Part transf encode: ',part_transfer_encode
-           
-            if not skip_part:
-                if part_type == "text/plain" or part_type == "text":
-                    #Как только нашли обычный текст, выводим с перекодировкой
-                    dirty=part.get_payload(decode=True)
-                    text = text + unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
-                elif part_type == "text/html":
-                    #Если нашли текст в HTML, чистим от разметки и выводим с перекодировкой
-                    dirty=part.get_payload(decode=True)
-                    html = unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
-                    text = text + remove_tags(html)
-            else:
-                text = text + u'Часть содержит не текст.\n'
-                #+ '\n'.join(part.values())
+                if (part_charset == 'None') or (part_is_attach):
+                    skip_part = True
+
+                if debug:
+                    print 'Part is attach: %s' % part_is_attach
+                    print 'Part type: ',part_type
+                    print 'Part charset: ',part_charset
+                    print 'Part transf encode: ',part_transfer_encode
+                    print "Пропустить часть: %s" % skip_part
+
+                if not skip_part:
+                    if part_type == "text/plain" or part_type == "text":
+                        # Как только нашли обычный текст, выводим с перекодировкой
+                        dirty = part.get_payload(decode=True)
+                        text += unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
+                        if debug:
+                            print 'Message in plain: ', text, '\n'
+                    elif part_type == "text/html":
+                        # Если нашли текст в HTML, чистим от разметки и выводим с перекодировкой
+                        dirty=part.get_payload(decode=True)
+                        html = unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
+                        text += remove_tags(html)
+                        if debug:
+                            print 'Message in HTML: ', text, '\n'
+
+                else:
+                    text = text + u'Часть содержит не текст.\n'
+                    #+ '\n'.join(part.values())
+                    #if debug:
+                    #   print 'Message text: ', text, '\n'
+
         elif (maintype == "text/plain" or maintype == "text") and (main_charset):
+            print "** NOT Multipart message **"
             dirty=msg.get_payload(decode=True)
             text = unicode(dirty, str(main_charset), "ignore").encode('utf8', 'replace')
-            #print 'Message in plain: ',text,'\n'
+            print 'Message in plain: ', text, '\n'
         elif not main_charset or not maintype:
-            #print 'Не указан main_charset'
+            if debug:
+                print 'Не указан main_charset. Битое сообщение.'
             #Если не определены параметры в заголовках, считаем что это битое сообщение не декодируем
             text=msg.get_payload(decode=True)
             broken_msg = True
@@ -281,7 +293,7 @@ for key in inbox.iterkeys():
             print 'Битое: ', broken_msg
     else:
         if debug:
-            #print 'Сообщение уже обработано...\n'
+            print 'Сообщение уже обработано...\n'
             pass
 
 db.close()
