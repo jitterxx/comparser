@@ -92,7 +92,7 @@ def send_email(category, orig_msg, msg_uuid):
         text += "\t Затрудняюсь определить. \n"
 
     links_block = """\n
-    Независимо от результата, укажите пожалуйста правильный вариант.
+    Независимо от результата укажите, пожалуйста, правильный вариант.
     Для этого перейдите по одной из ссылок: \n
         %s - %s
         %s - %s
@@ -107,7 +107,7 @@ def send_email(category, orig_msg, msg_uuid):
     msg['From'] = from_addr
     msg['To'] = to_addr
     msg['Subject'] = Header("Сообщение от Conversation parser", "utf8")
-    body = "Отправленное вами описание было проанализовано. \n" + text + links_block + orig_text
+    body = "Письмо было проанализовано. \n" + text + links_block + orig_text
     msg.preamble = "This is a multi-part message in MIME format."
     msg.epilogue = "End of message"
 
