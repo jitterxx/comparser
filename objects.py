@@ -240,6 +240,17 @@ def parse_message(msg=None, debug=False):
     else:
         date_hdr = ""
 
+    msg_datetime = datetime.datetime.now()
+    try:
+        dt = parse(date_hdr).replace(tzinfo=None)
+    except Exception as e:
+        print "Ошибка времени из сообщения. %s" % str(e)
+    else:
+        msg_datetime = dt
+
+    if debug:
+        print "Format datetime: ", msg_datetime
+
     text = ""
 
     # Проверяем параметры сообщения
@@ -323,9 +334,6 @@ def parse_message(msg=None, debug=False):
         broken_msg = True
 
     text += text2[0]
-
-    # Заносим полученные данные о письме в БД
-    msg_datetime = parse(date_hdr)
 
     return [msg_id, from_, to, cc, subject, text2[0], text2[1], msg_datetime, int(broken_msg)]
 
