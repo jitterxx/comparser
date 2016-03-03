@@ -146,6 +146,107 @@ cur.close()
 db.commit()
 
 
+def email_part_analyse(msg_part=None):
+
+    if msg_part:
+        # 3 части: plain, html, other text
+        text_part = ["", "", ""]
+    else:
+        return ""
+
+    for part in msg_part.get_payload():
+        if debug:
+            print "***** Анализ части сообщения *****"
+        part_type = part.get_content_type()
+        part_charset = part.get_param('charset')
+        part_transfer_encode = part['Content-Transfer-Encoding']
+        part_is_attach = part.has_key('Content-Disposition')
+        part_filename = part.get_param("filename")
+        skip_part = False
+
+        if (part_charset == 'None') or part_is_attach:
+            skip_part = True
+
+        if debug:
+            print 'Part is attach: %s' % part_is_attach
+            print 'Part type: ', part_type
+            print 'Part charset: ', part_charset
+            print 'Part transf encode: ', part_transfer_encode
+            print "Пропустить часть: %s" % skip_part
+            print "Filename: %s " % part_filename
+
+        if (part_type == "text/plain" or part_type == "text") and part_charset:
+            # Как только нашли обычный текст, выводим с перекодировкой
+            dirty_part = part.get_payload(decode=True)
+            text_part[0] += unicode(dirty_part, str(part_charset), "ignore").encode('utf8', 'replace')
+            if debug:
+                print 'Text in plain: ', text_part[0], '\n'
+        elif part_type == "text/html" and part_charset:
+            # Если нашли текст в HTML, чистим от разметки и выводим с перекодировкой
+            dirty_part = part.get_payload(decode=True)
+            html = unicode(dirty_part, str(part_charset), "ignore").encode('utf8', 'replace')
+            text_part[1] += remove_tags(html)
+            if debug:
+                print 'Text in HTML: ', text_part[1], '\n'
+        elif part_type == "multipart/alternative" or part_type == "multipart/related":
+            # часть сама является составной, ищем блоки и делаем анализ
+            text_part_new = email_part_analyse(msg_part=part)
+            text_part[0] = text_part[0] + text_part_new[0]
+            text_part[1] = text_part[1] + text_part_new[1]
+            text_part[2] = text_part[2] + text_part_new[2]
+        else:
+            # Если тип части не текст, пробуем раскодировать
+            try:
+                dirty_part = part.get_payload(decode=True)
+                html = unicode(dirty_part, str(part_charset), "ignore").encode('utf8', 'replace')
+            except Exception as e:
+                if debug:
+                    print "Ошибка раскодирования части. %s" % str(e)
+                pass
+            else:
+                text_part[2] += remove_tags(html)
+
+        """
+        if not skip_part:
+            if part_type == "text/plain" or part_type == "text":
+                # Как только нашли обычный текст, выводим с перекодировкой
+                dirty = part.get_payload(decode=True)
+                text += unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
+                if debug:
+                    print 'Message in plain: ', text, '\n'
+            elif part_type == "text/html":
+                # Если нашли текст в HTML, чистим от разметки и выводим с перекодировкой
+                dirty = part.get_payload(decode=True)
+                html = unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
+                text += remove_tags(html)
+                if debug:
+                    print 'Message in HTML: ', text, '\n'
+            else:
+                # Если тип части не известен, пробуем раскодировать
+                try:
+                    dirty = part.get_payload(decode=True)
+                    html = unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
+                except Exception as e:
+                    print "Ошибка раскодирования части. %s" % str(e)
+                    text += ""
+                else:
+                    text += remove_tags(html)
+
+                if debug:
+                    print 'Message in UNKNOWN format: ', text, '\n'
+
+        else:
+            #text = text + u'Часть содержит не текст.\n'
+            #+ '\n'.join(part.values())
+            if debug:
+               print "Часть содержит не текст.\n"
+        """
+        if debug:
+            print "***** Конец части сообщения *****"
+
+    return text_part
+
+
 for key in inbox.iterkeys():
     try:
         msg = inbox[key]
@@ -173,9 +274,13 @@ for key in inbox.iterkeys():
          
         date_raw = msg.get('Date')
         p = re.compile('[(]')
-        date_hdr = p.split(date_raw,1)[0]
+        if date_raw:
+            date_hdr = p.split(date_raw,1)[0]
+        else:
+            date_hdr = ""
+
          
-        text = ''
+        text = ""
 
         # Проверяем параметры сообщения
         broken_msg = False
@@ -201,67 +306,48 @@ for key in inbox.iterkeys():
         main_charset = msg.get_content_charset()
          
         if debug:
-            print msg_id
-            print from_
-            print to
-            print 'Main type: ',maintype
-            print 'Main charset',main_charset
+            print "MID:", msg_id
+            print "From: ", from_
+            print "To: ", to
+            print 'Main type: ', maintype
+            print 'Main charset', main_charset
             print 'Subj: ',subject
             print 'Date: ',date_hdr
+            print "\n"
 
         if maintype == 'multipart':
             # Если это мультипарт, ищем текстовую часть письма
-            print "** Multipart message **"
-            for part in msg.get_payload():
-                part_type = part.get_content_type()
-                part_charset = part.get_param('charset')
-                part_transfer_encode = part['Content-Transfer-Encoding']
-                part_is_attach = part.has_key('Content-Disposition')
-                skip_part = False
-           
-                if (part_charset == 'None') or (part_is_attach):
-                    skip_part = True
+            if debug:
+                print "** Multipart message **"
+                print msg.get_payload()
+                print len(msg.get_payload())
 
-                if debug:
-                    print 'Part is attach: %s' % part_is_attach
-                    print 'Part type: ',part_type
-                    print 'Part charset: ',part_charset
-                    print 'Part transf encode: ',part_transfer_encode
-                    print "Пропустить часть: %s" % skip_part
+            # Если это мультипарт, то передаем его на обработку
+            text2 = email_part_analyse(msg_part=msg)
+            print "= "*30
+            for one in text2[:2]:
+                print one
+                print "- "*30
 
-                if not skip_part:
-                    if part_type == "text/plain" or part_type == "text":
-                        # Как только нашли обычный текст, выводим с перекодировкой
-                        dirty = part.get_payload(decode=True)
-                        text += unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
-                        if debug:
-                            print 'Message in plain: ', text, '\n'
-                    elif part_type == "text/html":
-                        # Если нашли текст в HTML, чистим от разметки и выводим с перекодировкой
-                        dirty=part.get_payload(decode=True)
-                        html = unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
-                        text += remove_tags(html)
-                        if debug:
-                            print 'Message in HTML: ', text, '\n'
+            text += text2[0]
 
-                else:
-                    text = text + u'Часть содержит не текст.\n'
-                    #+ '\n'.join(part.values())
-                    #if debug:
-                    #   print 'Message text: ', text, '\n'
-
-        elif (maintype == "text/plain" or maintype == "text") and (main_charset):
+        elif (maintype == "text/plain" or maintype == "text" or maintype == "text/html") and main_charset:
             print "** NOT Multipart message **"
-            dirty=msg.get_payload(decode=True)
-            text = unicode(dirty, str(main_charset), "ignore").encode('utf8', 'replace')
+            dirty = msg.get_payload(decode=True)
+            text += unicode(dirty, str(main_charset), "ignore").encode('utf8', 'replace')
             print 'Message in plain: ', text, '\n'
         elif not main_charset or not maintype:
             if debug:
                 print 'Не указан main_charset. Битое сообщение.'
             #Если не определены параметры в заголовках, считаем что это битое сообщение не декодируем
-            text=msg.get_payload(decode=True)
+            text += msg.get_payload(decode=True)
             broken_msg = True
-          
+        else:
+            # Все остальное
+            if debug:
+                print 'Все остальное. Сообщение без обработки.'
+            text += msg.get_payload(decode=True)
+            broken_msg = True
 
         
         #Заносим полученные данные о письме в БД
@@ -293,7 +379,7 @@ for key in inbox.iterkeys():
             print 'Битое: ', broken_msg
     else:
         if debug:
-            print 'Сообщение уже обработано...\n'
+            #print 'Сообщение уже обработано...\n'
             pass
 
 db.close()
