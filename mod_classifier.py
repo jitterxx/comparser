@@ -169,8 +169,8 @@ class fisherclassifier(classifier):
     #Метод train принимает образец (в данном случае документ) и классификацию
     def train(self,item,cat):
         features=self.getfeatures(item,self.specwords)
-        print "Category: %s" % cat
-        print "Features: %s" % features
+        # print "Category: %s" % cat
+        # print "Features: %s" % features
         
         # Увеличить счетчики для каждого признака в данной классификации
         for f in features:
@@ -396,7 +396,36 @@ class fisherclassifier(classifier):
             #cl.incc(cat)
 
         con.close()
-                
+
+    #Функция тренировки классификатора на данных пользовательского контроля
+    def user_train(self):
+
+        con = self.db.cursor(buffered=True)
+        query = ('SELECT * FROM user_train_data;')
+        con.execute(query)
+
+        for train_row in con:
+            #Формируем словарь всей записи для entry
+            row = dict(zip(con.column_names, train_row))
+            print 'Train row: \n',row['sender'],'|',row['recipients'],'|',row['message_title'],'|', \
+                  row['message_text'],'|',row['orig_date'],'|',row['category']
+
+            #Формируем словарь для entry
+            entry=row
+
+            #Готовим словарь признаков для обучения
+            #features = entryfeatures(entry)
+            cat = row['category']
+            self.train(entry,cat)
+
+            #Увеличить счетчики для каждого признака в данной классификации
+            #for f in features:
+            #    cl.incf(f,cat)
+            # Увеличить счетчик применений этой классификации
+            #cl.incc(cat)
+
+        con.close()
+
         
 """ Функция извлечения признаков """
 def specfeatures(entry, specwords):
@@ -481,5 +510,7 @@ def specfeatures(entry, specwords):
 
     return f
 
+"""
 STOP_WORDS = ["как", "или", "который", "которых", "тот", "около", "они", "для", "Для", "Это", "это", "При", "при",
              "Кроме", "того", "чем", "под", "них", "его", "лат", "Также", "также", "этой", "этого"]
+"""

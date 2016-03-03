@@ -31,8 +31,6 @@ parser.add_argument("-d",action="store_true",help="Показать отладк
 args = parser.parse_args()
 
 
-
-
 if not args.db == None:
     #Указана БД классификатора, работаем используя лимит
     #Создаем объект классификатора
@@ -102,15 +100,15 @@ if not args.db == None:
                 #Устанавливаем/обновляем классификацию реальных данных
                 query = ('UPDATE email_cleared_data SET isclassified=%s,category=%s WHERE id=%s;')
                 data = (1, answer_str, row['id'])
-                con_update.execute(query,data)
-                real_db.commit()
+                # con_update.execute(query,data)
+                # real_db.commit()
 
                 # Добавлем запись в таблицу train_api для работы API и функции переобучения
                 query = ('INSERT INTO train_api (uuid, message_id, category, date, user_action, user_answer) VALUES '
                          '(%s, %s, %s, %s, %s, %s);')
                 data = (uuid.uuid4().__str__(), row["message_id"], answer_str, datetime.datetime.now(), 0, "")
-                con_update.execute(query, data)
-                real_db.commit()
+                # con_update.execute(query, data)
+                # real_db.commit()
 
 
         else:

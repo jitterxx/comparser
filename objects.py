@@ -354,9 +354,14 @@ class Msg(Base):
     message_text = Column(sqlalchemy.TEXT())
     orig_date = Column(sqlalchemy.DATETIME())
     create_date = Column(sqlalchemy.DATETIME())
-    isclassified = Column(sqlalchemy.Integer)
-    category = Column(sqlalchemy.String(256))
-    notified = Column(sqlalchemy.Integer)
+    isclassified = Column(sqlalchemy.Integer, default=0)
+    category = Column(sqlalchemy.String(256), default="")
+    notified = Column(sqlalchemy.Integer, default=0)
+
+    def __init__(self):
+        self.isclassified = 0
+        self.category = ""
+        self.notified = 0
 
 
 class MsgErr(Base):
