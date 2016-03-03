@@ -9,7 +9,8 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 from configuration import *
-from objects import *
+# from objects import *
+import objects as CPO
 import cherrypy
 from bs4 import BeautifulSoup
 from mako.lookup import TemplateLookup
@@ -20,6 +21,7 @@ __author__ = 'sergey'
 
 lookup = TemplateLookup(directories=["./templates"], output_encoding="utf-8",
                         input_encoding="utf-8", encoding_errors="replace")
+
 
 class ShowNotification(object):
 
@@ -55,7 +57,7 @@ class UserTrain(object):
             # 1. записать указанный емайл и категорию в пользовательские тренировочные данные
             # 2. Пометить в таблице train_api ответ.
             try:
-                status = set_user_train_data(uuid, category)
+                status = CPO.set_user_train_data(uuid, category)
             except Exception as e:
                 print str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
@@ -102,7 +104,7 @@ class Demo(object):
         result = ["", 0]
 
         try:
-            result, train_uuid = demo_classify(description)
+            result, train_uuid = CPO.demo_classify(description)
         except Exception as e:
             print "Ошибка. %s" % str(e)
             return ShowNotification().index("Что-то сломалось, будем чинить.")
@@ -113,7 +115,7 @@ class Demo(object):
     def train(self, msg_uuid=None):
         tmpl = lookup.get_template("demo.html")
         try:
-            result = get_message_for_train(msg_uuid)
+            result = CPO.get_message_for_train(msg_uuid)
             print result
         except Exception as e:
             print "Ошибка. %s" % str(e)
@@ -136,11 +138,31 @@ class MainSite(object):
         return tmpl.render()
 
 
+class Test(object):
+
+    @cherrypy.expose
+    def index(self):
+        tmpl = lookup.get_template("message_list_page.html")
+
+        clear_msg_list = dict()
+        raw_msg_list = dict()
+
+        try:
+            clear_msg_list = CPO.get_clear_message()
+            raw_msg_list = CPO.get_raw_message()
+        except Exception as e:
+            print "Ошибка. %s" % str(e)
+            return ShowNotification.index(str(e), "/")
+
+        return tmpl.render(clear=clear_msg_list, raw=raw_msg_list)
+
+
 class Root(object):
 
     api = API()
     demo = Demo()
     connect = MainSite()
+    test = Test()
 
     @cherrypy.expose
     def index(self):
@@ -162,7 +184,7 @@ class Root(object):
             customer_phone = "не указан"
 
         try:
-            landing_customer_contacts(customer_email, customer_phone, cherrypy.request.headers)
+            CPO.landing_customer_contacts(customer_email, customer_phone, cherrypy.request.headers)
         except Exception as e:
             print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
 

@@ -359,6 +359,41 @@ class Msg(Base):
     notified = Column(sqlalchemy.Integer)
 
 
+def get_clear_message(msg_id=None):
+
+    session = Session()
+
+    try:
+        resp = session.query(Msg).all()
+    except Exception as e:
+        raise e
+    else:
+        result = dict()
+        for one in resp:
+            result[one.message_id] = one
+
+        return result
+    finally:
+        session.close()
+
+
+def get_raw_message(msg_id=None):
+    session = Session()
+
+    try:
+        resp = session.query(MsgRaw).all()
+    except Exception as e:
+        raise e
+    else:
+        result = dict()
+        for one in resp:
+            result[one.message_id] = one
+
+        return result
+    finally:
+        session.close()
+
+
 class TrainAPIRecords(Base):
 
     __tablename__ = "train_api"
