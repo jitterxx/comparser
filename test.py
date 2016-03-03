@@ -148,7 +148,6 @@ cur.execute('SET NAMES utf8;')
 cur.close()
 db.commit()
 
-
 message = ""
 
 message = sys.stdin
@@ -156,14 +155,6 @@ message = sys.stdin
 msg = email.message_from_file(message)
 
 if msg:
-    """
-for key in inbox.iterkeys():
-    try:
-        msg = inbox[key]
-    except email.errors.MessageParseError:
-        # The message is malformed. Just leave it.
-        continue
-    """
 
     msg_id = ""
     subject = ""

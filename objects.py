@@ -8,11 +8,12 @@ from sqlalchemy import and_
 from configuration import *
 import datetime
 import email
-from email.header import Header
+from email.header import Header, decode_header
 from smtplib import SMTP_SSL
 from mod_classifier import fisherclassifier, specfeatures
 import uuid
 import re
+from dateutil.parser import *
 
 import sys
 reload(sys)
@@ -25,6 +26,308 @@ sql_uri = "mysql://%s:%s@%s:%s/%s?charset=utf8" % (db_user, db_pass, db_host, db
 Base = declarative_base()
 Engine = sqlalchemy.create_engine(sql_uri, pool_size=20, pool_recycle=3600)
 Session = sqlalchemy.orm.sessionmaker(bind=Engine)
+
+
+class MsgRaw(Base):
+
+    __tablename__ = "email_raw_data"
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    message_id = Column(sqlalchemy.String(256))
+    sender = Column(sqlalchemy.String(256))
+    recipient = Column(sqlalchemy.TEXT())
+    cc_recipient = Column(sqlalchemy.TEXT())
+    message_title = Column(sqlalchemy.TEXT())
+    message_text = Column(sqlalchemy.TEXT())
+    message_text_html = Column(sqlalchemy.TEXT())
+    orig_date = Column(sqlalchemy.DATETIME())
+    create_date = Column(sqlalchemy.DATETIME())
+    iscleared = Column(sqlalchemy.Integer)
+    isbroken = Column(sqlalchemy.Integer)
+
+    def __init__(self):
+        self.cc_recipients = ""
+        self.message_text = ""
+        self.message_title = ""
+        self.message_text_html = ""
+        self.isbroken = 0
+        self.iscleared = 0
+        self.create_date = datetime.datetime.now()
+
+
+def line_decoder (text_line):
+    s_text_line = text_line.split(" ")
+    # print 'split: ',s_text_line
+    # print 'Количество циклов: ',len(s_text_line)
+    # print 'Пошел цикл...'+'\n'
+    result=''
+
+    for i in range (len(s_text_line)):
+        # print 'Шаг номер ',i,':\n'
+        data=''
+        coding=''
+        # print 'Split item & num: ',s_text_line[i], i,'\n'
+        data, coding = decode_header(s_text_line[i])[0]
+        # print 'Decoded data, coding: ',data, coding,'\n'
+        if coding == None:
+            result = result + ' ' + data
+        else:
+            result = result + data.decode(coding,'replace')
+
+    # print 'Decoded data, coding: ',result, coding,'\n'
+    return result
+
+
+def remove_tags(data):
+    # remove the newlines
+    data = data.replace("\n", " ")
+    data = data.replace("\r", " ")
+
+    # replace consecutive spaces into a single one
+    data = " ".join(data.split())
+
+    # get only the body content
+    bodyPat = re.compile(r'<body[^<>]*?>(.*?)</body>', re.I)
+    if re.findall(bodyPat, data) :
+        result = re.findall(bodyPat, data)
+        data = result[0]
+
+    # now remove the java script
+    p = re.compile(r'<script[^<>]*?>.*?</script>')
+    data = p.sub('', data)
+
+    # remove the css styles
+    p = re.compile(r'<style[^<>]*?>.*?</style>')
+    data = p.sub('', data)
+
+    # remove html comments
+    p = re.compile(r'')
+    data = p.sub('', data)
+
+    # remove all the tags
+    p = re.compile(r'<[^<]*?>')
+    data = p.sub('', data)
+
+    return data
+
+
+def email_part_analyse(msg_part=None, debug=False):
+    """
+    Функция для работы с мультипарт сообщениями. Запускает рекурсию при вложенности.
+
+    :param msg_part: multipart сообщение
+    :return:
+    """
+
+    if msg_part:
+        # 3 части: plain, html, other text
+        text_part = ["", "", ""]
+    else:
+        return ""
+
+    for part in msg_part.get_payload():
+        if debug:
+            print "***** Анализ части сообщения *****"
+        part_type = part.get_content_type()
+        part_charset = part.get_param('charset')
+        part_transfer_encode = part['Content-Transfer-Encoding']
+        part_is_attach = part.has_key('Content-Disposition')
+        part_filename = part.get_param("filename")
+        skip_part = False
+
+        if (part_charset == 'None') or part_is_attach:
+            skip_part = True
+
+        if debug:
+            print 'Part is attach: %s' % part_is_attach
+            print 'Part type: ', part_type
+            print 'Part charset: ', part_charset
+            print 'Part transf encode: ', part_transfer_encode
+            print "Пропустить часть: %s" % skip_part
+            print "Filename: %s " % part_filename
+
+        if (part_type == "text/plain" or part_type == "text") and part_charset:
+            # Как только нашли обычный текст, выводим с перекодировкой
+            dirty_part = part.get_payload(decode=True)
+            text_part[0] += unicode(dirty_part, str(part_charset), "ignore").encode('utf8', 'replace')
+            if debug:
+                print 'Text in plain: ', text_part[0], '\n'
+        elif part_type == "text/html" and part_charset:
+            # Если нашли текст в HTML, чистим от разметки и выводим с перекодировкой
+            dirty_part = part.get_payload(decode=True)
+            html = unicode(dirty_part, str(part_charset), "ignore").encode('utf8', 'replace')
+            text_part[1] += remove_tags(html)
+            if debug:
+                print 'Text in HTML: ', text_part[1], '\n'
+        elif part_type == "multipart/alternative" or part_type == "multipart/related":
+            # часть сама является составной, ищем блоки и делаем анализ
+            text_part_new = email_part_analyse(msg_part=part)
+            text_part[0] = text_part[0] + text_part_new[0]
+            text_part[1] = text_part[1] + text_part_new[1]
+            text_part[2] = text_part[2] + text_part_new[2]
+        else:
+            # Если тип части не текст, пробуем раскодировать
+            try:
+                dirty_part = part.get_payload(decode=True)
+                html = unicode(dirty_part, str(part_charset), "ignore").encode('utf8', 'replace')
+            except Exception as e:
+                if debug:
+                    print "Ошибка раскодирования части. %s" % str(e)
+                pass
+            else:
+                text_part[2] += remove_tags(html)
+
+        """
+        if not skip_part:
+            if part_type == "text/plain" or part_type == "text":
+                # Как только нашли обычный текст, выводим с перекодировкой
+                dirty = part.get_payload(decode=True)
+                text += unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
+                if debug:
+                    print 'Message in plain: ', text, '\n'
+            elif part_type == "text/html":
+                # Если нашли текст в HTML, чистим от разметки и выводим с перекодировкой
+                dirty = part.get_payload(decode=True)
+                html = unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
+                text += remove_tags(html)
+                if debug:
+                    print 'Message in HTML: ', text, '\n'
+            else:
+                # Если тип части не известен, пробуем раскодировать
+                try:
+                    dirty = part.get_payload(decode=True)
+                    html = unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
+                except Exception as e:
+                    print "Ошибка раскодирования части. %s" % str(e)
+                    text += ""
+                else:
+                    text += remove_tags(html)
+
+                if debug:
+                    print 'Message in UNKNOWN format: ', text, '\n'
+
+        else:
+            #text = text + u'Часть содержит не текст.\n'
+            #+ '\n'.join(part.values())
+            if debug:
+               print "Часть содержит не текст.\n"
+        """
+        if debug:
+            print "***** Конец части сообщения *****"
+
+    return text_part
+
+
+def parse_message(msg=None, debug=False):
+    msg_id = ""
+    subject = ""
+    cc = ""
+    to = ""
+    from_ = ""
+    date_hdr = ""
+    text = ""
+    text2 = ["", "", ""]
+
+    msg_id = msg['message-id']
+
+    subject = msg.get('Subject', 'No subject provided')
+    subject = line_decoder(subject)
+
+    date_raw = msg.get('Date')
+    p = re.compile('[(]')
+    if date_raw:
+        date_hdr = p.split(date_raw,1)[0]
+    else:
+        date_hdr = ""
+
+    text = ""
+
+    # Проверяем параметры сообщения
+    broken_msg = False
+    # Если параметр не определен, ставим empty
+    cc = msg.get('Cc')
+    if not cc:
+        cc = "empty"
+    cc = line_decoder(cc)
+
+    to = msg.get('To')
+    if not to:
+        to = "empty"
+        broken_msg = True
+    to = line_decoder(to)
+
+    from_ = msg.get('From')
+    if not from_:
+        from_ = "empty"
+        broken_msg = True
+    from_ = line_decoder(from_)
+
+    maintype = msg.get_content_maintype()
+    main_charset = msg.get_content_charset()
+    is_multipart = msg.is_multipart()
+
+    content_type = msg.get_content_type()
+    content_charset = msg.get_content_charset()
+
+    if debug:
+        print "MID:", msg_id
+        print "From: ", from_
+        print "To: ", to
+        print 'Main type: ', maintype
+        print 'Main charset', main_charset
+        print "Multipart: ", msg.is_multipart()
+        print "Charset: ", content_charset
+        print "type :", content_type
+        print 'Subj: ',subject
+        print 'Date: ',date_hdr
+        print "\n"
+
+    if is_multipart:
+        # Если это мультипарт, ищем текстовую часть письма
+        if debug:
+            print "** Multipart message **"
+        # Если это мультипарт, то передаем его на обработку
+        text2 = email_part_analyse(msg_part=msg, debug=debug)
+        if debug:
+            print msg.get_payload()
+            print len(msg.get_payload())
+            print "= "*30
+            for one in text2[:2]:
+                print one
+                print "- "*30
+
+    elif content_type == "text/plain" and content_charset:
+        dirty = msg.get_payload(decode=True)
+        text2[0] = unicode(dirty, str(main_charset), "ignore").encode('utf8', 'replace')
+        if debug:
+            print "** NOT Multipart message **"
+            print 'Text in plain: ', text2[0], '\n'
+    elif content_type == "text/html" and content_charset:
+        dirty = msg.get_payload(decode=True)
+        html = unicode(dirty, str(main_charset), "ignore").encode('utf8', 'replace')
+        text2[1] = remove_tags(html)
+        if debug:
+            print "** NOT Multipart message **"
+            print 'Text in HTML: ', text2[1], '\n'
+    elif not main_charset or not maintype:
+        if debug:
+            print 'Не указан main_charset. Битое сообщение.'
+        # Если не определены параметры в заголовках, считаем что это битое сообщение не декодируем
+        text2[2] = msg.get_payload(decode=True)
+        broken_msg = True
+    else:
+        # Все остальное
+        if debug:
+            print 'Все остальное. Сообщение без обработки.'
+        text2[2] = msg.get_payload(decode=True)
+        broken_msg = True
+
+    text += text2[0]
+
+    # Заносим полученные данные о письме в БД
+    msg_datetime = parse(date_hdr)
+
+    return [msg_id, from_, to, cc, subject, text2[0], text2[1], msg_datetime, int(broken_msg)]
 
 
 class Msg(Base):
