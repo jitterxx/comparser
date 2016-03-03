@@ -19,6 +19,7 @@ from configuration import *
 # conversation parser object
 import objects as CPO
 
+import os
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -57,12 +58,14 @@ if msg:
     except Exception as e:
         print "Ошибка записи нового сообщения. %s" % str(e)
         print "Message ID: %s" % msg['message-id']
+        sys.exit(os.EX_DATAERR)
     else:
         if debug:
             print 'Перенос в прочитанные...\n'
             print 'Битое: ', message[8]
-
+        sys.exit(os.EX_OK)
     finally:
         session.close()
+
 
 
