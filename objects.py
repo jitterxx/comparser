@@ -359,6 +359,24 @@ class Msg(Base):
     notified = Column(sqlalchemy.Integer)
 
 
+class MsgErr(Base):
+
+    __tablename__ = "email_err_cleared_data"
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    message_id = Column(sqlalchemy.String(256))
+    sender = Column(sqlalchemy.String(256))
+    sender_name = Column(sqlalchemy.String(256))
+    recipients = Column(sqlalchemy.TEXT())
+    recipients_name = Column(sqlalchemy.TEXT())
+    cc_recipients = Column(sqlalchemy.TEXT())
+    cc_recipients_name = Column(sqlalchemy.TEXT())
+    message_title = Column(sqlalchemy.TEXT())
+    message_text = Column(sqlalchemy.TEXT())
+    orig_date = Column(sqlalchemy.DATETIME())
+    create_date = Column(sqlalchemy.DATETIME())
+
+
 def get_clear_message(msg_id=None):
 
     session = Session()
