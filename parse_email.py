@@ -244,7 +244,7 @@ else: limit = args.limit
 #dirty_con.execute(query,('%%',limit))
 
 #Запоминаем обработанные номера записей
-processed = [0]
+#processed = [0]
 
 session = CPO.Session()
 
@@ -298,7 +298,7 @@ for row in raw_data:
         print '*'*100,'\n'
 
     #Remember processed entry id
-    processed.append(int(row.id))
+    #processed.append(int(row.id))
     
     #Insert clear message in Clear DBs
     data = (clear_data['message_id'],clear_data['sender'],clear_data['sender_name'],
