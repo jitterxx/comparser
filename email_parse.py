@@ -226,7 +226,7 @@ args = parser.parse_args()
 if not args.debug: debug = False
 else: debug = args.debug
 
-if not args.limit: limit = 1
+if not args.limit: limit = 10
 else: limit = args.limit
 
 #Открываем грязную базу
