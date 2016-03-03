@@ -63,9 +63,10 @@ if msg:
         if debug:
             print 'Перенос в прочитанные...\n'
             print 'Битое: ', message[8]
-        sys.exit(os.EX_OK)
     finally:
         session.close()
 
+print msg
+sys.exit(os.EX_OK)
 
 
