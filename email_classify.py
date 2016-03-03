@@ -89,7 +89,7 @@ if con.fetchone():
         if args.debug:
             print 'Категория: ',answer_str,'\n'
             print '*'*100,'\n'
-            raw_input("Press Enter to continue...")
+            # raw_input("Press Enter to continue...")
 
             #cat_count[answer] += 1
 
