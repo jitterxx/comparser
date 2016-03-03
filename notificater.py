@@ -27,6 +27,7 @@ CATEGORY = GetCategory()
 code1, code2 = CATEGORY.keys()
 
 
+
 def notify():
     session = Session()
 
@@ -73,11 +74,8 @@ def send_email(category, orig_msg, msg_uuid):
     """
 
     msg = email.MIMEMultipart.MIMEMultipart()
-    from_addr = from_email
-    if to_email:
-        to_addr = to_email
-    else:
-        to_addr = orig_msg.sender
+    from_addr = smtp_email
+    to_addr = to_address
 
     orig_text = "\n\n---------------- Исходное сообщение -------------------\n"
     orig_text += "От кого: %s (%s)\n" % (orig_msg.sender_name, orig_msg.sender)
@@ -94,7 +92,7 @@ def send_email(category, orig_msg, msg_uuid):
         text += "\t Затрудняюсь определить. \n"
 
     links_block = """\n
-    Независимо от результата, укажите пожалуйста правильный вариант.
+    Независимо от результата укажите, пожалуйста, правильный вариант.
     Для этого перейдите по одной из ссылок: \n
         %s - %s
         %s - %s
@@ -109,7 +107,7 @@ def send_email(category, orig_msg, msg_uuid):
     msg['From'] = from_addr
     msg['To'] = to_addr
     msg['Subject'] = Header("Сообщение от Conversation parser", "utf8")
-    body = "Отправленное вами описание было проанализовано. \n" + text + links_block + orig_text
+    body = "Письмо было проанализовано. \n" + text + links_block + orig_text
     msg.preamble = "This is a multi-part message in MIME format."
     msg.epilogue = "End of message"
 
