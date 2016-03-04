@@ -387,7 +387,7 @@ def get_clear_message(msg_id=None):
     session = Session()
 
     try:
-        resp = session.query(Msg).all()
+        resp = session.query(Msg).order_by(Msg.orig_date.desc()).all()
     except Exception as e:
         raise e
     else:
@@ -404,7 +404,7 @@ def get_raw_message(msg_id=None):
     session = Session()
 
     try:
-        resp = session.query(MsgRaw).all()
+        resp = session.query(MsgRaw).order_by(MsgRaw.orig_date.desc()).all()
     except Exception as e:
         raise e
     else:

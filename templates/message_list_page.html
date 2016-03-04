@@ -34,34 +34,59 @@
 
         <div class="row">
             <h3>Сообщения</h3>
-            Всего сообщений: ${count_raw}<br>
-            Сообщений очищенно: ${count_clear}<br>
+            Всего сообщений получено: ${count_raw}<br>
+            Сообщений очищено: ${count_clear}<br>
             %if  cat_count.get("normal") and cat_count.get("conflict"):
-            Сообщений классифицировано: ${cat_count.get("normal") + cat_count.get("conflict")}<br>
+            Автоматически классифицировано: ${cat_count.get("normal") + cat_count.get("conflict")} сообщений<br>
             %else:
-            Сообщений классифицировано: 0<br>
+            Автоматически классифицировано: 0 сообщений<br>
             %endif
             По категориям: <br>
             %for key in cat_count.keys():
             % if category.get(key):
-            ${category.get(key).category} - ${cat_count.get(key)} - (ошибки: ${err_count.get(key)})<br>
+            ${category.get(key).category} - ${cat_count.get(key)}<br>
             %endif
             %endfor
+
+            <h3>Статистика и точность</h3>
+            <p>Проверено сообщений из классифицированных: ${count_checked}</p>
+            <p>
+            %for key in err_count.keys():
+                Система ошиблась в категории "${category.get(key).category}" - ${err_count.get(key)} раз<br>
+                <small>Это значит система автоматически определила категорию "${category.get(key).category}", но
+                при проверке была указана другая категория.</small><br>
+            %endfor
+            </p>
+
+            <p>
+                %if count_checked != 0:
+                Общая точность: ${float(count_checked - err_all)/count_checked*100} %
+                %else:
+                Общая точность: не могу посчитать, нет ни одного ответа для проверки.
+                %endif
+            </p>
+
+
+
             <table border="1">
                 <thead>
                 <tr>
+                    <th width="10%">Дата</th>
                     <th width="10%">От:/Кому:</th>
                     <th width="30%">Исходный текст</th>
                     <th width="20%">Чистый текст</th>
                     <th width="10%">Автокатегория</th>
                     <th width="10%">Пользовательская категория</th>
-                    <th width="20%"></th>
+                    <th width="10%"></th>
                 </tr>
                 </thead>
                 <tbody>
 
                 % for one in raw.keys():
                 <tr valign="top">
+                    <td>
+                        ${raw.get(one).orig_date}
+                    </td>
                     <td>
                         <textarea>${raw.get(one).sender}</textarea>
                         v
@@ -114,7 +139,6 @@
 
                 </tbody>
             </table>
-
 
         </div>
 

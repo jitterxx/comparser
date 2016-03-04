@@ -62,9 +62,10 @@ con_update = real_db.cursor(buffered=True)
 
 #Получаем реальные данные
 query = ('SELECT * FROM email_cleared_data WHERE not isclassified LIMIT %s;')
-con.execute(query,lim)
+con.execute(query, lim)
 
-if con.fetchone():
+#if con.fetchone():
+if con.rowcount:
     for real in con:
         row = dict(zip(con.column_names, real))
         if args.debug:

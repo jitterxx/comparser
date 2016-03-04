@@ -159,27 +159,51 @@ class Test(object):
         # вычисляем результаты и статистику
         count_raw = len(raw_msg_list.keys())
         count_clear = len(clear_msg_list.keys())
-        stat = list()
         cat_count = dict()
-        err_count = dict()
+
         for msg in clear_msg_list.values():
             cat1 = msg.category.split(":")[0]
             cat = cat1.split("-")[0]
             if cat in cat_count.keys():
                 cat_count[cat] += 1
             else:
-                cat_count[cat] = 0
+                cat_count[cat] = 1
 
-            if cat in err_count.keys():
-                if train_rec.get(msg.message_id):
-                    if cat != train_rec.get(msg.message_id).user_answer:
-                        err_count[cat] += 1
-            else:
-                err_count[cat] = 0
+        err_count = dict()
+        pos_count = dict()
+        err_all = 0
+        count_checked = 0
+        for one in category.values():
+            err_count[one.code] = 0
+            pos_count[one.code] = 0
+
+        for key in train_rec.keys():
+            if train_rec[key].user_action:
+                count_checked += 1
+                msg = clear_msg_list.get(key)
+                cat1 = msg.category.split(":")[0]
+                cat = cat1.split("-")[0]
+                # cat категория сообщения с ID key в списке clear_email
+                print "MSG ID:", key
+                print "Cat in CLEAR DB: ", cat
+                print "Cat in USER data: ", train_rec[key].user_answer
+
+                # если категория в clearDB, не совпадает с указанной пользователем в TRAIN_USER.
+                # Увеличиваем количество ошибок в ней.
+                if cat != train_rec[key].user_answer:
+                    err_count[cat] += 1
+                    err_all += 1
+                # если категория была определена верно, увеличиваем счетчик позитива
+                else:
+                    pos_count[cat] += 1
+
+        print "Правильные АВТО классификации: ", pos_count
+        print "Ошибки АВТО классификации: ", err_count
 
         return tmpl.render(clear=clear_msg_list, raw=raw_msg_list, train_rec=train_rec,
                            main_link=main_link, category=category, cat_count=cat_count,
-                           count_raw=count_raw, count_clear=count_clear, err_count=err_count)
+                           count_raw=count_raw, count_clear=count_clear, err_count=err_count, pos_count=pos_count,
+                           count_checked=count_checked, err_all=err_all)
 
 
 class Root(object):
