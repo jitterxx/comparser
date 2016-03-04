@@ -148,12 +148,10 @@
                 </tbody>
             </table>
             %else:
-            <table border="1">
+            <table class="table table-hover" border="0">
                 <thead>
                 <tr>
-                    <th width="10%">Дата</th>
-                    <th width="10%">От:/Кому:</th>
-                    <th width="30%">Исходный текст</th>
+                    <th width="30%"></th>
                     <th width="20%">Чистый текст</th>
                     <th width="10%">Автокатегория</th>
                     <th width="10%">Пользовательская категория</th>
@@ -163,18 +161,17 @@
                 <tbody>
 
                 % for cat in ["conflict"]:
+                    <!--
                     <tr><td colspan="7"><h3>${cat}</h3></td></tr>
+                    -->
                     %for key in msg_cat_list.get(cat):
                         <tr>
                             <td>
-                                ${clear.get(key).orig_date}
+                                Дата: ${clear.get(key).orig_date} <br>
+                                От кого: ${clear.get(key).sender_name} (${clear.get(key).sender}) <br>
+                                Кому: ${clear.get(key).recipients_name} (${clear.get(key).recipients})<br>
+                                ID: ${clear.get(key).message_id}
                             </td>
-                            <td>
-                                <textarea>${clear.get(key).sender_name} (${clear.get(key).sender})</textarea>
-                                v
-                                <textarea>${clear.get(key).recipients_name} (${clear.get(key).recipients})</textarea>
-                            </td>
-                            <td></td>
                             <td><textarea rows="10" cols="40">${clear.get(key).message_text}</textarea></td>
                             <td>${clear.get(key).category.split(":")[0]}</td>
                             <td>
