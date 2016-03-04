@@ -150,11 +150,36 @@ class Test(object):
         try:
             clear_msg_list = CPO.get_clear_message()
             raw_msg_list = CPO.get_raw_message()
+            train_rec = CPO.get_train_record()
+            category = CPO.GetCategory()
         except Exception as e:
             print "Ошибка. %s" % str(e)
             return ShowNotification.index(str(e), "/")
 
-        return tmpl.render(clear=clear_msg_list, raw=raw_msg_list)
+        # вычисляем результаты и статистику
+        count_raw = len(raw_msg_list.keys())
+        count_clear = len(clear_msg_list.keys())
+        stat = list()
+        cat_count = dict()
+        err_count = dict()
+        for msg in clear_msg_list.values():
+            cat1 = msg.category.split(":")[0]
+            cat = cat1.split("-")[0]
+            if cat in cat_count.keys():
+                cat_count[cat] += 1
+            else:
+                cat_count[cat] = 0
+
+            if cat in err_count.keys():
+                if train_rec.get(msg.message_id):
+                    if cat != train_rec.get(msg.message_id).user_answer:
+                        err_count[cat] += 1
+            else:
+                err_count[cat] = 0
+
+        return tmpl.render(clear=clear_msg_list, raw=raw_msg_list, train_rec=train_rec,
+                           main_link=main_link, category=category, cat_count=cat_count,
+                           count_raw=count_raw, count_clear=count_clear, err_count=err_count)
 
 
 class Root(object):

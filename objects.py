@@ -429,6 +429,26 @@ class TrainAPIRecords(Base):
     user_action = Column(sqlalchemy.Integer)
     user_answer = Column(sqlalchemy.String(45))
 
+
+def get_train_record(msg_id=None, uuid=None):
+    session = Session()
+
+    try:
+        resp = session.query(TrainAPIRecords).all()
+    except Exception as e:
+        print "get_train_record. Ошибка. %s" % str(e)
+        raise e
+    else:
+        result = dict()
+        for one in resp:
+            # print one.message_id
+            result[one.message_id] = one
+
+        return result
+    finally:
+        session.close()
+
+
 class UserTrainData(Base):
 
     __tablename__ = "user_train_data"

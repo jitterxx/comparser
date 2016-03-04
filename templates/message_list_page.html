@@ -17,9 +17,6 @@
     <!-- Custom CSS -->
     <link href="/static/css/landing-page.css" rel="stylesheet">
 
-    <!-- Custom Fonts -->
-    <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -36,46 +33,83 @@
     <div class="container">
 
         <div class="row">
-                <h3>Сообщения</h3>
-                <table border="1">
-                    <thead>
-                    <tr>
-                        <th width="10%">От:/Кому:</th>
-                        <th width="30%">Исходный текст</th>
-                        <th width="30%">Чистый текст</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
+            <h3>Сообщения</h3>
+            Всего сообщений: ${count_raw}<br>
+            Сообщений очищенно: ${count_clear}<br>
+            Сообщений классифицировано: ${cat_count["normal"] + cat_count["conflict"]}<br>
+            По категориям: <br>
+            %for key in cat_count.keys():
+            % if category.get(key):
+            ${category.get(key).category} - ${cat_count.get(key)} - (ошибки: ${err_count.get(key)})<br>
+            %endif
+            %endfor
+            <table border="1">
+                <thead>
+                <tr>
+                    <th width="10%">От:/Кому:</th>
+                    <th width="30%">Исходный текст</th>
+                    <th width="20%">Чистый текст</th>
+                    <th width="10%">Автокатегория</th>
+                    <th width="10%">Пользовательская категория</th>
+                    <th width="20%"></th>
+                </tr>
+                </thead>
+                <tbody>
 
-                    % for one in raw.keys():
-                    <tr valign="top">
-                        <td>
-                            <textarea>${raw.get(one).sender}</textarea>
-                            v
-                            <textarea>${raw.get(one).recipient}</textarea>
-                        </td>
-                        <td>
-                            <textarea rows="10" cols="40">
-                            %if raw.get(one).message_text:
-                            ${'{:>40}'.format(raw.get(one).message_text)}
+                % for one in raw.keys():
+                <tr valign="top">
+                    <td>
+                        <textarea>${raw.get(one).sender}</textarea>
+                        v
+                        <textarea>${raw.get(one).recipient}</textarea>
+                    </td>
+                    <td>
+                        <textarea rows="10" cols="40">
+                        %if raw.get(one).message_text:
+                        ${'{:>40}'.format(raw.get(one).message_text)}
+                        %else:
+                        ${raw.get(one).message_text_html}
+                        %endif
+                        </textarea>
+                    </td>
+                    <td>
+                        %if clear.get(one):
+                        <textarea rows="10" cols="40">${clear.get(one).message_text}</textarea>
+                        %endif
+
+                    </td>
+                    <td>
+                        %if clear.get(one):
+                        %for cat in clear.get(one).category.split(":"):
+                        ${cat}<br>
+                        %endfor
+
+                        %endif
+                    </td>
+                    <td>
+                        %if train_rec.get(one):
+                            %if train_rec.get(one).user_action == 1:
+                                ${train_rec.get(one).user_answer}
                             %else:
-                            ${raw.get(one).message_text_html}
+                                <a href="${main_link}${train_rec.get(one).uuid}/${category.keys()[0]}"
+                                   class="btn btn-default" target="_blank">
+                                    ${category.keys()[0]}
+                                </a><br>
+                                <a href="${main_link}${train_rec.get(one).uuid}/${category.keys()[1]}"
+                                   class="btn btn-default" target="_blank">
+                                    ${category.keys()[1]}
+                                </a>
                             %endif
-                            </textarea>
-                        </td>
-                        <td>
-                            %if clear.get(one):
-                            ${clear.get(one).message_text}
-                            %endif
+                        %endif
+                    </td>
+                    <td>
 
-                        </td>
-                        <td></td>
-                    </tr>
-                    % endfor
+                    </td>
+                </tr>
+                % endfor
 
-                    </tbody>
-                </table>
+                </tbody>
+            </table>
 
 
         </div>
