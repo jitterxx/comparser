@@ -165,11 +165,13 @@
                         <tr>
                             <td>
                                 Дата: ${clear.get(key).orig_date} <br>
-                                От кого: ${clear.get(key).sender_name} (${clear.get(key).sender}) <br>
-                                Кому: ${clear.get(key).recipients_name} (${clear.get(key).recipients})<br>
+                                От кого: ${clear.get(key).sender_name} (${" ,".join(clear.get(key).sender.split(","))}) <br>
+                                Кому: ${clear.get(key).recipients_name} (${" ,".join(clear.get(key).recipients.split(","))})<br>
                                 ID: ${clear.get(key).message_id}
                             </td>
-                            <td><textarea rows="10" cols="40">${clear.get(key).message_text}</textarea></td>
+                            <td>
+                                <textarea rows="10" cols="40"> ${clear.get(key).message_text} </textarea>
+                            </td>
                             <td>${clear.get(key).category.split(":")[0]}</td>
                             <td>
                             %if train_rec.get(key):
