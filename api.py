@@ -228,7 +228,6 @@ class Test(object):
 
         print "Правильные АВТО классификации: ", pos_count
         print "Ошибки АВТО классификации: ", err_count
-        print msg_cat_list
 
         return tmpl.render(clear=clear_msg_list, raw=raw_msg_list, train_rec=train_rec, msg_cat_list=msg_cat_list,
                            main_link=main_link, category=category, cat_count=cat_count,
