@@ -177,7 +177,22 @@
                             <td></td>
                             <td><textarea rows="10" cols="40">${clear.get(key).message_text}</textarea></td>
                             <td>${clear.get(key).category.split(":")[0]}</td>
-                            <td>${train_rec.get(key).user_answer}</td>
+                            <td>
+                            %if train_rec.get(key):
+                                %if train_rec.get(key).user_action == 1:
+                                    ${train_rec.get(key).user_answer}
+                                %else:
+                                    <a href="${main_link}${train_rec.get(key).uuid}/${category.keys()[0]}"
+                                       class="btn btn-default" target="_blank">
+                                        ${category.keys()[0]}
+                                    </a><br>
+                                    <a href="${main_link}${train_rec.get(key).uuid}/${category.keys()[1]}"
+                                       class="btn btn-default" target="_blank">
+                                        ${category.keys()[1]}
+                                    </a>
+                                %endif
+                            %endif
+                            </td>
                             <td></td>
                         </tr>
                     %endfor
