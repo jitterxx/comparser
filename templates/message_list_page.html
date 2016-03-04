@@ -36,7 +36,11 @@
             <h3>Сообщения</h3>
             Всего сообщений: ${count_raw}<br>
             Сообщений очищенно: ${count_clear}<br>
+            %if  cat_count.get("normal") and cat_count.get("conflict"):
             Сообщений классифицировано: ${cat_count.get("normal") + cat_count.get("conflict")}<br>
+            %else:
+            Сообщений классифицировано: 0<br>
+            %endif
             По категориям: <br>
             %for key in cat_count.keys():
             % if category.get(key):
