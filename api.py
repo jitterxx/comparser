@@ -141,8 +141,11 @@ class MainSite(object):
 class Test(object):
 
     @cherrypy.expose
-    def index(self):
+    def index(self, show_msg=None):
         tmpl = lookup.get_template("message_list_page.html")
+
+        if not show_msg:
+            show_msg = 0
 
         clear_msg_list = dict()
         raw_msg_list = dict()
@@ -203,7 +206,7 @@ class Test(object):
         return tmpl.render(clear=clear_msg_list, raw=raw_msg_list, train_rec=train_rec,
                            main_link=main_link, category=category, cat_count=cat_count,
                            count_raw=count_raw, count_clear=count_clear, err_count=err_count, pos_count=pos_count,
-                           count_checked=count_checked, err_all=err_all)
+                           count_checked=count_checked, err_all=err_all, show_msg=int(show_msg))
 
 
 class Root(object):
