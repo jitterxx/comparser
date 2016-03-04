@@ -74,6 +74,7 @@
                 Общая точность: не могу посчитать, нет ни одного ответа для проверки.
                 %endif
             </p>
+
             % if show_msg:
             <table border="1">
                 <thead>
@@ -146,6 +147,45 @@
 
                 </tbody>
             </table>
+            %else:
+            <table border="1">
+                <thead>
+                <tr>
+                    <th width="10%">Дата</th>
+                    <th width="10%">От:/Кому:</th>
+                    <th width="30%">Исходный текст</th>
+                    <th width="20%">Чистый текст</th>
+                    <th width="10%">Автокатегория</th>
+                    <th width="10%">Пользовательская категория</th>
+                    <th width="10%"></th>
+                </tr>
+                </thead>
+                <tbody>
+
+                % for cat in ["conflict"]:
+                    <tr><td colspan="7"><h3>${cat}</h3></td></tr>
+                    %for key in msg_cat_list.get(cat):
+                        <tr>
+                            <td>
+                                ${clear.get(key).orig_date}
+                            </td>
+                            <td>
+                                <textarea>${clear.get(key).sender_name} (${clear.get(key).sender})</textarea>
+                                v
+                                <textarea>${clear.get(key).recipients_name} (${clear.get(key).recipients})</textarea>
+                            </td>
+                            <td></td>
+                            <td><textarea rows="10" cols="40">${clear.get(key).message_text}</textarea></td>
+                            <td>${clear.get(key).category.split(":")[0]}</td>
+                            <td>${train_rec.get(key).user_answer}</td>
+                            <td></td>
+                        </tr>
+                    %endfor
+                % endfor
+
+                </tbody>
+            </table>
+
             %endif
 
         </div>

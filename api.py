@@ -163,14 +163,19 @@ class Test(object):
         count_raw = len(raw_msg_list.keys())
         count_clear = len(clear_msg_list.keys())
         cat_count = dict()
+        # список сообщений по категориям по автоматической классификации (с ошибками)
+        msg_cat_list = dict()
 
         for msg in clear_msg_list.values():
             cat1 = msg.category.split(":")[0]
             cat = cat1.split("-")[0]
             if cat in cat_count.keys():
                 cat_count[cat] += 1
+                msg_cat_list[cat].append(msg.message_id)
             else:
                 cat_count[cat] = 1
+                msg_cat_list[cat] = list()
+                msg_cat_list[cat].append(msg.message_id)
 
         err_count = dict()
         pos_count = dict()
@@ -181,7 +186,9 @@ class Test(object):
             pos_count[one.code] = 0
 
         for key in train_rec.keys():
+            # только если есть оценка от пользователя
             if train_rec[key].user_action:
+                cat1 = cat = ""
                 count_checked += 1
                 msg = clear_msg_list.get(key)
                 cat1 = msg.category.split(":")[0]
@@ -200,10 +207,31 @@ class Test(object):
                 else:
                     pos_count[cat] += 1
 
+        # Составляем списки сообщений помеченных разными категориями в автоматическом и ручном режиме
+        for msg in train_rec.values():
+            # Автоматический режим классификации
+            cat1 = msg.category.split(":")[0]
+            cat = cat1.split("-")[0]
+            if cat in cat_count.keys():
+                msg_cat_list[cat].append(msg.message_id)
+            else:
+                msg_cat_list[cat] = list()
+                msg_cat_list[cat].append(msg.message_id)
+
+            if msg.message_id not in msg_cat_list[cat]:
+                msg_cat_list[cat].append(msg.message_id)
+
+            # Ручной режим классификации
+            if msg.user_action:
+                if msg.message_id not in msg_cat_list[msg.user_answer]:
+                    msg_cat_list[msg.user_answer].append(msg.message_id)
+
         print "Правильные АВТО классификации: ", pos_count
         print "Ошибки АВТО классификации: ", err_count
+        print msg_cat_list
 
-        return tmpl.render(clear=clear_msg_list, raw=raw_msg_list, train_rec=train_rec,
+
+        return tmpl.render(clear=clear_msg_list, raw=raw_msg_list, train_rec=train_rec, msg_cat_list=msg_cat_list,
                            main_link=main_link, category=category, cat_count=cat_count,
                            count_raw=count_raw, count_clear=count_clear, err_count=err_count, pos_count=pos_count,
                            count_checked=count_checked, err_all=err_all, show_msg=int(show_msg))
