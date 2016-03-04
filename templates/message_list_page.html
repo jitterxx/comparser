@@ -58,6 +58,15 @@
             %endfor
             </p>
 
+            %for key in err_count.keys():
+            <p>
+                Проверенных сообщений в категории "${category.get(key).category}" -
+                ${err_count.get(key) + pos_count.get(key)}
+                (Ошибок: ${err_count.get(key)}
+                (${err_count.get(key) * 100 / (err_count.get(key) + pos_count.get(key))}%))
+            </p>
+            %endfor
+
             <p>
                 %if count_checked != 0:
                 Общая точность: ${float(count_checked - err_all)/count_checked*100} %
