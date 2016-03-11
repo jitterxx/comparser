@@ -15,7 +15,9 @@
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
+    <!--
     <link href="/static/css/landing-page.css" rel="stylesheet">
+    -->
 
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -25,6 +27,12 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script src="/static/js/jquery.js" rel="script"></script>
+    <script src="/static/js/bootstrap.min.js" rel="script"></script>
+    <script src="/static/js/collapse.js" rel="script"></script>
+    <script src="/static/js/transition.js" rel="script"></script>
+
+
 </head>
 
 <body>
@@ -33,16 +41,117 @@
     <div class="container">
 
         <div class="row">
+            <div class="col-md-12">
+                <h3>Статистика</h3>
+                Всего сообщений получено: ${count_raw}<br>
+                Сообщений очищено: ${count_clear}<br>
 
-            <h3>Сообщения</h3>
-            Всего сообщений получено: ${count_raw}<br>
-            Сообщений очищено: ${count_clear}<br>
+                % for epoch in range(0, epoch_count + 1):
+                    <h4>Раунд обучения - ${epoch} ( ${start_date[epoch]} - ${end_date[epoch]} )</h4>
+                    <p>
+                    %if  cat_count_epoch[epoch].get("normal") and cat_count_epoch[epoch].get("conflict"):
+                    Автоматически классифицировано: ${cat_count_epoch[epoch].get("normal") + cat_count_epoch[epoch].get("conflict")} сообщений<br>
+                    %else:
+                    Автоматически классифицировано: 0 сообщений<br>
+                    %endif
+                    </p>
 
-            % for epoch in range(0, epoch_count + 1):
-                <h4>${epoch}</h4>
-                Всего классифицированно сообщений в эпохе: ${len(train_rec_epoch[epoch])} <br>
-                По категориям: ${cat_count_epoch[epoch]}
-            % endfor
+                    <p>
+                    По категориям: <br>
+                    %for key in cat_count_epoch[epoch].keys():
+                    % if category.get(key):
+                    ${category.get(key).category} - ${cat_count_epoch[epoch].get(key)}<br>
+                    %endif
+                    %endfor
+                    </p>
+
+                    <h4>Статистика и точность</h4>
+                    <p>Проверено сообщений из классифицированных: ${count_checked_epoch[epoch]}</p>
+                    <p>
+                    %for key in neg_err_epoch[epoch].keys():
+                        Система ошиблась в категории "${category.get(key).category}" - ${neg_err_epoch[epoch].get(key)} раз<br>
+                        <small class="text-muted">Это значит система автоматически определила категорию "${category.get(key).category}", но
+                        при проверке была указана другая категория.</small><br>
+                    %endfor
+                    </p>
+
+                    %for key in neg_err_epoch[epoch].keys():
+                    <p>
+                        Проверенных сообщений в категории "${category.get(key).category}" -
+                        ${neg_err_epoch[epoch].get(key) + pos_err_epoch[epoch].get(key)}
+                        (Ошибок: ${neg_err_epoch[epoch].get(key)}
+                        % if (neg_err_epoch[epoch].get(key) + pos_err_epoch[epoch].get(key)):
+                        (${neg_err_epoch[epoch].get(key) * 100 / (neg_err_epoch[epoch].get(key) + pos_err_epoch[epoch].get(key))}%))
+                        % else:
+                        (0)
+                        % endif
+                    </p>
+                    %endfor
+
+                    <p>
+                        %if count_checked_epoch[epoch]:
+                        Общая точность: ${float(count_checked_epoch[epoch] - err_all_epoch[epoch])/count_checked_epoch[epoch]*100} %
+                        %else:
+                        Общая точность: не могу посчитать, нет ни одного ответа для проверки.
+                        %endif
+                    </p>
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapse${epoch}"
+                        aria-expanded="false" aria-controls="collapse${epoch}">
+                    Сообщения классифицированные - Конфликт
+                </button>
+                    <div class="collapse" id="collapse${epoch}">
+                        <table class="table table-hover" border="0">
+                            <thead>
+                            <tr>
+                                <th width="20%">ID</th>
+                                <th width="20%">Чистый текст</th>
+                                <th width="10%">Авто распознавание</th>
+                                <th width="10%">Проверка</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            % for cat in ["conflict"]:
+                                %for key in msg_cat_list_epoch[epoch].get(cat):
+                                    <tr>
+                                        <td>
+                                            Дата: ${clear.get(key).orig_date} <br>
+                                            От кого: ${clear.get(key).sender_name} (${" ,".join(clear.get(key).sender.split(","))}) <br>
+                                            Кому: ${clear.get(key).recipients_name} (${" ,".join(clear.get(key).recipients.split(","))})<br>
+                                            ID: ${clear.get(key).message_id}
+                                        </td>
+                                        <td>
+                                            <textarea rows="10" cols="40"> ${clear.get(key).message_text} </textarea>
+                                        </td>
+                                        <td>${clear.get(key).category.split(":")[0]}</td>
+                                        <td>
+                                        %if train_rec_epoch[epoch].get(key):
+                                            %if train_rec_epoch[epoch].get(key).user_action == 1:
+                                                ${train_rec_epoch[epoch].get(key).user_answer}
+                                            %else:
+                                                <a href="${main_link}${train_rec_epoch[epoch].get(key).uuid}/${category.keys()[0]}"
+                                                   class="btn btn-default" target="_blank">
+                                                    ${category.keys()[0]}
+                                                </a><br>
+                                                <a href="${main_link}${train_rec_epoch[epoch].get(key).uuid}/${category.keys()[1]}"
+                                                   class="btn btn-default" target="_blank">
+                                                    ${category.keys()[1]}
+                                                </a>
+                                            %endif
+                                        %endif
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                %endfor
+                            % endfor
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr>
+                % endfor
+            </div>
 
 
             <%doc>

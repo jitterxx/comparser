@@ -274,6 +274,17 @@ class Panel(object):
         cat_count_epoch = dict()
         # список ID сообщений по категориям с автоматической классификацией (с ошибками) разделенные по эпохам
         msg_cat_list_epoch = dict()
+        # кол-во негативных ошибок
+        neg_err_epoch = dict()
+        # кол-во позитивных ошибок
+        pos_err_epoch = dict()
+        # кол-во всех ошибок
+        err_all_epoch = dict()
+        # кол-во проверенных в ручном режиме сообщений
+        count_checked_epoch = dict()
+        # даты эпох: начало и конец
+        start_date = dict()
+        end_date = dict()
 
         # получаем все записи классификации по эпохам обучения, проверенные и не проверенные
         for epoch in range(0, epoch_count + 1):
@@ -284,10 +295,37 @@ class Panel(object):
                 print "Ошибка. %s" % str(e)
                 return ShowNotification.index(str(e), "/")
 
+            # Обнуляем исходные данные
+            neg_err_epoch[epoch] = dict()
+            pos_err_epoch[epoch] = dict()
+            err_all_epoch[epoch] = 0
+            count_checked_epoch[epoch] = 0
+
+            for one in category.values():
+                neg_err_epoch[epoch][one.code] = 0
+                pos_err_epoch[epoch][one.code] = 0
+
             cat_count_epoch[epoch] = dict()
             msg_cat_list_epoch[epoch] = dict()
+            start_date[epoch] = None
+            end_date[epoch] = None
 
             for msg in train_rec.values():
+                # даты эпохи
+                date = clear_msg_list.get(msg.message_id).create_date
+                if start_date[epoch]:
+                    if start_date[epoch] > date:
+                        start_date[epoch] = date
+                else:
+                    start_date[epoch] = date
+
+                if end_date[epoch]:
+                    if end_date[epoch] < date:
+                        end_date[epoch] = date
+                else:
+                    end_date[epoch] = date
+
+                # Считаем по категориям
                 cat1 = msg.category.split(":")[0]
                 cat = cat1.split("-")[0]
                 if cat in cat_count_epoch[epoch].keys():
@@ -298,62 +336,49 @@ class Panel(object):
                     msg_cat_list_epoch[epoch][cat] = list()
                     msg_cat_list_epoch[epoch][cat].append(msg.message_id)
 
+                # только если есть оценка от пользователя
+                if msg.user_action:
+                    cat1 = cat = ""
+                    count_checked_epoch[epoch] += 1
+                    # msg = clear_msg_list.get(msg.message_id)
+                    cat1 = msg.category.split(":")[0]
+                    cat = cat1.split("-")[0]
+                    # cat категория сообщения с ID key в списке clear_email
+                    # print "MSG ID:", msg.message_id
+                    # print "Cat in CLEAR DB: ", cat
+                    # print "Cat in USER data: ", msg.user_answer
 
-        err_count = dict()
-        pos_count = dict()
-        err_all = 0
-        count_checked = 0
-        for one in category.values():
-            err_count[one.code] = 0
-            pos_count[one.code] = 0
+                    # если категория в clearDB, не совпадает с указанной пользователем в TRAIN_USER.
+                    # Увеличиваем количество ошибок в ней.
+                    if cat != msg.user_answer:
+                        neg_err_epoch[epoch][cat] += 1
+                        err_all_epoch[epoch] += 1
+                    # если категория была определена верно, увеличиваем счетчик позитива
+                    else:
+                        pos_err_epoch[epoch][cat] += 1
 
-        for key in train_rec.keys():
-            # только если есть оценка от пользователя
-            if train_rec[key].user_action:
-                cat1 = cat = ""
-                count_checked += 1
-                msg = clear_msg_list.get(key)
+                # Составляем списки сообщений помеченных разными категориями в автоматическом и ручном режиме
+                # Автоматический режим классификации
                 cat1 = msg.category.split(":")[0]
                 cat = cat1.split("-")[0]
-                # cat категория сообщения с ID key в списке clear_email
-                print "MSG ID:", key
-                print "Cat in CLEAR DB: ", cat
-                print "Cat in USER data: ", train_rec[key].user_answer
 
-                # если категория в clearDB, не совпадает с указанной пользователем в TRAIN_USER.
-                # Увеличиваем количество ошибок в ней.
-                if cat != train_rec[key].user_answer:
-                    err_count[cat] += 1
-                    err_all += 1
-                # если категория была определена верно, увеличиваем счетчик позитива
-                else:
-                    pos_count[cat] += 1
+                if msg.message_id not in msg_cat_list_epoch[epoch][cat]:
+                    msg_cat_list_epoch[epoch][cat].append(msg.message_id)
 
-        # Составляем списки сообщений помеченных разными категориями в автоматическом и ручном режиме
-        for msg in train_rec.values():
-            # Автоматический режим классификации
-            cat1 = msg.category.split(":")[0]
-            cat = cat1.split("-")[0]
-            if cat in cat_count.keys():
-                msg_cat_list[cat].append(msg.message_id)
-            else:
-                msg_cat_list[cat] = list()
-                msg_cat_list[cat].append(msg.message_id)
+                # Ручной режим классификации
+                if msg.user_action:
+                    if msg.message_id not in msg_cat_list_epoch[epoch][msg.user_answer]:
+                        msg_cat_list_epoch[epoch][msg.user_answer].append(msg.message_id)
 
-            if msg.message_id not in msg_cat_list[cat]:
-                msg_cat_list[cat].append(msg.message_id)
-
-            # Ручной режим классификации
-            if msg.user_action:
-                if msg.message_id not in msg_cat_list[msg.user_answer]:
-                    msg_cat_list[msg.user_answer].append(msg.message_id)
-
-        print "Правильные АВТО классификации: ", pos_count
-        print "Ошибки АВТО классификации: ", err_count
+        print "Правильные АВТО классификации: ", pos_err_epoch
+        print "Ошибки АВТО классификации: ", neg_err_epoch
 
         return tmpl.render(train_rec_epoch=train_rec_epoch, msg_cat_list_epoch=msg_cat_list_epoch,
                            main_link=main_link, category=category, cat_count_epoch=cat_count_epoch,
-                           count_raw=count_raw, count_clear=count_clear, epoch_count=epoch_count)
+                           count_raw=count_raw, count_clear=count_clear, epoch_count=epoch_count,
+                           pos_err_epoch=pos_err_epoch, neg_err_epoch=neg_err_epoch, err_all_epoch=err_all_epoch,
+                           count_checked_epoch=count_checked_epoch, start_date=start_date, end_date=end_date,
+                           clear=clear_msg_list)
 
 
 class Root(object):
