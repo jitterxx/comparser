@@ -254,11 +254,12 @@ class fisherclassifier(classifier):
             sum += term
         return min(sum, 1.0)
 
-    
-    #Подключаем БД классификатора. DB = имя_схемы в Mysql
+    # Подключаем БД классификатора. DB = имя_схемы в Mysql
     def setdb(self,db):
         self.db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database=db)
         self.con = self.db.cursor(buffered=True)
+
+        """
         
         query = ('CREATE TABLE IF NOT EXISTS cc ('
         'id int(11) NOT NULL AUTO_INCREMENT,'
@@ -317,6 +318,7 @@ class fisherclassifier(classifier):
                 ') ENGINE=InnoDB DEFAULT CHARSET=utf8;')
         self.con.execute(query)
         self.db.commit()
+        """
         
         #Закрываем курсор, базу оставляем открытой для созданного класса
         #self.con.close()
@@ -332,10 +334,10 @@ class fisherclassifier(classifier):
         
         con.close()
 
-    #загрузка данных классификатора из базы
+    # загрузка данных классификатора из базы
     def loaddb(self):
         
-        #загружаем категории, минимумы
+        # загружаем категории, минимумы
         con = self.db.cursor(buffered=True)
         query = ('SELECT code, minimum, category FROM category;')
         con.execute(query)
@@ -343,10 +345,10 @@ class fisherclassifier(classifier):
             self.setminimum(d[0],d[1])
             self.category_code[d[0]] = d[2]
         
-        #Загружаем  спецпризнаки
+        # Загружаем  спецпризнаки
         self.load_specwords()
         
-        #Загружаем cколько раз признак появлялся в данной категории для fcount
+        # Загружаем cколько раз признак появлялся в данной категории для fcount
         query = ('select feature, category, count from fc group by feature, category;')
         self.con.execute(query)
         for f in self.con:
@@ -356,7 +358,7 @@ class fisherclassifier(classifier):
             self.fc[f[0]][f[1]] = f[2]
         
        
-        #загружаем сколько образцов отнесено к данной категории для catcount
+        # загружаем сколько образцов отнесено к данной категории для catcount
         query = ('select category,count from cc;')
         self.con.execute(query)
         for d in self.con:
@@ -397,32 +399,32 @@ class fisherclassifier(classifier):
 
         con.close()
 
-    #Функция тренировки классификатора на данных пользовательского контроля
+    # Функция тренировки классификатора на данных пользовательского контроля
     def user_train(self):
 
         con = self.db.cursor(buffered=True)
-        query = ('SELECT * FROM user_train_data;')
+        query = ("SELECT * FROM user_train_data where create_date >= '2016-03-11 11:55:00';")
         con.execute(query)
 
         for train_row in con:
-            #Формируем словарь всей записи для entry
+            # Формируем словарь всей записи для entry
             row = dict(zip(con.column_names, train_row))
-            print 'Train row: \n',row['sender'],'|',row['recipients'],'|',row['message_title'],'|', \
-                  row['message_text'],'|',row['orig_date'],'|',row['category']
+            # print 'Train row: \n',row['sender'],'|',row['recipients'],'|',row['message_title'],'|', \
+            #      row['message_text'],'|',row['orig_date'],'|',row['category']
 
-            #Формируем словарь для entry
+            # Формируем словарь для entry
             entry=row
 
-            #Готовим словарь признаков для обучения
-            #features = entryfeatures(entry)
+            # Готовим словарь признаков для обучения
+            # features = entryfeatures(entry)
             cat = row['category']
             self.train(entry,cat)
 
-            #Увеличить счетчики для каждого признака в данной классификации
-            #for f in features:
-            #    cl.incf(f,cat)
-            # Увеличить счетчик применений этой классификации
-            #cl.incc(cat)
+            # Увеличить счетчики для каждого признака в данной классификации
+            # for f in features:
+            #     cl.incf(f,cat)
+            #  Увеличить счетчик применений этой классификации
+            # cl.incc(cat)
 
         con.close()
 

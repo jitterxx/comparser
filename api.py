@@ -147,9 +147,6 @@ class Test(object):
         if not show_msg:
             show_msg = 0
 
-        clear_msg_list = dict()
-        raw_msg_list = dict()
-
         try:
             clear_msg_list = CPO.get_clear_message()
             raw_msg_list = CPO.get_raw_message()
@@ -235,12 +232,137 @@ class Test(object):
                            count_checked=count_checked, err_all=err_all, show_msg=int(show_msg))
 
 
+class Panel(object):
+
+    @cherrypy.expose
+    def statistics(self, show_msg=None):
+        tmpl = lookup.get_template("panel_statistics_page.html")
+
+        if not show_msg:
+            show_msg = 0
+
+        # Данные для общей статистики
+        try:
+            clear_msg_list = CPO.get_clear_message()
+            raw_msg_list = CPO.get_raw_message()
+            category = CPO.GetCategory()
+        except Exception as e:
+            print "Ошибка. %s" % str(e)
+            return ShowNotification.index(str(e), "/")
+
+        # вычисляем результаты и статистику
+        count_raw = len(raw_msg_list.keys())
+        count_clear = len(clear_msg_list.keys())
+
+        cat_count = dict()
+        # список сообщений по категориям по автоматической классификации (с ошибками)
+        msg_cat_list = dict()
+
+        for msg in clear_msg_list.values():
+            cat1 = msg.category.split(":")[0]
+            cat = cat1.split("-")[0]
+            if cat in cat_count.keys():
+                cat_count[cat] += 1
+                msg_cat_list[cat].append(msg.message_id)
+            else:
+                cat_count[cat] = 1
+                msg_cat_list[cat] = list()
+                msg_cat_list[cat].append(msg.message_id)
+
+        epoch_count = CPO.read_epoch()
+        train_rec_epoch = dict()
+        cat_count_epoch = dict()
+        # список ID сообщений по категориям с автоматической классификацией (с ошибками) разделенные по эпохам
+        msg_cat_list_epoch = dict()
+
+        # получаем все записи классификации по эпохам обучения, проверенные и не проверенные
+        for epoch in range(0, epoch_count + 1):
+            try:
+                train_rec = CPO.get_train_record(for_epoch=epoch)
+                train_rec_epoch[epoch] = train_rec
+            except Exception as e:
+                print "Ошибка. %s" % str(e)
+                return ShowNotification.index(str(e), "/")
+
+            cat_count_epoch[epoch] = dict()
+            msg_cat_list_epoch[epoch] = dict()
+
+            for msg in train_rec.values():
+                cat1 = msg.category.split(":")[0]
+                cat = cat1.split("-")[0]
+                if cat in cat_count_epoch[epoch].keys():
+                    cat_count_epoch[epoch][cat] += 1
+                    msg_cat_list_epoch[epoch][cat].append(msg.message_id)
+                else:
+                    cat_count_epoch[epoch][cat] = 1
+                    msg_cat_list_epoch[epoch][cat] = list()
+                    msg_cat_list_epoch[epoch][cat].append(msg.message_id)
+
+
+        err_count = dict()
+        pos_count = dict()
+        err_all = 0
+        count_checked = 0
+        for one in category.values():
+            err_count[one.code] = 0
+            pos_count[one.code] = 0
+
+        for key in train_rec.keys():
+            # только если есть оценка от пользователя
+            if train_rec[key].user_action:
+                cat1 = cat = ""
+                count_checked += 1
+                msg = clear_msg_list.get(key)
+                cat1 = msg.category.split(":")[0]
+                cat = cat1.split("-")[0]
+                # cat категория сообщения с ID key в списке clear_email
+                print "MSG ID:", key
+                print "Cat in CLEAR DB: ", cat
+                print "Cat in USER data: ", train_rec[key].user_answer
+
+                # если категория в clearDB, не совпадает с указанной пользователем в TRAIN_USER.
+                # Увеличиваем количество ошибок в ней.
+                if cat != train_rec[key].user_answer:
+                    err_count[cat] += 1
+                    err_all += 1
+                # если категория была определена верно, увеличиваем счетчик позитива
+                else:
+                    pos_count[cat] += 1
+
+        # Составляем списки сообщений помеченных разными категориями в автоматическом и ручном режиме
+        for msg in train_rec.values():
+            # Автоматический режим классификации
+            cat1 = msg.category.split(":")[0]
+            cat = cat1.split("-")[0]
+            if cat in cat_count.keys():
+                msg_cat_list[cat].append(msg.message_id)
+            else:
+                msg_cat_list[cat] = list()
+                msg_cat_list[cat].append(msg.message_id)
+
+            if msg.message_id not in msg_cat_list[cat]:
+                msg_cat_list[cat].append(msg.message_id)
+
+            # Ручной режим классификации
+            if msg.user_action:
+                if msg.message_id not in msg_cat_list[msg.user_answer]:
+                    msg_cat_list[msg.user_answer].append(msg.message_id)
+
+        print "Правильные АВТО классификации: ", pos_count
+        print "Ошибки АВТО классификации: ", err_count
+
+        return tmpl.render(train_rec_epoch=train_rec_epoch, msg_cat_list_epoch=msg_cat_list_epoch,
+                           main_link=main_link, category=category, cat_count_epoch=cat_count_epoch,
+                           count_raw=count_raw, count_clear=count_clear, epoch_count=epoch_count)
+
+
 class Root(object):
 
     api = API()
     demo = Demo()
     connect = MainSite()
     test = Test()
+    panel = Panel()
 
     @cherrypy.expose
     def index(self):

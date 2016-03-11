@@ -72,8 +72,31 @@ def read_epoch():
         session.close()
 
 
+def update_epoch():
+
+    global CURRENT_TRAIN_EPOCH
+
+    session = Session()
+    try:
+        resp = session.query(Settings).one()
+    except Exception as e:
+        raise e
+    else:
+        try:
+            resp.train_epoch = int(CURRENT_TRAIN_EPOCH) + 1
+            session.commit()
+        except Exception as e:
+            raise e
+        else:
+            CURRENT_TRAIN_EPOCH = int(CURRENT_TRAIN_EPOCH) + 1
+
+    finally:
+        session.close()
+
+
 try:
     CURRENT_TRAIN_EPOCH = read_epoch()
+    pass
 except Exception as e:
     print "Ошибка чтения эпохи. %s" % str(e)
     sys.exit(os.EX_DATAERR)
@@ -482,11 +505,14 @@ class TrainAPIRecords(Base):
     train_epoch = Column(sqlalchemy.Integer)
 
 
-def get_train_record(msg_id=None, uuid=None):
+def get_train_record(msg_id=None, uuid=None, for_epoch=None):
     session = Session()
 
     try:
-        resp = session.query(TrainAPIRecords).all()
+        if isinstance(for_epoch, int):
+            resp = session.query(TrainAPIRecords).filter(TrainAPIRecords.train_epoch == for_epoch).all()
+        else:
+            resp = session.query(TrainAPIRecords).all()
     except Exception as e:
         print "get_train_record. Ошибка. %s" % str(e)
         raise e
@@ -508,7 +534,6 @@ class UserTrainData(Base):
     удаляются из данной таблицы.
     """
 
-
     __tablename__ = "user_train_data"
 
     id = Column(sqlalchemy.Integer, primary_key=True)
@@ -524,6 +549,7 @@ class UserTrainData(Base):
     orig_date = Column(sqlalchemy.DATETIME())
     create_date = Column(sqlalchemy.DATETIME())
     category = Column(sqlalchemy.String(255))
+    train_epoch = Column(sqlalchemy.Integer)
 
     def __init__(self):
         self.message_id = ""
@@ -626,6 +652,7 @@ def set_user_train_data(uuid, category):
 
         if query.user_action == 0:
             message_id = query.message_id
+            train_epoch = query.train_epoch
             query.user_action = 1
             query.user_answer = category
             session.commit()
@@ -643,6 +670,7 @@ def set_user_train_data(uuid, category):
     train_data.category = category
     train_data.message_text = query.message_text
     train_data.message_title = query.message_title
+    train_data.train_epoch = train_epoch
 
     try:
         session.add(train_data)
@@ -764,6 +792,7 @@ def demo_classify(description):
     return answer, record_uid
 
 
+# Используется только в демо
 def get_message_for_train(msg_uuid):
     session = Session()
     try:
