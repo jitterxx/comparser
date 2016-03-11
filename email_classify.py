@@ -13,6 +13,8 @@ import mysql.connector
 import math
 import datetime
 from configuration import *
+import objects as CPO
+
 import uuid
 import sys
 reload(sys)
@@ -101,12 +103,26 @@ if con.rowcount:
         real_db.commit()
 
         # Добавлем запись в таблицу train_api для работы API и функции переобучения
-        query = ('INSERT INTO train_api (uuid, message_id, category, date, user_action, user_answer) VALUES '
-                 '(%s, %s, %s, %s, %s, %s);')
-        data = (uuid.uuid4().__str__(), row["message_id"], answer_str, datetime.datetime.now(), 0, "")
-        con_update.execute(query, data)
-        real_db.commit()
-
+        session = CPO.Session()
+        try:
+            new = CPO.TrainAPIRecords()
+            new.uuid = uuid.uuid4().__str__()
+            new.message_id = row["message_id"]
+            new.category = answer_str
+            new.date = datetime.datetime.now()
+            new.user_action = 0
+            new.user_answer = ""
+            new.train_epoch = CPO.CURRENT_TRAIN_EPOCH
+            session.add(new)
+            session.commit()
+        except Exception as e:
+            print "Ошибка записи в TRAIN_API. %s" % str(e)
+        finally:
+            session.commit()
+        # query = ('INSERT INTO train_api (uuid, message_id, category, date, user_action, user_answer) VALUES '
+        #         '(%s, %s, %s, %s, %s, %s);')
+        # con_update.execute(query, data)
+        # real_db.commit()
 
 else:
     if args.debug:

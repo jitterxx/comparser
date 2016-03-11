@@ -15,6 +15,7 @@ import uuid
 import re
 from dateutil.parser import *
 
+import os
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -26,6 +27,56 @@ sql_uri = "mysql://%s:%s@%s:%s/%s?charset=utf8" % (db_user, db_pass, db_host, db
 Base = declarative_base()
 Engine = sqlalchemy.create_engine(sql_uri, pool_size=20, pool_recycle=3600)
 Session = sqlalchemy.orm.sessionmaker(bind=Engine)
+
+
+def create_tables():
+    """
+    Функция пересоздания таблиц  базе данных MySQL.
+
+    Все таблицы пересоздаются согласно объявлению классов наследованных от Base. Если таблица в БД существует,
+    то ничего не происходит.
+
+    :return: нет
+    """
+
+    Base.metadata.create_all(Engine)
+
+
+# Текущая эпоха обучения. Значение должно быть считано из БД
+CURRENT_TRAIN_EPOCH = None
+
+
+class Settings(Base):
+    """
+    train_epoch - этот параметр храниит номер эпохи обучения ядра системы классификации. Нужен для разделения данных
+    на наборы по которым проходило обучение, распознавание и проверка результата. Наборы нужны для расчета статистики
+    ошибок, проверки результатов и сравнения эффективности наборов обучения ядра.
+    """
+    __tablename__ = "settings"
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    train_epoch = Column(sqlalchemy.Integer, default=0)  # хранит номер текущей эпохи обучения
+
+
+# Читаем текущую эпоху из БД
+def read_epoch():
+
+    session = Session()
+    try:
+        resp = session.query(Settings).one()
+    except Exception as e:
+        raise e
+    else:
+        return resp.train_epoch
+    finally:
+        session.close()
+
+
+try:
+    CURRENT_TRAIN_EPOCH = read_epoch()
+except Exception as e:
+    print "Ошибка чтения эпохи. %s" % str(e)
+    sys.exit(os.EX_DATAERR)
 
 
 class MsgRaw(Base):
@@ -428,6 +479,7 @@ class TrainAPIRecords(Base):
     date = Column(sqlalchemy.DATETIME())
     user_action = Column(sqlalchemy.Integer)
     user_answer = Column(sqlalchemy.String(45))
+    train_epoch = Column(sqlalchemy.Integer)
 
 
 def get_train_record(msg_id=None, uuid=None):
@@ -450,6 +502,12 @@ def get_train_record(msg_id=None, uuid=None):
 
 
 class UserTrainData(Base):
+    """
+    Данные собираемые системой для текущей эпохи обучения.
+    Будут использованы для обучения ядра и добавлены в train_data с указанием эпохи. После обучения ядра на них, \
+    удаляются из данной таблицы.
+    """
+
 
     __tablename__ = "user_train_data"
 
@@ -481,6 +539,47 @@ class UserTrainData(Base):
         self.create_date = datetime.datetime.now()
         self.category = ""
 
+
+class TrainData(Base):
+    """
+    Данные собираемые системой по всем эпохам обучения.
+    Используются для:
+     - накопительного обучения системы при начале новой эпохи
+     - перекрестной проверки всех эпох обучения
+     - хранения исторических данных для анализа.
+    """
+
+    __tablename__ = "train_data"
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    message_id = Column(sqlalchemy.String(256))
+    sender = Column(sqlalchemy.String(256))
+    sender_name = Column(sqlalchemy.String(256))
+    recipients = Column(sqlalchemy.TEXT())
+    recipients_name = Column(sqlalchemy.TEXT())
+    cc_recipients = Column(sqlalchemy.TEXT())
+    cc_recipients_name = Column(sqlalchemy.TEXT())
+    message_title = Column(sqlalchemy.TEXT())
+    message_text = Column(sqlalchemy.TEXT())
+    orig_date = Column(sqlalchemy.DATETIME())
+    create_date = Column(sqlalchemy.DATETIME())
+    category = Column(sqlalchemy.String(255))
+    train_epoch = Column(sqlalchemy.Integer)
+
+    def __init__(self):
+        self.message_id = ""
+        self.sender = ""
+        self.sender_name = ""
+        self.recipients = ""
+        self.recipients_name = ""
+        self.cc_recipients = ""
+        self.cc_recipients_name = ""
+        self.message_title = ""
+        self.message_text = ""
+        self.orig_date = datetime.datetime.now()
+        self.create_date = datetime.datetime.now()
+        self.category = ""
+        self.train_epoch = CURRENT_TRAIN_EPOCH
 
 
 class Category(Base):
