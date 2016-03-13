@@ -300,14 +300,16 @@ class Panel(object):
             err_all_epoch[epoch] = 0
             count_checked_epoch[epoch] = 0
 
-            for one in category.values():
-                neg_err_epoch[epoch][one.code] = 0
-                pos_err_epoch[epoch][one.code] = 0
-
             cat_count_epoch[epoch] = dict()
             msg_cat_list_epoch[epoch] = dict()
             start_date[epoch] = None
             end_date[epoch] = None
+
+            for one in category.values():
+                neg_err_epoch[epoch][one.code] = 0
+                pos_err_epoch[epoch][one.code] = 0
+                msg_cat_list_epoch[epoch][one.code] = list()
+                cat_count_epoch[epoch][one.code] = 1
 
             for msg in train_rec.values():
                 # даты эпохи
