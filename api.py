@@ -9,13 +9,12 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 from configuration import *
-# from objects import *
 import objects as CPO
 import cherrypy
 from bs4 import BeautifulSoup
 from mako.lookup import TemplateLookup
 from user_agents import parse
-
+import datetime
 
 __author__ = 'sergey'
 
@@ -379,6 +378,38 @@ class Panel(object):
                            pos_err_epoch=pos_err_epoch, neg_err_epoch=neg_err_epoch, err_all_epoch=err_all_epoch,
                            count_checked_epoch=count_checked_epoch, start_date=start_date, end_date=end_date,
                            clear=clear_msg_list)
+
+    @cherrypy.expose
+    def messages(self, day=None):
+        tmpl = lookup.get_template("panel_messages_page.html")
+
+        if not day:
+            day = datetime.datetime.now()
+        else:
+            day = datetime.datetime.strptime(day, "%Y-%m-%d")
+
+        delta = datetime.timedelta(days=1)
+
+        # получаем сообщения для указанного дня
+        try:
+            clear_msg_list = CPO.get_clear_message(for_day=day)
+            category = CPO.GetCategory()
+        except Exception as e:
+            print "Ошибка. %s" % str(e)
+            raise e
+
+        train_rec = dict()
+        for msg in clear_msg_list:
+            try:
+                resp = CPO.get_train_record(msg_id=msg.message_id)
+            except Exception as e:
+                print "Ошибка. %s" % str(e)
+                raise e
+            else:
+                train_rec[msg.message_id] = resp
+
+        return tmpl.render(clear=clear_msg_list, train_rec=train_rec, day=day, now=datetime.datetime.now(),
+                           category=category, main_link=main_link, delta=delta)
 
 
 class Root(object):

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Conversation parser landing page">
+    <meta name="author" content="Sergey Fomin, Ramil Galiullin">
+
+    <title>Conversation parser</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <!--
+    <link href="/static/css/landing-page.css" rel="stylesheet">
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="/static/js/jquery.js" rel="script"></script>
+    <script src="/static/js/bootstrap.min.js" rel="script"></script>
+    <script src="/static/js/collapse.js" rel="script"></script>
+    <script src="/static/js/transition.js" rel="script"></script>
+
+
+</head>
+
+<body>
+
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Сообщения за: ${day.day}-${day.month}-${day.year}</h2>
+                <h4>Сообщений: ${len(clear)}</h4>
+                <table class="table table-hover" border="0">
+                    <thead>
+                    <tr>
+                        <th width="20%">ID</th>
+                        <th width="20%">Чистый текст</th>
+                        <th width="10%">Авто распознавание</th>
+                        <th width="10%">Проверка</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    %for key in clear:
+                        <tr>
+                            <td>
+                                Дата: ${key.orig_date} <br>
+                                От кого: ${key.sender_name} (${" ,".join(key.sender.split(","))}) <br>
+                                Кому: ${key.recipients_name} (${" ,".join(key.recipients.split(","))})<br>
+                                ID: ${key.message_id}
+                            </td>
+                            <td>
+                                <textarea rows="10" cols="40"> ${key.message_text} </textarea>
+                            </td>
+                            <td>${key.category.split(":")[0]}</td>
+
+                            <td>
+                            %if train_rec.get(key.message_id):
+                                %if train_rec.get(key.message_id).user_action == 1:
+                                    ${train_rec.get(key.message_id).user_answer}
+                                %else:
+                                    <a href="${main_link}${train_rec.get(key.message_id).uuid}/${category.keys()[0]}"
+                                       class="btn btn-default" target="_blank">
+                                        ${category.keys()[0]}
+                                    </a><br>
+                                    <a href="${main_link}${train_rec.get(key.message_id).uuid}/${category.keys()[1]}"
+                                       class="btn btn-default" target="_blank">
+                                        ${category.keys()[1]}
+                                    </a>
+                                %endif
+                            %endif
+                            </td>
+
+                            <td></td>
+                        </tr>
+                    %endfor
+                    </tbody>
+                </table>
+                <hr>
+            </div>
+
+
+            <%doc>
+            <h3>Сообщения</h3>
+            Всего сообщений получено: ${count_raw}<br>
+            Сообщений очищено: ${count_clear}<br>
+            %if  cat_count.get("normal") and cat_count.get("conflict"):
+            Автоматически классифицировано: ${cat_count.get("normal") + cat_count.get("conflict")} сообщений<br>
+            %else:
+            Автоматически классифицировано: 0 сообщений<br>
+            %endif
+            По категориям: <br>
+            %for key in cat_count.keys():
+            % if category.get(key):
+            ${category.get(key).category} - ${cat_count.get(key)}<br>
+            %endif
+            %endfor
+
+            <h3>Статистика и точность</h3>
+            <p>Проверено сообщений из классифицированных: ${count_checked}</p>
+            <p>
+            %for key in err_count.keys():
+                Система ошиблась в категории "${category.get(key).category}" - ${err_count.get(key)} раз<br>
+                <small>Это значит система автоматически определила категорию "${category.get(key).category}", но
+                при проверке была указана другая категория.</small><br>
+            %endfor
+            </p>
+
+            %for key in err_count.keys():
+            <p>
+                Проверенных сообщений в категории "${category.get(key).category}" -
+                ${err_count.get(key) + pos_count.get(key)}
+                (Ошибок: ${err_count.get(key)}
+                (${err_count.get(key) * 100 / (err_count.get(key) + pos_count.get(key))}%))
+            </p>
+            %endfor
+
+            <p>
+                %if count_checked != 0:
+                Общая точность: ${float(count_checked - err_all)/count_checked*100} %
+                %else:
+                Общая точность: не могу посчитать, нет ни одного ответа для проверки.
+                %endif
+            </p>
+
+            % if show_msg:
+            <table border="1">
+                <thead>
+                <tr>
+                    <th width="10%">Дата</th>
+                    <th width="10%">От:/Кому:</th>
+                    <th width="30%">Исходный текст</th>
+                    <th width="20%">Чистый текст</th>
+                    <th width="10%">Автокатегория</th>
+                    <th width="10%">Пользовательская категория</th>
+                    <th width="10%"></th>
+                </tr>
+                </thead>
+                <tbody>
+
+                % for one in raw.keys():
+                <tr valign="top">
+                    <td>
+                        ${raw.get(one).orig_date}
+                    </td>
+                    <td>
+                        <textarea>${raw.get(one).sender}</textarea>
+                        v
+                        <textarea>${raw.get(one).recipient}</textarea>
+                    </td>
+                    <td>
+                        <textarea rows="10" cols="40">
+                        %if raw.get(one).message_text:
+                        ${'{:>40}'.format(raw.get(one).message_text)}
+                        %else:
+                        ${raw.get(one).message_text_html}
+                        %endif
+                        </textarea>
+                    </td>
+                    <td>
+                        %if clear.get(one):
+                        <textarea rows="10" cols="40">${clear.get(one).message_text}</textarea>
+                        %endif
+
+                    </td>
+                    <td>
+                        %if clear.get(one):
+                        %for cat in clear.get(one).category.split(":"):
+                        ${cat}<br>
+                        %endfor
+
+                        %endif
+                    </td>
+                    <td>
+                        %if train_rec.get(one):
+                            %if train_rec.get(one).user_action == 1:
+                                ${train_rec.get(one).user_answer}
+                            %else:
+                                <a href="${main_link}${train_rec.get(one).uuid}/${category.keys()[0]}"
+                                   class="btn btn-default" target="_blank">
+                                    ${category.keys()[0]}
+                                </a><br>
+                                <a href="${main_link}${train_rec.get(one).uuid}/${category.keys()[1]}"
+                                   class="btn btn-default" target="_blank">
+                                    ${category.keys()[1]}
+                                </a>
+                            %endif
+                        %endif
+                    </td>
+                    <td>
+
+                    </td>
+                </tr>
+                % endfor
+
+                </tbody>
+            </table>
+            %else:
+            <table class="table table-hover" border="0">
+                <thead>
+                <tr>
+                    <th width="20%">ID</th>
+                    <th width="20%">Чистый текст</th>
+                    <th width="10%">Авто распознавание</th>
+                    <th width="10%">Проверка</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+
+                % for cat in ["conflict"]:
+                    %for key in msg_cat_list.get(cat):
+                        <tr>
+                            <td>
+                                Дата: ${clear.get(key).orig_date} <br>
+                                От кого: ${clear.get(key).sender_name} (${" ,".join(clear.get(key).sender.split(","))}) <br>
+                                Кому: ${clear.get(key).recipients_name} (${" ,".join(clear.get(key).recipients.split(","))})<br>
+                                ID: ${clear.get(key).message_id}
+                            </td>
+                            <td>
+                                <textarea rows="10" cols="40"> ${clear.get(key).message_text} </textarea>
+                            </td>
+                            <td>${clear.get(key).category.split(":")[0]}</td>
+                            <td>
+                            %if train_rec.get(key):
+                                %if train_rec.get(key).user_action == 1:
+                                    ${train_rec.get(key).user_answer}
+                                %else:
+                                    <a href="${main_link}${train_rec.get(key).uuid}/${category.keys()[0]}"
+                                       class="btn btn-default" target="_blank">
+                                        ${category.keys()[0]}
+                                    </a><br>
+                                    <a href="${main_link}${train_rec.get(key).uuid}/${category.keys()[1]}"
+                                       class="btn btn-default" target="_blank">
+                                        ${category.keys()[1]}
+                                    </a>
+                                %endif
+                            %endif
+                            </td>
+                            <td></td>
+                        </tr>
+                    %endfor
+                % endfor
+
+                </tbody>
+            </table>
+
+            %endif
+            </%doc>
+
+        </div>
+
+    </div>
+        <!-- /.container -->
+
+</body>
+
+</html>

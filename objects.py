@@ -456,22 +456,42 @@ class MsgErr(Base):
     create_date = Column(sqlalchemy.DATETIME())
 
 
-def get_clear_message(msg_id=None):
+def get_clear_message(msg_id=None, for_day=None):
 
-    session = Session()
+    if msg_id:
+        pass
+    elif for_day:
+        # получаем сообщения за определенный день
+        start = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (for_day.year, for_day.month, for_day.day),
+                                           "%Y-%m-%d %H:%M:%S")
+        end = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
+                                         "%Y-%m-%d %H:%M:%S")
+        session = Session()
+        try:
+            result = session.query(Msg).filter(and_(Msg.create_date >= start,
+                                                    Msg.create_date <= end)).order_by(Msg.create_date.desc()).all()
+        except Exception as e:
+            print "Get_clear_message(). Ошибка получения сообщений за день: %s. %s" % (for_day, str(e))
+            raise e
+        else:
+            return result
+        finally:
+            session.close()
 
-    try:
-        resp = session.query(Msg).order_by(Msg.orig_date.desc()).all()
-    except Exception as e:
-        raise e
     else:
-        result = dict()
-        for one in resp:
-            result[one.message_id] = one
+        session = Session()
+        try:
+            resp = session.query(Msg).order_by(Msg.orig_date.desc()).all()
+        except Exception as e:
+            raise e
+        else:
+            result = dict()
+            for one in resp:
+                result[one.message_id] = one
 
-        return result
-    finally:
-        session.close()
+            return result
+        finally:
+            session.close()
 
 
 def get_raw_message(msg_id=None):
@@ -506,25 +526,57 @@ class TrainAPIRecords(Base):
 
 
 def get_train_record(msg_id=None, uuid=None, for_epoch=None):
-    session = Session()
 
-    try:
-        if isinstance(for_epoch, int):
-            resp = session.query(TrainAPIRecords).filter(TrainAPIRecords.train_epoch == for_epoch).all()
+    if msg_id:
+        # записи о проверках для данного сообщения
+        session = Session()
+        try:
+            result = session.query(TrainAPIRecords).filter(TrainAPIRecords.message_id == msg_id).one()
+        except Exception as e:
+            print "get_train_record. Ошибка. %s" % str(e)
+            raise e
         else:
-            resp = session.query(TrainAPIRecords).all()
-    except Exception as e:
-        print "get_train_record. Ошибка. %s" % str(e)
-        raise e
-    else:
-        result = dict()
-        for one in resp:
-            # print one.message_id
-            result[one.message_id] = one
+            return result
+        finally:
+            session.close()
 
-        return result
-    finally:
-        session.close()
+    elif uuid:
+        pass
+    elif for_epoch:
+        # записи о проверках для данной эпохи
+        for_epoch = int(for_epoch)
+        session = Session()
+        try:
+            resp = session.query(TrainAPIRecords).filter(TrainAPIRecords.train_epoch == for_epoch).all()
+        except Exception as e:
+            print "get_train_record. Ошибка. %s" % str(e)
+            raise e
+        else:
+            result = dict()
+            for one in resp:
+                # print one.message_id
+                result[one.message_id] = one
+            return result
+        finally:
+            session.close()
+
+    else:
+        # все записи о проверках
+        session = Session()
+        try:
+            resp = session.query(TrainAPIRecords).all()
+        except Exception as e:
+            print "get_train_record. Ошибка. %s" % str(e)
+            raise e
+        else:
+            result = dict()
+            for one in resp:
+                # print one.message_id
+                result[one.message_id] = one
+
+            return result
+        finally:
+            session.close()
 
 
 class UserTrainData(Base):
