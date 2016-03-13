@@ -118,6 +118,8 @@ class MsgRaw(Base):
     create_date = Column(sqlalchemy.DATETIME())
     iscleared = Column(sqlalchemy.Integer)
     isbroken = Column(sqlalchemy.Integer)
+    references = Column(sqlalchemy.TEXT())
+    in_reply_to = Column(sqlalchemy.String(256))
 
     def __init__(self):
         self.cc_recipients = ""
@@ -304,6 +306,17 @@ def parse_message(msg=None, debug=False):
 
     msg_id = msg['message-id']
 
+    # Заголовки для составления бесед-тредов
+    if msg.get('References'):
+        references = msg.get('References')
+    else:
+        references = ""
+
+    if msg.get('In-Reply-To'):
+        in_reply_to = msg.get('In-Reply-To')
+    else:
+        in_reply_to = ""
+
     subject = msg.get('Subject', 'No subject provided')
     subject = line_decoder(subject)
 
@@ -356,6 +369,8 @@ def parse_message(msg=None, debug=False):
 
     if debug:
         print "MID:", msg_id
+        print "References: ", references
+        print "In-Reply-To: ", in_reply_to
         print "From: ", from_
         print "To: ", to
         print 'Main type: ', maintype
@@ -409,7 +424,7 @@ def parse_message(msg=None, debug=False):
 
     text += text2[0]
 
-    return [msg_id, from_, to, cc, subject, text2[0], text2[1], msg_datetime, int(broken_msg)]
+    return [msg_id, from_, to, cc, subject, text2[0], text2[1], msg_datetime, int(broken_msg), references, in_reply_to]
 
 
 class Msg(Base):
@@ -431,6 +446,8 @@ class Msg(Base):
     isclassified = Column(sqlalchemy.Integer, default=0)
     category = Column(sqlalchemy.String(256), default="")
     notified = Column(sqlalchemy.Integer, default=0)
+    references = Column(sqlalchemy.TEXT())
+    in_reply_to = Column(sqlalchemy.String(256))
 
     def __init__(self):
         self.isclassified = 0
@@ -454,6 +471,8 @@ class MsgErr(Base):
     message_text = Column(sqlalchemy.TEXT())
     orig_date = Column(sqlalchemy.DATETIME())
     create_date = Column(sqlalchemy.DATETIME())
+    references = Column(sqlalchemy.TEXT())
+    in_reply_to = Column(sqlalchemy.String(256))
 
 
 def get_clear_message(msg_id=None, for_day=None):

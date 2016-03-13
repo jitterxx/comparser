@@ -58,6 +58,8 @@ for key in inbox.iterkeys():
             new.message_text_html = message[6]  # text2[1]
             new.orig_date = message[7]  # msg_datetime
             new.isbroken = message[8]  # int(broken_msg)
+            new.references = message[9]
+            new.in_reply_to = message[10]
 
             session.add(new)
             session.commit()

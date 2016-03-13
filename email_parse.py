@@ -265,6 +265,8 @@ for row in raw_data:
     clear_data['orig_date'] = row.orig_date
     clear_data['create_date'] = row.create_date
     clear_data['isbroken'] = row.isbroken
+    clear_data['references'] = row.references
+    clear_data['in_reply_to'] = row.in_reply_to
     
     clear_data = get_emails(row,clear_data)
     clear_data["message_title"] = get_title(row.message_title)
@@ -330,6 +332,9 @@ for row in raw_data:
             new.message_text = clear_data['message_text']
             new.orig_date = clear_data['orig_date']
             new.create_date = clear_data['create_date']
+            new.references = clear_data['references']
+            new.in_reply_to = clear_data['in_reply_to']
+
             session.add(new)
             session.commit()
         except Exception as e:
@@ -373,6 +378,9 @@ for row in raw_data:
             new.message_text = clear_data['message_text']
             new.orig_date = clear_data['orig_date']
             new.create_date = clear_data['create_date']
+            new.references = clear_data['references']
+            new.in_reply_to = clear_data['in_reply_to']
+
             session.add(new)
             session.commit()
         except Exception as e:
