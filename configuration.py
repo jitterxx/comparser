@@ -31,5 +31,5 @@ STOP_WORDS = ["как", "или", "который", "которых", "тот", 
               "com", "вам", "Вам", "Вами", "вами", "Вас", "вас", "ваше", "Ваше", "Все", "все"]
 
 # Список адресов, сообщения отправленные С и НА них буду игнорироваться системой.
-EXCEPTION_EMAIL = u"root@rework.reshim.com|undisclosed-recipients|hr@vipservice.ru|dobro@vipservice.ru"
+EXCEPTION_EMAIL = u"root@rework.reshim.com|undisclosed-recipients|hr@vipservice.ru|dobro@vipservice.ru|dl-avia@vipct.ru"
 
