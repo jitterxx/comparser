@@ -542,29 +542,15 @@ def get_train_record(msg_id=None, uuid=None, for_epoch=None):
 
     elif uuid:
         pass
-    elif for_epoch:
-        # записи о проверках для данной эпохи
-        for_epoch = int(for_epoch)
-        session = Session()
-        try:
-            resp = session.query(TrainAPIRecords).filter(TrainAPIRecords.train_epoch == for_epoch).all()
-        except Exception as e:
-            print "get_train_record. Ошибка. %s" % str(e)
-            raise e
-        else:
-            result = dict()
-            for one in resp:
-                # print one.message_id
-                result[one.message_id] = one
-            return result
-        finally:
-            session.close()
-
     else:
         # все записи о проверках
         session = Session()
+
         try:
-            resp = session.query(TrainAPIRecords).all()
+            if isinstance(for_epoch, int):
+                resp = session.query(TrainAPIRecords).filter(TrainAPIRecords.train_epoch == for_epoch).all()
+            else:
+                resp = session.query(TrainAPIRecords).all()
         except Exception as e:
             print "get_train_record. Ошибка. %s" % str(e)
             raise e
