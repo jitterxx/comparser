@@ -165,7 +165,8 @@ def get_clear_text(raw_text=""):
 
 # отсеиваем ненужные сообщения (каледарные, нотификации, исключения пользователей и т.д.)
 def exception(data):
-    emails = u'root@rework.reshim.com|undisclosed-recipients'
+    # emails = u'root@rework.reshim.com|undisclosed-recipients'
+    emails = EXCEPTION_EMAIL
     isexception = False
     title_start = u"""Принять:|Прочтено:|Принято:|Read-Receipt:|Отменено:|Предложено новое время:"""
     text_start = u"""Тема:|Следующее собрание изменилось:|Запрос на новую встречу:|
