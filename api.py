@@ -309,7 +309,7 @@ class Panel(object):
                 neg_err_epoch[epoch][one.code] = 0
                 pos_err_epoch[epoch][one.code] = 0
                 msg_cat_list_epoch[epoch][one.code] = list()
-                cat_count_epoch[epoch][one.code] = 1
+                cat_count_epoch[epoch][one.code] = 0
 
             for msg in train_rec.values():
                 # даты эпохи
@@ -332,10 +332,10 @@ class Panel(object):
                 if cat in cat_count_epoch[epoch].keys():
                     cat_count_epoch[epoch][cat] += 1
                     msg_cat_list_epoch[epoch][cat].append(msg.message_id)
-                else:
-                    cat_count_epoch[epoch][cat] = 1
-                    msg_cat_list_epoch[epoch][cat] = list()
-                    msg_cat_list_epoch[epoch][cat].append(msg.message_id)
+                #else:
+                #    cat_count_epoch[epoch][cat] = 1
+                #    msg_cat_list_epoch[epoch][cat] = list()
+                #    msg_cat_list_epoch[epoch][cat].append(msg.message_id)
 
                 # только если есть оценка от пользователя
                 if msg.user_action:
