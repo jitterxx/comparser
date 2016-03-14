@@ -10,287 +10,241 @@ import poplib, email
 import base64
 import re
 # import html2text
-import MySQLdb
 import datetime
 from dateutil.parser import *
 import argparse
 from configuration import *
+import objects as CPO
+
+import numpy as np
+from time import time
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import HashingVectorizer
+from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.linear_model import RidgeClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.svm import LinearSVC
+from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import Perceptron
+from sklearn.linear_model import PassiveAggressiveClassifier
+from sklearn.naive_bayes import BernoulliNB, MultinomialNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import NearestCentroid
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.utils.extmath import density
+from sklearn import metrics
+
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-def line_decoder (text_line):
- s_text_line = text_line.split(" ")
- #print 'split: ',s_text_line
- #print 'Количество циклов: ',len(s_text_line)
- #print 'Пошел цикл...'+'\n'
- result=''
 
- for i in range (len(s_text_line)):
-   #print 'Шаг номер ',i,':\n'
-   data=''
-   coding=''
-   #print 'Split item & num: ',s_text_line[i], i,'\n'
-   data, coding = decode_header(s_text_line[i])[0]
-   #print 'Decoded data, coding: ',data, coding,'\n'
-   if coding == None:
-        result = result + ' ' + data
-   else:
-        result = result + data.decode(coding,'replace')
- #print 'Decoded data, coding: ',result, coding,'\n'
- return result
+def specfeatures(entry):
+    """ Функция для получения признаков(features) из текста
+    Выделяет следующие признаки:
+    1. email отправителя
+    2. email получателей
+    3. Слова из темы сообщения
+    4. Все пары слов из темы сообщения
+    5. Определенные сочетания из темы сообщения
+    6. Слова из текста
+    7. Все пары слов из текста
+    8. Определенные пары слов из текста (specwords)
+    9. Оригинальное время создания сообщения, только HH:MM\
 
-
-
-def get_decoded_email_body(message_body):
-    """ Decode email body.
-
-    Detect character set if the header is not set.
-
-    We try to get text/plain, but if there is not one then fallback to text/html.
-
-    :param message_body: Raw 7-bit message body input e.g. from imaplib. Double encoded in quoted-printable and latin-1
-
-    :return: Message body as unicode string
     """
+    splitter=re.compile('\\W*',re.UNICODE)
+    f = {}
 
-    msg = email.message_from_string(message_body)
+    # Извлечь слова из резюме
+    summarywords=[s for s in splitter.split(entry)
+                  if len(s)>2 and len(s)<20 and s not in STOP_WORDS]
+    # print 'sum words: ',summarywords
 
-    text = ""
-    if msg.is_multipart():
-        html = None
-        for part in msg.get_payload():
+    # Подсчитать количество слов, написанных заглавными буквами
+    uc = 0
+    for i in range(len(summarywords)):
+        w=summarywords[i]
+        f[w]=1
+        if w.isupper(): uc += 1
+        # Выделить в качестве признаков пары слов из резюме
+        if i<len(summarywords)-1:
+            j = i+1
+            l = [summarywords[i],summarywords[j]]
+            twowords = ' '.join(l)
+            # print 'Two words: ',twowords,'\n'
+            f[twowords]=1
 
-            print "%s, %s" % (part.get_content_type(), part.get_content_charset())
+    # UPPERCASE – специальный признак, описывающий степень "крикливости"
+    if (len(summarywords)) and (float(uc)/len(summarywords) > 0.3): f['UPPERCASE'] = 1
 
-            if part.get_content_charset() is None:
-                # We cannot know the character set, so return decoded "something"
-                text = part.get_payload(decode=True)
-                continue
-
-            charset = part.get_content_charset()
-
-            if part.get_content_type() == 'text/plain':
-                text = unicode(part.get_payload(decode=True), str(charset), "ignore").encode('utf8', 'replace')
-
-            if part.get_content_type() == 'text/html':
-                html = unicode(part.get_payload(decode=True), str(charset), "ignore").encode('utf8', 'replace')
-
-        if text is not None:
-            return text.strip()
-        else:
-            return html.strip()
-    else:
-        text = unicode(msg.get_payload(decode=True), msg.get_content_charset(), 'ignore').encode('utf8', 'replace')
-        return text.strip()
+    return f
 
 
-# note that if you want to get text content (body) and the email contains
-# multiple payloads (plaintext/ html), you must parse each message separately.
-# use something like the following: (taken from a stackoverflow post)
-def get_first_text_block(email_message_instance):
-    maintype = email_message_instance.get_content_maintype()
-    if maintype == 'multipart':
-        for part in email_message_instance.get_payload():
-            if part.get_content_maintype() == 'text':
-                return part.get_payload()
-    elif maintype == 'text':
-            return email_message_instance.get_payload()
+use_hashing = True
+
+session = CPO.Session()
+
+resp = session.query(CPO.TrainData).filter(CPO.TrainData.train_epoch == 0).all()
+train = list()
+answer = list()
+
+for one in resp:
+    train.append(one.message_title + one.message_text)
+    answer.append(one.category)
+
+resp = session.query(CPO.TrainData).filter(CPO.TrainData.train_epoch == 1).all()
+test = list()
+test_answer = list()
+for one in resp:
+    test.append(one.message_title + one.message_text)
+    test_answer.append(one.category)
+
+print len(train), len(test)
+categories = ["conflict", "normal"]
+
+t0 = time()
+if use_hashing:
+    vectorizer = HashingVectorizer(stop_words=STOP_WORDS, analyzer='word', non_negative=True, n_features=2 ** 16,
+                                   tokenizer=specfeatures)
+    X_train = vectorizer.transform(train)
+else:
+    vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5, stop_words=STOP_WORDS)
+    X_train = vectorizer.fit_transform(train)
+
+duration = time() - t0
+print("done in %fs at %0.3fText/s" % (duration, len(train) / duration))
+print("n_samples: %d, n_features: %d" % X_train.shape)
+print()
+
+print("Extracting features from the test data using the same vectorizer")
+t0 = time()
+X_test = vectorizer.transform(test)
+duration = time() - t0
+print("done in %fs at %0.3f Text/s" % (duration, len(test) / duration))
+print("n_samples: %d, n_features: %d" % X_test.shape)
+print()
+
+if use_hashing:
+    feature_names = None
+else:
+    feature_names = vectorizer.get_feature_names()
+
+select_chi2 = 10
+if select_chi2:
+    print("Extracting %d best features by a chi-squared test" % select_chi2)
+    t0 = time()
+    ch2 = SelectKBest(chi2, k=select_chi2)
+    X_train = ch2.fit_transform(X_train, answer)
+    X_test = ch2.transform(X_test)
+    if feature_names:
+        # keep selected feature names
+        feature_names_2 = [feature_names[i] for i
+                           in ch2.get_support(indices=True)]
+    print("done in %fs" % (time() - t0))
+    print ""
+
+if feature_names:
+    feature_names = np.asarray(feature_names)
 
 
-def remove_tags(data):
-    # remove the newlines
-    data = data.replace("\n", " ")
-    data = data.replace("\r", " ")
-
-    # replace consecutive spaces into a single one
-    data = " ".join(data.split())
-
-    # get only the body content
-    bodyPat = re.compile(r'<body[^<>]*?>(.*?)</body>', re.I)
-    if re.findall(bodyPat, data) :
-        result = re.findall(bodyPat, data)
-        data = result[0]
-
-    # now remove the java script
-    p = re.compile(r'<script[^<>]*?>.*?</script>')
-    data = p.sub('', data)
-
-    # remove the css styles
-    p = re.compile(r'<style[^<>]*?>.*?</style>')
-    data = p.sub('', data)
-
-    # remove html comments
-    p = re.compile(r'')
-    data = p.sub('', data)
-
-    # remove all the tags
-    p = re.compile(r'<[^<]*?>')
-    data = p.sub('', data)
-
-    return data
+def trim(s):
+    """Trim string to fit on terminal (assuming 80-column display)"""
+    return s if len(s) <= 80 else s[:77] + "..."
 
 
-parser = argparse.ArgumentParser(description='Debug option')
-parser.add_argument('-d', action='store_true', dest='debug', help='print debug info')
-args = parser.parse_args()
-debug = args.debug
+# Benchmark classifiers
+def benchmark(clf):
+    print('_' * 80)
+    print("Training: ")
+    print(clf)
+    t0 = time()
+    clf.fit(X_train, answer)
+    train_time = time() - t0
+    print("train time: %0.3fs" % train_time)
 
-"""
-inbox = mailbox.Maildir(maildir_path, factory=None)
-"""
+    t0 = time()
+    pred = clf.predict(X_test)
+    test_time = time() - t0
+    print("test time:  %0.3fs" % test_time)
 
-db = MySQLdb.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, db=db_name, use_unicode=True,
-                     charset="utf8")
-db.set_character_set('utf8')
-cur = db.cursor()
-cur.execute('SET NAMES utf8;')
-cur.close()
-db.commit()
+    score = metrics.accuracy_score(test_answer, pred)
+    print("accuracy:   %0.3f" % score)
 
-message = ""
+    if hasattr(clf, 'coef_'):
+        print("dimensionality: %d" % clf.coef_.shape[1])
+        print("density: %f" % density(clf.coef_))
 
-message = sys.stdin
+        if False and feature_names is not None:
+            print("top 10 keywords per class:")
+            for i, category in enumerate(categories):
+                top10 = np.argsort(clf.coef_[i])[-10:]
+                print(trim("%s: %s"
+                      % (category, " ".join(feature_names[top10]))))
+        print ""
 
-msg = email.message_from_file(message)
+    print("classification report:")
+    print(metrics.classification_report(test_answer, pred, target_names=categories))
 
-if msg:
+    print("confusion matrix:")
+    print(metrics.confusion_matrix(test_answer, pred))
 
-    msg_id = ""
-    subject = ""
-    cc = ""
-    to = ""
-    from_ = ""
-    date_hdr = ""
-    text = ""
+    print()
+    clf_descr = str(clf).split('(')[0]
 
-    if debug:
-        print '********** Next message **********\n'
-
-    msg_id = msg['message-id']
-
-    subject = msg.get('Subject', 'No subject provided')
-    subject = line_decoder(subject)
-
-    date_raw = msg.get('Date')
-    p = re.compile('[(]')
-    if date_raw:
-        date_hdr = p.split(date_raw,1)[0]
-    else:
-        date_hdr = ""
-
-    text = ''
-
-    # Проверяем параметры сообщения
-    broken_msg = False
-    # Если параметр не определен, ставим empty
-    cc = msg.get('Cc')
-    if not cc:
-        cc = "empty"
-    cc = line_decoder(cc)
-
-    to = msg.get('To')
-    if not to:
-        to = "empty"
-        broken_msg = True
-    to = line_decoder(to)
-
-    from_ = msg.get('From')
-    if not from_:
-        from_ = "empty"
-        broken_msg = True
-    from_ = line_decoder(from_)
-
-    maintype = msg.get_content_maintype()
-    main_charset = msg.get_content_charset()
-
-    if debug:
-        print msg_id
-        print from_
-        print to
-        print 'Main type: ',maintype
-        print 'Main charset',main_charset
-        print 'Subj: ',subject
-        print 'Date: ',date_hdr
-
-    if maintype == 'multipart':
-        # Если это мультипарт, ищем текстовую часть письма
-        print "** Multipart message **"
-        for part in msg.get_payload():
-            part_type = part.get_content_type()
-            part_charset = part.get_param('charset')
-            part_transfer_encode = part['Content-Transfer-Encoding']
-            part_is_attach = part.has_key('Content-Disposition')
-            skip_part = False
-
-            if (part_charset == 'None') or (part_is_attach):
-                skip_part = True
-
-            if debug:
-                print 'Part is attach: %s' % part_is_attach
-                print 'Part type: ',part_type
-                print 'Part charset: ',part_charset
-                print 'Part transf encode: ',part_transfer_encode
-                print "Пропустить часть: %s" % skip_part
-
-            if not skip_part:
-                if part_type == "text/plain" or part_type == "text":
-                    # Как только нашли обычный текст, выводим с перекодировкой
-                    dirty = part.get_payload(decode=True)
-                    text += unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
-                    if debug:
-                        print 'Message in plain: ', text, '\n'
-                elif part_type == "text/html":
-                    # Если нашли текст в HTML, чистим от разметки и выводим с перекодировкой
-                    dirty=part.get_payload(decode=True)
-                    html = unicode(dirty, str(part_charset), "ignore").encode('utf8', 'replace')
-                    text += remove_tags(html)
-                    if debug:
-                        print 'Message in HTML: ', text, '\n'
-
-            else:
-                text = text + u'Часть содержит не текст.\n'
-                #+ '\n'.join(part.values())
-                #if debug:
-                #   print 'Message text: ', text, '\n'
-
-    elif (maintype == "text/plain" or maintype == "text") and (main_charset):
-        print "** NOT Multipart message **"
-        dirty=msg.get_payload(decode=True)
-        text = unicode(dirty, str(main_charset), "ignore").encode('utf8', 'replace')
-        print 'Message in plain: ', text, '\n'
-    elif not main_charset or not maintype:
-        if debug:
-            print 'Не указан main_charset. Битое сообщение.'
-        #Если не определены параметры в заголовках, считаем что это битое сообщение не декодируем
-        text=msg.get_payload(decode=True)
-        broken_msg = True
+    raw_input()
+    return clf_descr, score, train_time, test_time
 
 
+results = []
+for clf, name in ((Perceptron(n_iter=70), "Perceptron"),):
+        #(RidgeClassifier(tol=1e-2, solver="lsqr"), "Ridge Classifier"),
+        #(Perceptron(n_iter=50), "Perceptron"),
+        #(PassiveAggressiveClassifier(n_iter=50), "Passive-Aggressive"),
+        #(KNeighborsClassifier(n_neighbors=10), "kNN"),
+        #(RandomForestClassifier(n_estimators=100), "Random forest")):
 
-    #Заносим полученные данные о письме в БД
-    msg_datetime = parse(date_hdr)
-    cur = db.cursor()
-    cur.execute("""INSERT INTO email_raw_data (message_id,sender,recipient,cc_recipient,message_title,\
-                                           message_text,orig_date,create_date,isbroken)\
-                                           VALUES (%s,%s,%s,%s,%s,%s,%s,now(),%s);""",\
-                                           (MySQLdb.escape_string(msg_id),
-                                            MySQLdb.escape_string(from_),
-                                            MySQLdb.escape_string(to),
-                                            MySQLdb.escape_string(cc),
-                                            MySQLdb.escape_string(subject),
-                                            MySQLdb.escape_string(text),
-                                            msg_datetime,
-                                            int(broken_msg)))
+    print('=' * 80)
+    print(name)
+    results.append(benchmark(clf))
 
-    #print query,'\n'
-    cur.close()
-    db.commit()
+for penalty in ["l2", "l1"]:
+    continue
+    print('=' * 80)
+    print("%s penalty" % penalty.upper())
+    # Train Liblinear model
+    results.append(benchmark(LinearSVC(loss='l2', penalty=penalty,
+                                            dual=False, tol=1e-3)))
 
-    if debug:
-        print 'Перенос в прочитанные...\n'
-        print 'Битое: ', broken_msg
+    # Train SGD model
+    results.append(benchmark(SGDClassifier(alpha=.0001, n_iter=50,
+                                           penalty=penalty)))
 
-db.close()
+# Train SGD with Elastic Net penalty
+#print('=' * 80)
+#print("Elastic-Net penalty")
+#results.append(benchmark(SGDClassifier(alpha=.0001, n_iter=50,
+#                                       penalty="elasticnet")))
+
+# Train NearestCentroid without threshold
+#print('=' * 80)
+#print("NearestCentroid (aka Rocchio classifier)")
+#results.append(benchmark(NearestCentroid()))
+
+# Train sparse Naive Bayes classifiers
+print('=' * 80)
+print("Naive Bayes")
+results.append(benchmark(MultinomialNB(alpha=.01)))
+results.append(benchmark(BernoulliNB(alpha=.01)))
+
+#print('=' * 80)
+#print("LinearSVC with L1-based feature selection")
+# The smaller C, the stronger the regularization.
+# The more regularization, the more sparsity.
+#results.append(benchmark(Pipeline([
+#  ('feature_selection', LinearSVC(penalty="l1", dual=False, tol=1e-3)),
+#  ('classification', LinearSVC())
+#])))
 
 
+session.close()

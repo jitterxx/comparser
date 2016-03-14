@@ -430,7 +430,7 @@ class fisherclassifier(classifier):
 
         
 """ Функция извлечения признаков """
-def specfeatures(entry, specwords):
+def specfeatures(entry, specwords=None):
     """ Функция для получения признаков(features) из текста
     Выделяет следующие признаки:
     1. email отправителя
