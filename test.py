@@ -34,6 +34,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.extmath import density
 from sklearn import metrics
 
+import pymorphy2
+morph = pymorphy2.MorphAnalyzer()
+
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -53,66 +56,79 @@ def specfeatures(entry):
     9. Оригинальное время создания сообщения, только HH:MM\
 
     """
-    splitter=re.compile('\\W*',re.UNICODE)
+    splitter = re.compile('\\W*', re.UNICODE)
     f = {}
 
     # Извлечь слова из резюме
-    summarywords=[s for s in splitter.split(entry)
-                  if len(s)>2 and len(s)<20 and s not in STOP_WORDS]
+    summarywords = [s for s in splitter.split(entry)
+                    if len(s)>2 and len(s)<20 and s not in STOP_WORDS]
     # print 'sum words: ',summarywords
 
     # Подсчитать количество слов, написанных заглавными буквами
     uc = 0
     for i in range(len(summarywords)):
-        w=summarywords[i]
-        f[w]=1
-        if w.isupper(): uc += 1
+        word = morph.parse(summarywords[i])[0]  # Берем первый вариант разбора
+        print word.normal_form, word.tag
+        raw_input()
+        w = summarywords[i]
+        f[w] = 1
+        if w.isupper():
+            uc += 1
         # Выделить в качестве признаков пары слов из резюме
-        if i<len(summarywords)-1:
-            j = i+1
-            l = [summarywords[i],summarywords[j]]
+        if i < len(summarywords)-1:
+            j = i + 1
+            l = [summarywords[i], summarywords[j]]
             twowords = ' '.join(l)
             # print 'Two words: ',twowords,'\n'
-            f[twowords]=1
+            f[twowords] = 1
 
     # UPPERCASE – специальный признак, описывающий степень "крикливости"
-    if (len(summarywords)) and (float(uc)/len(summarywords) > 0.3): f['UPPERCASE'] = 1
+    if (len(summarywords)) and (float(uc)/len(summarywords) > 0.3):
+        f['UPPERCASE'] = 1
 
     return f
 
 
-use_hashing = True
-
 session = CPO.Session()
 
-resp = session.query(CPO.TrainData).filter(CPO.TrainData.train_epoch == 0).all()
+resp = session.query(CPO.TrainData).filter(CPO.or_((CPO.TrainData.train_epoch == -1),
+                                                   (CPO.TrainData.train_epoch == 1),
+                                                   (CPO.TrainData.train_epoch == 0))).all()
 train = list()
 answer = list()
 
 for one in resp:
-    train.append(one.message_title + one.message_text)
+    train.append(one.message_text)
     answer.append(one.category)
 
-resp = session.query(CPO.TrainData).filter(CPO.TrainData.train_epoch == 1).all()
+resp = session.query(CPO.TrainData).filter(CPO.or_((CPO.TrainData.train_epoch == 1),
+                                                   (CPO.TrainData.train_epoch == 1))).all()
 test = list()
 test_answer = list()
 for one in resp:
-    test.append(one.message_title + one.message_text)
+    test.append(one.message_text)
     test_answer.append(one.category)
 
-print len(train), len(test)
+#test = train
+#test_answer = answer
+
+print "Count Train: %s, Test: %s" % (len(train), len(test))
 categories = ["conflict", "normal"]
+use_hashing = True
+
 
 t0 = time()
 if use_hashing:
-    vectorizer = HashingVectorizer(stop_words=STOP_WORDS, analyzer='word', non_negative=True, n_features=2 ** 16,
+    vectorizer = HashingVectorizer(stop_words=STOP_WORDS, analyzer='word', non_negative=True, n_features=40000,
                                    tokenizer=specfeatures)
     X_train = vectorizer.transform(train)
 else:
-    vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5, stop_words=STOP_WORDS)
+    vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=1, stop_words=STOP_WORDS, analyzer='word',
+                                 tokenizer=specfeatures)
     X_train = vectorizer.fit_transform(train)
 
 duration = time() - t0
+print "TRAIN"
 print("done in %fs at %0.3fText/s" % (duration, len(train) / duration))
 print("n_samples: %d, n_features: %d" % X_train.shape)
 print()
@@ -121,6 +137,7 @@ print("Extracting features from the test data using the same vectorizer")
 t0 = time()
 X_test = vectorizer.transform(test)
 duration = time() - t0
+print "TEST"
 print("done in %fs at %0.3f Text/s" % (duration, len(test) / duration))
 print("n_samples: %d, n_features: %d" % X_test.shape)
 print()
@@ -139,7 +156,7 @@ if select_chi2:
     X_test = ch2.transform(X_test)
     if feature_names:
         # keep selected feature names
-        feature_names_2 = [feature_names[i] for i
+        feature_names = [feature_names[i] for i
                            in ch2.get_support(indices=True)]
     print("done in %fs" % (time() - t0))
     print ""
@@ -197,12 +214,15 @@ def benchmark(clf):
 
 
 results = []
-for clf, name in ((Perceptron(n_iter=70), "Perceptron"),):
-        #(RidgeClassifier(tol=1e-2, solver="lsqr"), "Ridge Classifier"),
-        #(Perceptron(n_iter=50), "Perceptron"),
+for clf, name in (
+        #(RidgeClassifier(tol=1e-2, solver="sag"), "Ridge Classifier"),
+        (Perceptron(n_iter=70, class_weight="balanced"), "Perceptron"),
         #(PassiveAggressiveClassifier(n_iter=50), "Passive-Aggressive"),
-        #(KNeighborsClassifier(n_neighbors=10), "kNN"),
-        #(RandomForestClassifier(n_estimators=100), "Random forest")):
+
+        #(KNeighborsClassifier(n_neighbors=5, algorithm="ball_tree"), "kNN"),
+        #(RandomForestClassifier(n_estimators=100), "Random forest")
+
+    ):
 
     print('=' * 80)
     print(name)
@@ -234,7 +254,7 @@ for penalty in ["l2", "l1"]:
 # Train sparse Naive Bayes classifiers
 print('=' * 80)
 print("Naive Bayes")
-results.append(benchmark(MultinomialNB(alpha=.01)))
+#results.append(benchmark(MultinomialNB(alpha=.01)))
 results.append(benchmark(BernoulliNB(alpha=.01)))
 
 #print('=' * 80)

@@ -4,7 +4,7 @@
 import sqlalchemy
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from configuration import *
 import datetime
 import email
