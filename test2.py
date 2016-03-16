@@ -199,7 +199,7 @@ import numpy as np
 from sklearn import svm
 
 # fit the model
-clf = svm.OneClassSVM(nu=0.5, kernel="rbf", gamma=0.1)
+clf = svm.OneClassSVM(nu=0.3, kernel="rbf", gamma=0.1)
 clf.fit(X_train2)
 y_pred_train = clf.predict(X_train)
 y_pred_test = clf.predict(X_test)

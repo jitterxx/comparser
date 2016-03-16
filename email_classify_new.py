@@ -37,7 +37,7 @@ else:
 session = CPO.Session()
 
 try:
-    clear = session.query(CPO.Msg).filter(CPO.Msg.isclassified == 0).all()
+    clear = session.query(CPO.Msg).filter(CPO.Msg.isclassified == 0).limit(args.limit)
 except sqlalchemy.orm.exc.NoResultFound as e:
     if args.debug:
         print 'Новых сообщений нет.'
@@ -75,6 +75,7 @@ else:
             # Обновляем запись в clearDB
             try:
                 row.isclassified = 1
+                row.category = answer
                 #session.commit()
             except Exception as e:
                 if args.debug:

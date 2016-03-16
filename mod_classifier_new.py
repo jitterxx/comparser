@@ -37,6 +37,8 @@ import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+morph = pymorphy2.MorphAnalyzer()
+
 
 class ClassifierNew(object):
     clf = None
@@ -72,7 +74,7 @@ class ClassifierNew(object):
             if self.debug:
                 print "Count Train: %s" % len(train)
 
-        # Аномалии, данные для обучения
+        # данные для обучения детектора аномалий
         try:
             resp = session.query(CPO.TrainData).filter(CPO.TrainData.category == "normal").all()
         except Exception as e:
@@ -86,7 +88,7 @@ class ClassifierNew(object):
                 print "Count for Anomaly Train: %s" % len(train_anom)
 
         # Готовим векторизатор
-        use_hashing = False
+        use_hashing = True
         t0 = time()
         if use_hashing:
             vectorizer = HashingVectorizer(stop_words=STOP_WORDS, analyzer='word', non_negative=True, n_features=60000,
@@ -115,7 +117,6 @@ class ClassifierNew(object):
             print("n_samples: %d, n_features: %d" % X_train_anom.shape)
             print "\n"
 
-
         # Создаем классификатор
         self.clf = Perceptron(n_iter=60, class_weight="balanced")
         t0 = time()
@@ -126,15 +127,13 @@ class ClassifierNew(object):
             print("train time: %0.3fs" % train_time)
 
         # Создаем определитель аномалий
-        clf = svm.OneClassSVM(nu=0.5, kernel="rbf", gamma=0.1)
+        self.outlier = svm.OneClassSVM(nu=0.5, kernel="poly", gamma=0.1, degree=5)
         t0 = time()
         # Тренируем определитель аномалий
-        clf.fit(X_train_anom)
+        self.outlier.fit(X_train_anom)
         train_time = time() - t0
         if self.debug:
             print("train time: %0.3fs" % train_time)
-        # сохраняем
-        self.outlier = clf
 
     def classify(self, data=None):
         """
@@ -151,7 +150,7 @@ class ClassifierNew(object):
         # Тренируем классификатор
         # Тренируем определитель аномалий
 
-        test = data.message_title + data.message_text
+        test = [data.message_title + data.message_text]
 
         X_test = self.vectorizer.transform(test)
 
@@ -160,8 +159,15 @@ class ClassifierNew(object):
         outlier = self.outlier.predict(X_test)
 
         if self.debug:
-            print pred
-            print outlier
+            print "Классификация: %s" % pred
+            print "Детектор аномалий: %s" % outlier
+
+        if pred[0] == "conflict" and outlier[0] == 1:
+            return "normal" + "-1:" + pred[0] + ":" + str(outlier[0])
+        if pred[0] == "conflict" and outlier[0] == -1:
+            return pred[0] + "-1:" + pred[0] + ":" + str(outlier[0])
+        if pred[0] == "normal":
+            return pred[0] + "-1:" + pred[0] + ":" + str(outlier[0])
 
         return None
 
@@ -182,7 +188,6 @@ def features_extractor(entry):
     """
     splitter = re.compile('\\W*', re.UNICODE)
     f = {}
-    morph = pymorphy2.MorphAnalyzer()
 
     # Извлечь слова из резюме
     summarywords = list()
