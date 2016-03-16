@@ -144,7 +144,7 @@ for one in resp:
 
 print "Count Train: %s, Test: %s, Anomaly: %s" % (len(train), len(test), len(test_con))
 categories = ["conflict", "normal"]
-use_hashing = True
+use_hashing = False
 
 
 t0 = time()

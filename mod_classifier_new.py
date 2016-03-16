@@ -1,18 +1,15 @@
 #!/usr/bin/python -t
 # coding: utf8
 
+"""
+Классификация текстов(документов), сообщений и т.д.
 
-import mailbox
-import email.parser, email.utils
-import chardet
-from email.header import decode_header
-import poplib, email
-import base64
+1. Содержит модели классификаторов
+2. Для каждой модели определены методы загрузки данных из базы, тренировки и извлечения признаков
+
+"""
+
 import re
-# import html2text
-import datetime
-from dateutil.parser import *
-import argparse
 from configuration import *
 import objects as CPO
 
@@ -33,16 +30,143 @@ from sklearn.neighbors import NearestCentroid
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.extmath import density
 from sklearn import metrics
-
+from sklearn import svm
 import pymorphy2
-morph = pymorphy2.MorphAnalyzer()
 
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
 
-def specfeatures(entry):
+class ClassifierNew(object):
+    clf = None
+    outlier = None
+    vectorizer = None
+    debug = False
+
+    def init_and_fit(self, debug=False):
+        """
+        Инициализация классификаторов и определителя аномалий.
+        Создание объектов и тренировка.
+
+        :return:
+        """
+
+        session = CPO.Session()
+        self.debug = debug
+
+        # Загружаем тренировочные данные
+        try:
+            resp = session.query(CPO.TrainData).all()
+        except Exception as e:
+            print "Error. Mod_classifier_new. Ошибка загрузки данных для тренировки. %s" % str(e)
+            raise e
+        else:
+            train = list()
+            answer = list()
+            # Нормальные сообщения тестовые данные
+            for one in resp:
+                train.append(one.message_title + one.message_text)
+                answer.append(one.category)
+
+            if self.debug:
+                print "Count Train: %s" % len(train)
+
+        # Аномалии, данные для обучения
+        try:
+            resp = session.query(CPO.TrainData).filter(CPO.TrainData.category == "normal").all()
+        except Exception as e:
+            print "Error. Mod_classifier_new. Ошибка загрузки данных для детектора аномалий. %s" % str(e)
+            raise e
+        else:
+            train_anom = list()
+            for one in resp:
+                train_anom.append(one.message_title + one.message_text)
+            if self.debug:
+                print "Count for Anomaly Train: %s" % len(train_anom)
+
+        # Готовим векторизатор
+        use_hashing = False
+        t0 = time()
+        if use_hashing:
+            vectorizer = HashingVectorizer(stop_words=STOP_WORDS, analyzer='word', non_negative=True, n_features=60000,
+                                           tokenizer=features_extractor)
+            X_train = vectorizer.transform(train)
+        else:
+            vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=1, stop_words=STOP_WORDS, analyzer='word',
+                                         tokenizer=features_extractor)
+            X_train = vectorizer.fit_transform(train)
+
+        self.vectorizer = vectorizer
+
+        if self.debug:
+            duration = time() - t0
+            print "TRAIN data"
+            print("done in %fs at %0.3fText/s" % (duration, len(train) / duration))
+            print("n_samples: %d, n_features: %d" % X_train.shape)
+            print "\n"
+
+        t0 = time()
+        X_train_anom = vectorizer.transform(train_anom)
+        if self.debug:
+            duration = time() - t0
+            print "Anomaly TRAIN data"
+            print("done in %fs at %0.3fText/s" % (duration, len(train_anom) / duration))
+            print("n_samples: %d, n_features: %d" % X_train_anom.shape)
+            print "\n"
+
+
+        # Создаем классификатор
+        self.clf = Perceptron(n_iter=60, class_weight="balanced")
+        t0 = time()
+        # Тренируем классификатор
+        self.clf.fit(X_train, answer)
+        train_time = time() - t0
+        if self.debug:
+            print("train time: %0.3fs" % train_time)
+
+        # Создаем определитель аномалий
+        clf = svm.OneClassSVM(nu=0.5, kernel="rbf", gamma=0.1)
+        t0 = time()
+        # Тренируем определитель аномалий
+        clf.fit(X_train_anom)
+        train_time = time() - t0
+        if self.debug:
+            print("train time: %0.3fs" % train_time)
+        # сохраняем
+        self.outlier = clf
+
+    def classify(self, data=None):
+        """
+        Классификация образца классификатором.
+        Проверка результата классификации детектором аномалий.
+        Если детектор и классификатор определяют образец как аномалию (т.е. - conflict), соглашаемся.
+        Если детектор считаем аномалией, а классфикатор нет, возращаем результат детектора.
+
+        :return:
+        """
+
+        # Загружаем тренировочные данные
+        # Готовим векторизатор
+        # Тренируем классификатор
+        # Тренируем определитель аномалий
+
+        test = data.message_title + data.message_text
+
+        X_test = self.vectorizer.transform(test)
+
+        pred = self.clf.predict(X_test)
+
+        outlier = self.outlier.predict(X_test)
+
+        if self.debug:
+            print pred
+            print outlier
+
+        return None
+
+
+def features_extractor(entry):
     """ Функция для получения признаков(features) из текста
     Выделяет следующие признаки:
     1. email отправителя
@@ -58,6 +182,7 @@ def specfeatures(entry):
     """
     splitter = re.compile('\\W*', re.UNICODE)
     f = {}
+    morph = pymorphy2.MorphAnalyzer()
 
     # Извлечь слова из резюме
     summarywords = list()
@@ -102,6 +227,7 @@ def specfeatures(entry):
 
     return f
 
+"""
 
 session = CPO.Session()
 
@@ -130,7 +256,7 @@ for one in resp:
 
 print "Count Train: %s, Test: %s" % (len(train), len(test))
 categories = ["conflict", "normal"]
-use_hashing = True
+use_hashing = False
 
 
 t0 = time()
@@ -182,7 +308,7 @@ if feature_names:
 
 
 def trim(s):
-    """Trim string to fit on terminal (assuming 80-column display)"""
+
     return s if len(s) <= 80 else s[:77] + "..."
 
 
@@ -300,3 +426,4 @@ for i in range(0, len(test)):
             print "\t", results[j][4][i]
 
 session.close()
+"""

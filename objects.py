@@ -28,7 +28,6 @@ Base = declarative_base()
 Engine = sqlalchemy.create_engine(sql_uri, pool_size=20, pool_recycle=3600)
 Session = sqlalchemy.orm.sessionmaker(bind=Engine)
 
-
 def create_tables():
     """
     Функция пересоздания таблиц  базе данных MySQL.
