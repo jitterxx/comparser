@@ -105,18 +105,22 @@ def specfeatures(entry):
 
 session = CPO.Session()
 
-resp = session.query(CPO.TrainData).filter(CPO.or_((CPO.TrainData.train_epoch == -1),
-                                                   (CPO.TrainData.train_epoch == 0),
-                                                   (CPO.TrainData.train_epoch == 0))).all()
+# Нормальные сообщения тренировочные данные
+resp = session.query(CPO.TrainData).filter(CPO.and_(CPO.or_((CPO.TrainData.train_epoch == -1),
+                                                   (CPO.TrainData.train_epoch == 0)),
+                                                   (CPO.TrainData.category == "normal"))).all()
 train = list()
 answer = list()
 
+# Нормальные сообщения тестовые данные
 for one in resp:
     train.append(one.message_title + one.message_text)
     answer.append(one.category)
 
-resp = session.query(CPO.TrainData).filter(CPO.or_((CPO.TrainData.train_epoch == 1),
-                                                   (CPO.TrainData.train_epoch == 1))).all()
+resp = session.query(CPO.TrainData).filter(CPO.and_(CPO.or_((CPO.TrainData.train_epoch == 1),
+                                                   (CPO.TrainData.train_epoch == 1)),
+                                                   (CPO.TrainData.category == "normal"))).all()
+
 test = list()
 test_answer = list()
 test_id = list()
@@ -125,12 +129,22 @@ for one in resp:
     test_answer.append(one.category)
     test_id.append(one.id)
 
-#test = train
-#test_answer = answer
+# Обучение на всех даных
+train2 = train + test
 
-print "Count Train: %s, Test: %s" % (len(train), len(test))
+# Аномалии, тестовые данные
+resp = session.query(CPO.TrainData).filter(CPO.TrainData.category == "conflict").all()
+test_con = list()
+test_con_answer = list()
+test_con_id = list()
+for one in resp:
+    test_con.append(one.message_title + one.message_text)
+    test_con_answer.append(one.category)
+    test_con_id.append(one.id)
+
+print "Count Train: %s, Test: %s, Anomaly: %s" % (len(train), len(test), len(test_con))
 categories = ["conflict", "normal"]
-use_hashing = False
+use_hashing = True
 
 
 t0 = time()
@@ -147,7 +161,16 @@ duration = time() - t0
 print "TRAIN"
 print("done in %fs at %0.3fText/s" % (duration, len(train) / duration))
 print("n_samples: %d, n_features: %d" % X_train.shape)
-print()
+print ""
+
+print("Extracting features from the test data using the same vectorizer")
+t0 = time()
+X_train2 = vectorizer.transform(train2)
+duration = time() - t0
+print "TEST"
+print("done in %fs at %0.3f Text/s" % (duration, len(train2) / duration))
+print("n_samples: %d, n_features: %d" % X_train2.shape)
+print ""
 
 print("Extracting features from the test data using the same vectorizer")
 t0 = time()
@@ -156,147 +179,42 @@ duration = time() - t0
 print "TEST"
 print("done in %fs at %0.3f Text/s" % (duration, len(test) / duration))
 print("n_samples: %d, n_features: %d" % X_test.shape)
-print()
+print ""
+
+print("Extracting features from the anomaly data using the same vectorizer")
+t0 = time()
+X_test_con = vectorizer.transform(test_con)
+duration = time() - t0
+print "TEST"
+print("done in %fs at %0.3f Text/s" % (duration, len(test_con) / duration))
+print("n_samples: %d, n_features: %d" % X_test_con.shape)
+print ""
 
 if use_hashing:
     feature_names = None
 else:
     feature_names = vectorizer.get_feature_names()
 
-select_chi2 = 0
-if select_chi2:
-    print("Extracting %d best features by a chi-squared test" % select_chi2)
-    t0 = time()
-    ch2 = SelectKBest(chi2, k=select_chi2)
-    X_train = ch2.fit_transform(X_train, answer)
-    X_test = ch2.transform(X_test)
-    if feature_names:
-        # keep selected feature names
-        feature_names = [feature_names[i] for i
-                           in ch2.get_support(indices=True)]
-    print("done in %fs" % (time() - t0))
-    print ""
+import numpy as np
+from sklearn import svm
 
-if feature_names:
-    feature_names = np.asarray(feature_names)
+# fit the model
+clf = svm.OneClassSVM(nu=0.5, kernel="rbf", gamma=0.1)
+clf.fit(X_train2)
+y_pred_train = clf.predict(X_train)
+y_pred_test = clf.predict(X_test)
+y_pred_outliers = clf.predict(X_test_con)
+n_error_train = y_pred_train[y_pred_train == -1].size
+n_error_test = y_pred_test[y_pred_test == -1].size
+n_error_outliers = y_pred_outliers[y_pred_outliers == 1].size
 
+print "Ошибки при работе с данными обучения: %s" % n_error_train
+print "Ошибки при работе с данными тестов: %s" % n_error_test
+print "Ошибки при работе с данными аномалий: %s" % n_error_outliers
 
-def trim(s):
-    """Trim string to fit on terminal (assuming 80-column display)"""
-    return s if len(s) <= 80 else s[:77] + "..."
-
-
-# Benchmark classifiers
-def benchmark(clf):
-    print('_' * 80)
-    print("Training: ")
-    print(clf)
-    t0 = time()
-    clf.fit(X_train, answer)
-    train_time = time() - t0
-    print("train time: %0.3fs" % train_time)
-
-    t0 = time()
-    pred = clf.predict(X_test)
-    test_time = time() - t0
-    print("test time:  %0.3fs" % test_time)
-
-    score = metrics.accuracy_score(test_answer, pred)
-    print("accuracy:   %0.3f" % score)
-
-    if hasattr(clf, 'coef_'):
-        print("dimensionality: %d" % clf.coef_.shape[1])
-        print("density: %f" % density(clf.coef_))
-
-        if False and feature_names is not None:
-            print("top 10 keywords per class:")
-            for i, category in enumerate(categories):
-                top10 = np.argsort(clf.coef_[i])[-10:]
-                print(trim("%s: %s"
-                      % (category, " ".join(feature_names[top10]))))
-        print ""
-
-    print("classification report:")
-    print(metrics.classification_report(test_answer, pred, target_names=categories))
-
-    print("confusion matrix:")
-    print(metrics.confusion_matrix(test_answer, pred))
-
-    print()
-    clf_descr = str(clf).split('(')[0]
-
+for i in range(0, len(test_con)):
+    pass
+    print test_con_id[i], y_pred_outliers[i], test_con_answer[i]
     raw_input()
-    return clf_descr, score, train_time, test_time, pred
-
-
-results = []
-for clf, name in (
-        #(RidgeClassifier(tol=1e-2, solver="sag"), "Ridge Classifier"),
-        (Perceptron(n_iter=60, class_weight="balanced"), "Perceptron"),
-        #(PassiveAggressiveClassifier(n_iter=50), "Passive-Aggressive"),
-
-        #(KNeighborsClassifier(n_neighbors=5, algorithm="ball_tree"), "kNN"),
-        # (RandomForestClassifier(n_estimators=10), "Random forest"),
-
-    ):
-
-    print('=' * 80)
-    print(name)
-    results.append(benchmark(clf))
-
-for penalty in ["l2", "l1"]:
-    continue
-    print('=' * 80)
-    print("%s penalty" % penalty.upper())
-    # Train Liblinear model
-    results.append(benchmark(LinearSVC(loss='squared_hinge', penalty=penalty, class_weight="balanced",
-                                            dual=False, tol=1e-3)))
-
-    # Train SGD model
-    #results.append(benchmark(SGDClassifier(alpha=.0001, n_iter=50,
-    #                                       penalty=penalty)))
-
-# Train SGD with Elastic Net penalty
-#print('=' * 80)
-#print("Elastic-Net penalty")
-#results.append(benchmark(SGDClassifier(alpha=.0001, n_iter=50,
-#                                       penalty="elasticnet")))
-
-print('=' * 80)
-print("SGD")
-results.append(benchmark(SGDClassifier(alpha=.0001, n_iter=70, penalty="l2", loss="squared_hinge",
-                                       class_weight="balanced")))
-
-
-# Train NearestCentroid without threshold
-#print('=' * 80)
-#print("NearestCentroid (aka Rocchio classifier)")
-#results.append(benchmark(NearestCentroid()))
-
-# Train sparse Naive Bayes classifiers
-print('=' * 80)
-print("Naive Bayes")
-results.append(benchmark(MultinomialNB(alpha=.01)))
-results.append(benchmark(BernoulliNB(alpha=.01)))
-
-#for i in range(0, len(results[0][4])):
-#    if results[0][4][i] != results[1][4][i]:
-#        print test_id[i], "-", results[0][4][i], " : ", results[1][4][i], " - ", test_answer[i]
-
-#print('=' * 80)
-#print("LinearSVC with L1-based feature selection")
-# The smaller C, the stronger the regularization.
-# The more regularization, the more sparsity.
-#results.append(benchmark(Pipeline([
-#  ('feature_selection', LinearSVC(penalty="l1", dual=False, tol=1e-3)),
-#  ('classification', LinearSVC(class_weight="balanced"))
-#])))
-
-
-for i in range(0, len(test)):
-    if test_answer[i] == "conflict":
-        print test_id[i], " - ", test_answer[i]
-        for j in range(0, len(results)):
-            print "\t", results[j][4][i]
 
 session.close()
