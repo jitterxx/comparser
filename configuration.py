@@ -32,5 +32,6 @@ STOP_WORDS = ["как", "или", "который", "которых", "тот", 
               "добрый", "день", "спасибо", "здравствуйте", "добрый день", "утро", "коллеги"]
 
 # Список адресов, сообщения отправленные С и НА них буду игнорироваться системой.
-EXCEPTION_EMAIL = u"root@rework.reshim.com|undisclosed-recipients|hr@vipservice.ru|dobro@vipservice.ru|dl-avia@vipct.ru"
+EXCEPTION_EMAIL = u"root@rework.reshim.com|undisclosed-recipients|hr@vipservice.ru|dobro@vipservice.ru|" \
+                  u"dl-avia@vipct.ru|iway@iwayex.com|noreply@uralairlines.ru"
 
