@@ -164,10 +164,13 @@ class ClassifierNew(object):
 
         if pred[0] == "conflict" and outlier[0] == 1:
             return "normal" + "-1:" + pred[0] + "-" + str(outlier[0])
+
         if pred[0] == "conflict" and outlier[0] == -1:
             return pred[0] + "-1:" + pred[0] + "-0"
+
         if pred[0] == "normal" and outlier[0] == -1:
             return pred[0] + "-1:" + pred[0] + "-0"
+        
         if pred[0] == "normal" and outlier[0] == 1:
             return pred[0] + "-1:" + pred[0] + "-" + str(outlier[0])
 

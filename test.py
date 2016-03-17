@@ -57,11 +57,38 @@ def specfeatures(entry):
 
     """
     splitter = re.compile('\\W*', re.UNICODE)
-    f = {}
+    f = results = dict()
+
+    # Извлечь и аннотировать слова из заголовка
+    titlewords = list()
+    for s in splitter.split(entry.message_title):
+        if 2 <= len(s) < 20 and s not in STOP_WORDS:
+            titlewords.append(s)
+
+    uc = 0
+    for i in range(len(titlewords)):
+        word = morph.parse(titlewords[i])[0]  # Берем первый вариант разбора
+        if "Abbr" in word.tag or "Name" in word.tag or "Surn" in word.tag or "Patr" in word.tag:
+            # print "Не используем", word.normal_form
+            pass
+        else:
+            # print "Используем", word.normal_form
+            w = word.normal_form
+            results.append(w)
+            if f.get(w):
+                f["title:" + w] += 1
+            else:
+                f["title:" + w] = 1
+            if w.isupper():
+                uc += 1
+
+    # UPPERCASE – специальный признак, описывающий степень "крикливости"
+    if (len(titlewords)) and (float(uc)/len(titlewords) > 0.1):
+        f["title:UPPERCASE"] = 1
 
     # Извлечь слова из резюме
     summarywords = list()
-    for s in splitter.split(entry):
+    for s in splitter.split(entry.message_text):
         if (2 < len(s) < 20 and s not in STOP_WORDS) or (s not in STOP_WORDS and s in [u"не", u"ни"]):
             summarywords.append(s)
 
@@ -77,20 +104,22 @@ def specfeatures(entry):
         else:
             # print "Используем", word.normal_form
             w = word.normal_form
-            f[w] = 1
+            results.append(w)
+            if f.get(w):
+                f[w] += 1
+            else:
+                f[w] = 1
             if w.isupper():
                 uc += 1
             # Выделить в качестве признаков пары слов из резюме
-            if i < len(summarywords)-1:
-                j = i + 1
-                word = morph.parse(summarywords[j])[0]  # Берем первый вариант разбора
-                if "Abbr" in word.tag or "Name" in word.tag or "Surn" in word.tag or "Patr" in word.tag:
-                    # print "Не используем", word.normal_form
-                    pass
-                else:
-                    twowords = ' '.join([w, word.normal_form])
-                    # print 'Two words: ',twowords,'\n'
-                    f[twowords] = 1
+
+    for i in range(len(results) - 1):
+        twowords = ' '.join([results[i], results[i + 1]])
+        # print 'Two words: ',twowords,'\n'
+        if f.get(twowords):
+            f[twowords] += 1
+        else:
+            f[twowords] = 1
 
     # UPPERCASE – специальный признак, описывающий степень "крикливости"
     if (len(summarywords)) and (float(uc)/len(summarywords) > 0.3):
@@ -130,17 +159,21 @@ for one in resp:
 
 print "Count Train: %s, Test: %s" % (len(train), len(test))
 categories = ["conflict", "normal"]
-use_hashing = True
+use_hashing = False
 
 
 t0 = time()
 if use_hashing:
     vectorizer = HashingVectorizer(stop_words=STOP_WORDS, analyzer='word', non_negative=True, n_features=60000,
                                    tokenizer=specfeatures)
+    #vectorizer = HashingVectorizer(stop_words=STOP_WORDS, non_negative=True, n_features=60000)
+
     X_train = vectorizer.transform(train)
 else:
-    vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=1, stop_words=STOP_WORDS, analyzer='word',
-                                 tokenizer=specfeatures)
+    vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5, stop_words=STOP_WORDS, analyzer='word',
+                                 tokenizer=specfeatures, use_idf=True, norm="l1")
+    # vectorizer = TfidfVectorizer(max_df=0.75, max_features=5000,                                  use_idf=False, norm="l1")
+
     X_train = vectorizer.fit_transform(train)
 
 duration = time() - t0
@@ -228,13 +261,14 @@ def benchmark(clf):
     raw_input()
     return clf_descr, score, train_time, test_time, pred
 
+from sklearn.svm import SVC
 
 results = []
 for clf, name in (
         #(RidgeClassifier(tol=1e-2, solver="sag"), "Ridge Classifier"),
-        (Perceptron(n_iter=60, class_weight="balanced"), "Perceptron"),
+        (Perceptron(n_iter=50, class_weight="balanced", alpha=1e-06, penalty="l2"), "Perceptron"),
         #(PassiveAggressiveClassifier(n_iter=50), "Passive-Aggressive"),
-
+        (SVC(C=0.01, kernel="rbf", class_weight="balanced"), "SVC"),
         #(KNeighborsClassifier(n_neighbors=5, algorithm="ball_tree"), "kNN"),
         # (RandomForestClassifier(n_estimators=10), "Random forest"),
 
