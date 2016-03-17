@@ -551,6 +551,9 @@ def get_train_record(msg_id=None, uuid=None, for_epoch=None):
         session = Session()
         try:
             result = session.query(TrainAPIRecords).filter(TrainAPIRecords.message_id == msg_id).one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            print "get_train_record. Сообщение еще не классифицированно."
+            return None
         except Exception as e:
             print "get_train_record. Ошибка. %s" % str(e)
             raise e
