@@ -76,7 +76,7 @@ else:
             try:
                 row.isclassified = 1
                 row.category = answer
-                #session.commit()
+                session.commit()
             except Exception as e:
                 if args.debug:
                     print "ERROR. Ошибка обновления записи в ClearDB. MSGID: %s, ID: %s" % (row.message_id, row.id)
@@ -91,8 +91,8 @@ else:
                     new.user_action = 0
                     new.user_answer = ""
                     new.train_epoch = CPO.CURRENT_TRAIN_EPOCH
-                    #session.add(new)
-                    #session.commit()
+                    session.add(new)
+                    session.commit()
                 except Exception as e:
                     if args.debug:
                         print "Ошибка записи в TRAIN_API. %s" % str(e)
