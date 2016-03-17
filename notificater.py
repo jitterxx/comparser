@@ -43,18 +43,27 @@ def notify():
             msg_uuid = query1.uuid
 
         cats = re.split(":", msg.category)
-        l = dict()
+        # l = dict()
+        ll = list()
         for cat in cats:
             m = re.split("-", cat)
+            print m
             if m[1] == "unknown":
                 m[1] = 0
-            l[m[0]] = float(m[1])
+            # l[m[0]] = float(m[1])
+            ll.append((m[0], float(m[1])))
 
-        category = sorted(l.items(), key=lambda (k, v): v, reverse=True)
+        # category = sorted(l.items(), key=lambda (k, v): v, reverse=True)
+        categoryll = sorted(ll, key=lambda (k, v): v, reverse=True)
+
         print "От: %s (%s)" % (msg.sender, msg.sender_name)
         print "\n%s\n" % msg.message_text
-        print category
-        send_email(category, msg, msg_uuid)
+
+        # print category
+        print categoryll
+
+        #send_email(category, msg, msg_uuid)
+        send_email(categoryll, msg, msg_uuid)
         msg.notified = 1
         session.commit()
 
