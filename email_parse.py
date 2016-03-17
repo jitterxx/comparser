@@ -8,7 +8,7 @@
 """
 import argparse
 from email.utils import parseaddr
-import mysql.connector
+# import mysql.connector
 import re
 import html2text
 from configuration import *

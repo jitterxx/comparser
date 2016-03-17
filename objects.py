@@ -10,7 +10,7 @@ import datetime
 import email
 from email.header import Header, decode_header
 from smtplib import SMTP_SSL
-from mod_classifier import fisherclassifier, specfeatures
+# from mod_classifier import fisherclassifier, specfeatures
 import uuid
 import re
 from dateutil.parser import *
@@ -27,6 +27,7 @@ sql_uri = "mysql://%s:%s@%s:%s/%s?charset=utf8" % (db_user, db_pass, db_host, db
 Base = declarative_base()
 Engine = sqlalchemy.create_engine(sql_uri, pool_size=20, pool_recycle=3600)
 Session = sqlalchemy.orm.sessionmaker(bind=Engine)
+
 
 def create_tables():
     """
@@ -773,6 +774,7 @@ def landing_customer_contacts(customer_email, customer_phone, customer_session):
     smtp.quit()
 
 
+"""
 def demo_classify(description):
 
     answer = ["", 0]
@@ -846,6 +848,7 @@ def demo_classify(description):
         session.close()
 
     return answer, record_uid
+"""
 
 
 # Используется только в демо

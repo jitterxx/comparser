@@ -103,7 +103,8 @@ class Demo(object):
         result = ["", 0]
 
         try:
-            result, train_uuid = CPO.demo_classify(description)
+            # result, train_uuid = CPO.demo_classify(description)
+            result, train_uuid = (None, None)
         except Exception as e:
             print "Ошибка. %s" % str(e)
             return ShowNotification().index("Что-то сломалось, будем чинить.")
@@ -417,9 +418,9 @@ class Panel(object):
 class Root(object):
 
     api = API()
-    demo = Demo()
+    # demo = Demo()
     connect = MainSite()
-    test = Test()
+    # test = Test()
     panel = Panel()
 
     @cherrypy.expose
