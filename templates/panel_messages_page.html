@@ -70,20 +70,20 @@
                             <td>
                                 <textarea rows="10" cols="40"> ${key.message_text} </textarea>
                             </td>
-                            <td>${key.category.split(":")[0]}</td>
+                            <td>${category.get(key.category.split(":")[0].split("-")[0]).category}</td>
 
                             <td>
                             %if train_rec.get(key.message_id):
                                 %if train_rec.get(key.message_id).user_action == 1:
-                                    ${train_rec.get(key.message_id).user_answer}
+                                    ${category.get(train_rec.get(key.message_id).user_answer).category}
                                 %else:
                                     <a href="${main_link}${train_rec.get(key.message_id).uuid}/${category.keys()[0]}"
                                        class="btn btn-default" target="_blank">
-                                        ${category.keys()[0]}
+                                        ${category.values()[0]}
                                     </a><br>
                                     <a href="${main_link}${train_rec.get(key.message_id).uuid}/${category.keys()[1]}"
                                        class="btn btn-default" target="_blank">
-                                        ${category.keys()[1]}
+                                        ${category.values()[1]}
                                     </a>
                                 %endif
                             %endif
