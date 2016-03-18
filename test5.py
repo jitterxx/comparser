@@ -47,9 +47,20 @@ def specfeatures(entry):
 
     """
     splitter = re.compile('\\W*', re.UNICODE)
+    find_n = re.compile('\d+', re.UNICODE)
+    find_questions = re.compile('\?{1,5}', re.UNICODE)
     f = dict()
     results = list()
-    print type(entry)
+    print entry.message_text
+
+    # Ищем вопросительные знаки
+    quest = find_questions.findall(entry.message_text)
+    if quest:
+        print "QUESTION : ", quest
+        if f.get("QUESTION"):
+            f['QUESTION'] += 1
+        else:
+            f['QUESTION'] = 1
 
     # Извлечь и аннотировать слова из заголовка
     titlewords = list()
@@ -96,17 +107,23 @@ def specfeatures(entry):
         else:
             # print "Используем", word.normal_form
             w = word.normal_form
-            number = re.search('^\d+$', w, re.UNICODE)
-            print "NUMBER"
-            results.append(w)
-            if f.get(w):
-                f[w] += 1
+            number = find_n.search(w)
+            if number:
+                print "NUMBER : ", number.string
+                if f.get("NUMBER"):
+                    f['NUMBER'] += 1
+                else:
+                    f['NUMBER'] = 1
             else:
-                f[w] = 1
-            if w.isupper():
-                uc += 1
-            # Выделить в качестве признаков пары слов из резюме
+                results.append(w)
+                if f.get(w):
+                    f[w] += 1
+                else:
+                    f[w] = 1
+                if w.isupper():
+                    uc += 1
 
+    # Выделить в качестве признаков пары слов из резюме
     for i in range(len(results) - 1):
         twowords = ' '.join([results[i], results[i + 1]])
         # print 'Two words: ',twowords,'\n'
@@ -145,10 +162,11 @@ def specfeatures(entry):
     else:
         f["MANYREPLY"] = 0
 
-    for one in f.keys():
-        print one
+    #for one in f.keys():
+    #    print one, " : ", f[one]
 
-    print "*" * 30
+    #print "*" * 30
+    #raw_input()
 
     return f
 
@@ -172,10 +190,20 @@ for one in resp:
 
 from sklearn.feature_extraction.text import CountVectorizer
 
-print train[0].message_text
 count_vect = CountVectorizer(tokenizer=mytoken, analyzer='word', preprocessor=specfeatures)
 X_train_counts = count_vect.fit_transform(resp)
 
 print X_train_counts.shape
+
+from sklearn.feature_extraction.text import TfidfTransformer
+
+tfidf_transformer = TfidfTransformer(use_idf=False)
+X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
+print X_train_tfidf.shape
+
+from sklearn.naive_bayes import MultinomialNB
+
+clf = MultinomialNB().fit(X_train_tfidf, X_train_target)
+
 
 session.close()

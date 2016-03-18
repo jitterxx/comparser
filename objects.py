@@ -478,7 +478,17 @@ class MsgErr(Base):
 def get_clear_message(msg_id=None, for_day=None):
 
     if msg_id:
-        pass
+        session = Session()
+        try:
+            result = session.query(Msg).filter(Msg.message_id == msg_id).one_or_none()
+        except Exception as e:
+            print "Get_clear_message(). Ошибка получения сообщения. MSGID: %s. %s" % (msg_id, str(e))
+            raise e
+        else:
+            return result
+        finally:
+            session.close()
+
     elif for_day:
         # получаем сообщения за определенный день
         start = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (for_day.year, for_day.month, for_day.day),
@@ -649,6 +659,8 @@ class TrainData(Base):
     message_text = Column(sqlalchemy.TEXT())
     orig_date = Column(sqlalchemy.DATETIME())
     create_date = Column(sqlalchemy.DATETIME())
+    references = Column(sqlalchemy.TEXT())
+    in_reply_to = Column(sqlalchemy.String(256))
     category = Column(sqlalchemy.String(255))
     train_epoch = Column(sqlalchemy.Integer)
 
@@ -728,6 +740,14 @@ def set_user_train_data(uuid, category):
     train_data = UserTrainData()
     train_data.message_id = message_id
     train_data.category = category
+    train_data.references = query.references
+    train_data.in_reply_to = query.in_reply_to
+    train_data.sender = query.sender
+    train_data.sender_name = query.sender_name
+    train_data.recipients = query.recipients
+    train_data.recipients_name = query.recipients_name
+    train_data.cc_recipients = query.cc_recipients
+    train_data.cc_recipients_name =  query.cc_recipients_name
     train_data.message_text = query.message_text
     train_data.message_title = query.message_title
     train_data.train_epoch = train_epoch

@@ -41,8 +41,12 @@ sql.append("ALTER TABLE `email_raw_data` ADD COLUMN `references` TEXT NULL AFTER
 sql.append("ALTER TABLE `email_cleared_data` ADD COLUMN `references` TEXT NULL AFTER `notified`,"
            "ADD COLUMN `in_reply_to` VARCHAR(255) NULL AFTER `references`;")
 
-# 8
+# 9
 sql.append("ALTER TABLE `email_err_cleared_data` ADD COLUMN `references` TEXT NULL AFTER `create_date`,"
+           "ADD COLUMN `in_reply_to` VARCHAR(255) NULL AFTER `references`;")
+
+# 10
+sql.append("ALTER TABLE `train_data` ADD COLUMN `references` TEXT NULL AFTER `create_date`,"
            "ADD COLUMN `in_reply_to` VARCHAR(255) NULL AFTER `references`;")
 
 # Создаем новые таблицы
@@ -125,6 +129,13 @@ except Exception as e:
 else:
     print result
 
+
+try:
+    result = connection.execute(sql[10])
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
 
 connection.close()
 
