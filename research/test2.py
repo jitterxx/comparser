@@ -1,22 +1,14 @@
 #!/usr/bin/python -t
 # coding: utf8
 
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
+sys.path.extend(['/home/sergey/dev/conflict analyser'])
 
-import mailbox
-import email.parser, email.utils
-import chardet
-from email.header import decode_header
-import poplib, email
-import base64
-import re
-# import html2text
-import datetime
-from dateutil.parser import *
-import argparse
 from configuration import *
 import objects as CPO
 
-import numpy as np
 from time import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import HashingVectorizer
@@ -33,75 +25,12 @@ from sklearn.neighbors import NearestCentroid
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils.extmath import density
 from sklearn import metrics
+import numpy as np
+from sklearn import svm
+import test_func
 
 import pymorphy2
 morph = pymorphy2.MorphAnalyzer()
-
-import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
-
-
-def specfeatures(entry):
-    """ Функция для получения признаков(features) из текста
-    Выделяет следующие признаки:
-    1. email отправителя
-    2. email получателей
-    3. Слова из темы сообщения
-    4. Все пары слов из темы сообщения
-    5. Определенные сочетания из темы сообщения
-    6. Слова из текста
-    7. Все пары слов из текста
-    8. Определенные пары слов из текста (specwords)
-    9. Оригинальное время создания сообщения, только HH:MM\
-
-    """
-    splitter = re.compile('\\W*', re.UNICODE)
-    f = {}
-
-    # Извлечь слова из резюме
-    summarywords = list()
-    for s in splitter.split(entry):
-        if (2 < len(s) < 20 and s not in STOP_WORDS) or (s not in STOP_WORDS and s in [u"не", u"ни"]):
-            summarywords.append(s)
-
-    # print 'sum words: ',summarywords
-
-    # Подсчитать количество слов, написанных заглавными буквами
-    uc = 0
-    for i in range(len(summarywords)):
-        word = morph.parse(summarywords[i])[0]  # Берем первый вариант разбора
-        if "Abbr" in word.tag or "Name" in word.tag or "Surn" in word.tag or "Patr" in word.tag:
-            # print "Не используем", word.normal_form
-            pass
-        else:
-            # print "Используем", word.normal_form
-            w = word.normal_form
-            f[w] = 1
-            if w.isupper():
-                uc += 1
-            # Выделить в качестве признаков пары слов из резюме
-            if i < len(summarywords)-1:
-                j = i + 1
-                word = morph.parse(summarywords[j])[0]  # Берем первый вариант разбора
-                if "Abbr" in word.tag or "Name" in word.tag or "Surn" in word.tag or "Patr" in word.tag:
-                    # print "Не используем", word.normal_form
-                    pass
-                else:
-                    twowords = ' '.join([w, word.normal_form])
-                    # print 'Two words: ',twowords,'\n'
-                    f[twowords] = 1
-
-    # UPPERCASE – специальный признак, описывающий степень "крикливости"
-    if (len(summarywords)) and (float(uc)/len(summarywords) > 0.3):
-        f['UPPERCASE'] = 1
-
-    #for one in f:
-    #    print one
-    # raw_input()
-
-    return f
-
 
 session = CPO.Session()
 
@@ -114,7 +43,7 @@ answer = list()
 
 # Нормальные сообщения тестовые данные
 for one in resp:
-    train.append(one.message_title + one.message_text)
+    train.append(one)
     answer.append(one.category)
 
 resp = session.query(CPO.TrainData).filter(CPO.and_(CPO.or_((CPO.TrainData.train_epoch == 1),
@@ -125,7 +54,7 @@ test = list()
 test_answer = list()
 test_id = list()
 for one in resp:
-    test.append(one.message_title + one.message_text)
+    test.append(one)
     test_answer.append(one.category)
     test_id.append(one.id)
 
@@ -133,28 +62,32 @@ for one in resp:
 train2 = train + test
 
 # Аномалии, тестовые данные
-resp = session.query(CPO.TrainData).filter(CPO.TrainData.category == "conflict").all()
+resp = session.query(CPO.UserTrainData).filter(CPO.UserTrainData.category == "conflict").all()
 test_con = list()
 test_con_answer = list()
 test_con_id = list()
 for one in resp:
-    test_con.append(one.message_title + one.message_text)
+    clear = session.query(CPO.Msg).filter(CPO.Msg.message_id == one.message_id).one_or_none()
+    if clear:
+        test_con.append(clear)
+    else:
+        test_con.append(one)
     test_con_answer.append(one.category)
     test_con_id.append(one.id)
 
 print "Count Train: %s, Test: %s, Anomaly: %s" % (len(train), len(test), len(test_con))
 categories = ["conflict", "normal"]
-use_hashing = False
+use_hashing = True
 
 
 t0 = time()
 if use_hashing:
     vectorizer = HashingVectorizer(stop_words=STOP_WORDS, analyzer='word', non_negative=True, n_features=60000,
-                                   tokenizer=specfeatures)
+                                   tokenizer=test_func.mytoken, preprocessor=test_func.specfeatures_new)
     X_train = vectorizer.transform(train)
 else:
     vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=1, stop_words=STOP_WORDS, analyzer='word',
-                                 tokenizer=specfeatures)
+                                 tokenizer=test_func.mytoken, preprocessor=test_func.specfeatures_new)
     X_train = vectorizer.fit_transform(train)
 
 duration = time() - t0
@@ -194,9 +127,6 @@ if use_hashing:
     feature_names = None
 else:
     feature_names = vectorizer.get_feature_names()
-
-import numpy as np
-from sklearn import svm
 
 # fit the model
 clf = svm.OneClassSVM(nu=0.3, kernel="rbf", gamma=0.1)
