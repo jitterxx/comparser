@@ -124,7 +124,7 @@
                                         <td>
                                             <textarea rows="10" cols="40"> ${clear.get(key).message_text} </textarea>
                                         </td>
-                                        <td>${category.get(clear.get(key).category.split(":")[0].split("-")[0].category}</td>
+                                        <td>${category.get(clear.get(key).category.split(":")[0].split("-")[0]).category}</td>
                                         <td>
                                         %if train_rec_epoch[epoch].get(key):
                                             %if train_rec_epoch[epoch].get(key).user_action == 1:
