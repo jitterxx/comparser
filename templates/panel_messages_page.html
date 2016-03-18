@@ -79,11 +79,11 @@
                                 %else:
                                     <a href="${main_link}${train_rec.get(key.message_id).uuid}/${category.keys()[0]}"
                                        class="btn btn-default" target="_blank">
-                                        ${category.values()[0]}
+                                        ${category.values()[0].category}
                                     </a><br>
                                     <a href="${main_link}${train_rec.get(key.message_id).uuid}/${category.keys()[1]}"
                                        class="btn btn-default" target="_blank">
-                                        ${category.values()[1]}
+                                        ${category.values()[1].category}
                                     </a>
                                 %endif
                             %endif
