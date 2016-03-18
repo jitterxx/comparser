@@ -128,15 +128,15 @@
                                         <td>
                                         %if train_rec_epoch[epoch].get(key):
                                             %if train_rec_epoch[epoch].get(key).user_action == 1:
-                                                ${train_rec_epoch[epoch].get(key).user_answer}
+                                                ${category.get(train_rec_epoch[epoch].get(key).user_answer).category}
                                             %else:
                                                 <a href="${main_link}${train_rec_epoch[epoch].get(key).uuid}/${category.keys()[0]}"
                                                    class="btn btn-default" target="_blank">
-                                                    ${category.keys()[0]}
+                                                    ${category.values()[0].category}
                                                 </a><br>
                                                 <a href="${main_link}${train_rec_epoch[epoch].get(key).uuid}/${category.keys()[1]}"
                                                    class="btn btn-default" target="_blank">
-                                                    ${category.keys()[1]}
+                                                    ${category.values()[1].category}
                                                 </a>
                                             %endif
                                         %endif
