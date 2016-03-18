@@ -32,7 +32,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 
-def specfeatures(entry):
+def specfeatures_new(entry):
     """ Функция для получения признаков(features) из текста
     Выделяет следующие признаки:
     1. email отправителя
@@ -177,9 +177,7 @@ def mytoken(entry):
 
 session = CPO.Session()
 
-resp = session.query(CPO.Msg).filter(CPO.Msg.message_id.in_(["<56E67DDA.20000@vipct.ru>",
-                                                             "<56D42420.9060000@gmail.com>",
-                                                             "<9D619583E62EC54598F189DEDA38004F97D9D9@msk-srv03mbxp.akrikhin.local>"])).all()
+resp = session.query(CPO.TrainData).filter(CPO.TrainData.train_epoch == 0).all()
 train = list()
 answer = list()
 
@@ -188,22 +186,38 @@ for one in resp:
     train.append(one)
     answer.append(one.category)
 
+resp = session.query(CPO.TrainData).filter(CPO.TrainData.train_epoch == 1).all()
+test = list()
+test_answer = list()
+
+print len(resp)
+for one in resp:
+    test.append(one)
+    test_answer.append(one.category)
+
+
 from sklearn.feature_extraction.text import CountVectorizer
 
-count_vect = CountVectorizer(tokenizer=mytoken, analyzer='word', preprocessor=specfeatures)
-X_train_counts = count_vect.fit_transform(resp)
-
-print X_train_counts.shape
+count_vect = CountVectorizer(tokenizer=mytoken, analyzer='word', preprocessor=specfeatures_new())
+X_train_counts = count_vect.fit_transform(train)
 
 from sklearn.feature_extraction.text import TfidfTransformer
 
 tfidf_transformer = TfidfTransformer(use_idf=False)
 X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
-print X_train_tfidf.shape
 
 from sklearn.naive_bayes import MultinomialNB
 
-clf = MultinomialNB().fit(X_train_tfidf, X_train_target)
+clf = MultinomialNB().fit(X_train_tfidf, answer)
 
+X_test_counts = count_vect.transform(test)
+X_test_tfidf = tfidf_transformer.transform(X_test_counts)
+
+print X_train_tfidf.shape
+print X_test_tfidf.shape
+
+predicted = clf.predict(X_test_tfidf)
+
+print(metrics.classification_report(test_answer, predicted, target_names=["conflict", "normal"]))
 
 session.close()
