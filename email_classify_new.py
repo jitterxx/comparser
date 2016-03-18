@@ -51,7 +51,8 @@ else:
         print "Создаем классификатор и инициализируем его"
 
     predictor = clf.ClassifierNew()
-    predictor.init_and_fit(debug=args.debug)
+    # predictor.init_and_fit(debug=args.debug)
+    predictor.init_and_fit_new(debug=args.debug)
 
     for row in clear:
         if args.debug:
@@ -62,7 +63,8 @@ else:
 
         # классификация
         try:
-            answer = predictor.classify(data=row)
+            # answer = predictor.classify(data=row)
+            answer = predictor.classify_new(data=row, debug=args.debug)
         except Exception as e:
             if args.debug:
                 print "ERROR. Ошибка классфикации для записи. MSGID: %s, ID: %s" % (row.message_id, row.id)
