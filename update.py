@@ -49,6 +49,11 @@ sql.append("ALTER TABLE `email_err_cleared_data` ADD COLUMN `references` TEXT NU
 sql.append("ALTER TABLE `train_data` ADD COLUMN `references` TEXT NULL AFTER `create_date`,"
            "ADD COLUMN `in_reply_to` VARCHAR(255) NULL AFTER `references`;")
 
+# 11
+sql.append("ALTER TABLE `email_raw_data`"
+           "ADD COLUMN `orig_date_str` VARCHAR(255) NULL AFTER `in_reply_to`;")
+
+
 # Создаем новые таблицы
 CPO.create_tables()
 
@@ -132,6 +137,13 @@ else:
 
 try:
     result = connection.execute(sql[10])
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
+
+try:
+    result = connection.execute(sql[11])
 except Exception as e:
     print e.message, e.args
 else:

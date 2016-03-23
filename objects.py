@@ -120,6 +120,7 @@ class MsgRaw(Base):
     isbroken = Column(sqlalchemy.Integer)
     references = Column(sqlalchemy.TEXT())
     in_reply_to = Column(sqlalchemy.String(256))
+    orig_date_str = Column(sqlalchemy.String(256))
 
     def __init__(self):
         self.cc_recipients = ""
@@ -424,7 +425,7 @@ def parse_message(msg=None, debug=False):
 
     text += text2[0]
 
-    return [msg_id, from_, to, cc, subject, text2[0], text2[1], msg_datetime, int(broken_msg), references, in_reply_to]
+    return [msg_id, from_, to, cc, subject, text2[0], text2[1], msg_datetime, int(broken_msg), references, in_reply_to, date_hdr]
 
 
 class Msg(Base):
@@ -905,3 +906,12 @@ def get_message_for_train(msg_uuid):
 
     return [True, desc, answer]
 
+
+class Statistics(Base):
+
+    __tablename__ = "statistics"
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    tread_uuid = Column(sqlalchemy.String(256))  # код диалога
+    message_id = Column(sqlalchemy.String(256))  # ИД сообщения которое относиться к диалогу
+    orig_date = Column(sqlalchemy.DATETIME())  # Дата получения оригинального сообщения в виде UTC

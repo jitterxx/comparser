@@ -60,6 +60,7 @@ for key in inbox.iterkeys():
             new.isbroken = message[8]  # int(broken_msg)
             new.references = message[9]
             new.in_reply_to = message[10]
+            new.orig_date_str = message[11]
 
             session.add(new)
             session.commit()

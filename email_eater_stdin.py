@@ -52,8 +52,9 @@ if msg:
         new.message_text_html = message[6]  # text2[1]
         new.orig_date = message[7]  # msg_datetime
         new.isbroken = message[8]  # int(broken_msg)
-        new.references = message[9]
-        new.in_reply_to = message[10]
+        new.references = message[9]  # references
+        new.in_reply_to = message[10]  # in-reply-to header
+        new.orig_date_str = message[11]  # original date header string with timezone info
 
         session.add(new)
         session.commit()

@@ -80,6 +80,20 @@ for key in inbox.iterkeys():
                 else:
                     print "TRAIN Сообщение не найдено! MSGID: ", message[0]
 
+            try:
+                raw_msg = session.query(CPO.MsgRaw).filter(CPO.MsgRaw.message_id == message[0]).one_or_none()
+            except Exception as e:
+                print "EMAIL_MAILDIR_ADDNEW(). Ошибка получения RAW сообщения. MSGID: %s. %s" % (message[0], str(e))
+                raise e
+            else:
+                if raw_msg:
+                    # print "Сообщение найдено! Обновляем данные!  MSGID: ", message[0]
+                    raw_msg.references = message[9]
+                    raw_msg.in_reply_to = message[10]
+                    raw_msg.orig_date_str = message[11]
+                    session.commit()
+                else:
+                    print "Сообщение не найдено! MSGID: ", message[0]
 
         except Exception as e:
             print "Ошибка записи нового сообщения. %s" % str(e)
