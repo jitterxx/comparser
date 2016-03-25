@@ -61,7 +61,7 @@ class UserTrain(object):
                 print str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
 
-        return ShowNotification().index(status[1])
+        return ShowNotification().index(error=status[1], url="/")
 
 
 class API(object):
