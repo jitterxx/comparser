@@ -27,7 +27,6 @@ CATEGORY = GetCategory()
 code1, code2 = CATEGORY.keys()
 
 
-
 def notify():
     session = Session()
 
@@ -63,7 +62,15 @@ def notify():
         print categoryll
 
         #send_email(category, msg, msg_uuid)
-        send_email(categoryll, msg, msg_uuid)
+        cat, val = categoryll[0]
+        # Если нужно оповещать только при конфликте
+        if SEND_ONLY_WARNING and cat == "conflict":
+            send_email(categoryll, msg, msg_uuid)
+            print "Это %s. Отправляем уведомление." % cat
+        elif not SEND_ONLY_WARNING:
+            # Если нужно оповещать об всех сообщениях
+            send_email(categoryll, msg, msg_uuid)
+
         msg.notified = 1
         session.commit()
 
@@ -87,6 +94,7 @@ def send_email(category, orig_msg, msg_uuid):
     to_addr = to_address
 
     orig_text = "\n\n---------------- Исходное сообщение -------------------\n"
+    orig_text += "Дата: %s \n" % orig_msg.create_date
     orig_text += "От кого: %s (%s)\n" % (orig_msg.sender_name, orig_msg.sender)
     orig_text += "Кому: %s (%s) \n" % (orig_msg.recipients_name, orig_msg.recipients)
     orig_text += "Тема: %s" % orig_msg.message_title
