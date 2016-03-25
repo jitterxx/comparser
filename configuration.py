@@ -24,7 +24,7 @@ smtp_server = "smtp.yandex.ru"
 smtp_pass = "Qazcde123"
 
 # Кому будут направляться сообщения о классификации от имени аккаунта анализатора. см. выше.
-to_address = "info@reshim.com"
+to_address = "v.vlasova@vipct.ru"
 SEND_ONLY_WARNING = True
 
 STOP_WORDS = ["как", "или", "который", "которых", "тот", "около", "они", "для", "Для", "Это", "это", "При", "при",
