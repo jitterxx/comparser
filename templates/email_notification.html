@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html lang="ru">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Conversation parser email notification">
+    <meta name="author" content="Sergey Fomin, Ramil Galiullin">
+
+    <title>Conversation parser email notification</title>
+
+</head>
+
+<body>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0">
+        <tr>
+            <td height="100%" align="center">
+
+                <!-- заголовок -->
+                <table border="0" cellpadding="10" cellspacing="0" style="margin:0; padding:0" width="560">
+                    <tr>
+                        <td>
+                            <span style="color: #333333; font: 20px Arial, sans-serif; line-height: 40px;
+                            -webkit-text-size-adjust:none; display: block; font-weight: bold; ">
+                                Просим обратить внимание. <br>
+                                Предположительно, в данном письме проблема.
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- основное сообщение -->
+                <table border="0" cellpadding="10" cellspacing="0" style="margin:0; padding:0"  width="560">
+                    <tr>
+                        <td height="10"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${"-" * 15} Оригинальное сообщение ${"-" * 15}
+                        </td>
+                    </tr>
+                </table>
+
+                <table border="0" cellpadding="10" cellspacing="0" style="margin:0; padding:0"  width="560">
+                    <tr align="left">
+                        <td width="100" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                            <b>Дата:</b>
+                        </td>
+                        <td width="460" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                            ${orig_msg.create_date}
+                        </td>
+                    </tr>
+                    <tr align="left">
+                        <td width="100" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                            <b>От кого:</b>
+                        </td>
+                        <td width="460" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                            ${orig_msg.sender_name} (${orig_msg.sender})
+                        </td>
+                    </tr>
+                    <tr align="left">
+                        <td width="100" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                            <b>Кому:</b>
+                        </td>
+                        <td width="460" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                            ${orig_msg.recipients_name} (${orig_msg.recipients})
+                        </td>
+                    </tr>
+                    <tr align="left">
+                        <td width="100" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                            <b>Тема:</b>
+                        </td>
+                        <td width="460" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                            ${orig_msg.message_title}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td height="10" colspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            ${orig_msg.message_text}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            ${"-" * 15} Конец сообщения ${"-" * 15}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td height="10" colspan="2"></td>
+                    </tr>
+                </table>
+                <table border="0" cellpadding="10" cellspacing="0" style="margin:0; padding:0"  width="560">
+                    <tr>
+                        <td colspan="2" align="left">
+                             <span style="color: #333333; font: 16px Arial, sans-serif; line-height: 30px;
+                                                         -webkit-text-size-adjust:none; display: block;">
+                                 Пожалуйста, дайте обратную связь. <br>
+                                 Ваш ответ будет использован для обучения системы и повышения точности.
+                             </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <a href="${main_link}${msg_uuid}/${code1}" style="color: #ffffff">
+                            <table border="0" cellspacing="0" cellpadding="0" bgcolor="#cc3300" height="48"
+                                   style="border:1px solid #cc3300;border-radius: 10px;
+                                   display:block;">
+                                <tr>
+                                    <td height="48" width="16"></td>
+                                    <td valign="middle" align="center" height="48"
+                                        style="font-weight:bold;color:#ffffff;font-family:Arial, Helvetica, sans-serif;
+                                        line-height:22px;font-size:16px">
+                                            Да, проблема имеется
+                                    </td>
+                                    <td height="48" width="16"></td>
+                                </tr>
+                            </table>
+                            </a>
+                        </td>
+                        <td align="center">
+                            <a href="${main_link}${msg_uuid}/${code2}" style="color: #ffffff">
+                            <table border="0" cellspacing="0" cellpadding="0" bgcolor="#339933" height="48"
+                                   style="border:1px solid #339933;border-radius: 10px; box-shadow: 0 0 4px #666666;
+                                   -moz-box-shadow: 0 0 4px #666666; -webkit-box-shadow: 0 0 4px #666666;
+                                   display:block;">
+                                <tr>
+                                    <td height="48" width="16"></td>
+                                    <td valign="middle" align="center" height="48"
+                                        style="font-weight:bold;color:#ffffff;font-family:Arial, Helvetica, sans-serif;
+                                        line-height:22px;font-size:16px">
+                                             В письме проблемы нет
+                                    </td>
+                                    <td height="48" width="16"></td>
+                                </tr>
+                            </table>
+
+
+                            </a>
+                        </td>
+                    </tr>
+
+                </table>
+
+                <!-- окончание -->
+                <table border="0" cellpadding="10" cellspacing="0" style="margin:0; padding:0" width="560">
+                    <tr>
+                        <td height="20"></td>
+                    </tr>
+                    <tr>
+                        <td align="left">
+                            <p class="copyright">
+                                Copyright &copy; Conversation parser 2016. All Rights Reserved
+                            </p>
+                        </td>
+                        <td align="right">
+                            <a href="https://www.facebook.com/Conparser">
+                                <span class="network-name">Facebook</span>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>
