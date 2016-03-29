@@ -764,7 +764,7 @@ def set_user_train_data(uuid, category):
     finally:
         session.close()
 
-    return [True, "Ваш ответ принят. Спасибо за участие!"]
+    return [True, "Спасибо. Ваш ответ принят."]
 
 
 def landing_customer_contacts(customer_email, customer_phone, customer_session):

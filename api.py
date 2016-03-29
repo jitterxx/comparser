@@ -60,8 +60,9 @@ class UserTrain(object):
             except Exception as e:
                 print str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
-
-        return ShowNotification().index(error=status[1], url="/")
+            else:
+                tmpl = lookup.get_template("usertrain_page.html")
+                return tmpl.render(status=status)
 
 
 class API(object):
