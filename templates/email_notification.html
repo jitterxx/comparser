@@ -35,64 +35,89 @@
                     <tr>
                         <td height="10"></td>
                     </tr>
+                </table>
+
+                <table border="0" cellpadding="10" cellspacing="0" width="560"
+                       style="margin:0; padding:0; border:1px solid #cccccc;border-radius: 5px;display:block;">
                     <tr>
-                        <td>
-                            ${"-" * 15} Оригинальное сообщение ${"-" * 15}
+                        <td bgcolor="#cccccc" colspan="2">
+                            <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                Оригинальное сообщение
+                            </span>
                         </td>
+                    </tr>
+                    <tr align="left">
+                        <td width="80">
+                            <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                <b>Дата:</b>
+                            </span>
+                        </td>
+                        <td width="460">
+                            <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                ${orig_msg.create_date}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr align="left">
+                        <td width="80">
+                            <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                <b>От кого:</b>
+                            </span>
+                        </td>
+                        <td width="460">
+                            <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                ${orig_msg.sender_name} (${orig_msg.sender})
+                            </span>
+                        </td>
+                    </tr>
+                    <tr align="left">
+                        <td width="80">
+                            <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                <b>Кому:</b>
+                            </span>
+                        </td>
+                        <td width="460">
+                            <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                ${orig_msg.recipients_name} (${orig_msg.recipients})
+                            </span>
+                        </td>
+                    </tr>
+                    <tr align="left">
+                        <td width="80">
+                            <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                <b>Тема:</b>
+                            </span>
+                        </td>
+                        <td width="460">
+                            <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                ${orig_msg.message_title}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td height="5" colspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" align="left">
+                            <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                ${orig_msg.message_text}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td height="10" colspan="2"></td>
                     </tr>
                 </table>
 
-                <table border="0" cellpadding="10" cellspacing="0" style="margin:0; padding:0"  width="560">
-                    <tr align="left">
-                        <td width="100" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
-                            <b>Дата:</b>
-                        </td>
-                        <td width="460" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
-                            ${orig_msg.create_date}
-                        </td>
-                    </tr>
-                    <tr align="left">
-                        <td width="100" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
-                            <b>От кого:</b>
-                        </td>
-                        <td width="460" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
-                            ${orig_msg.sender_name} (${orig_msg.sender})
-                        </td>
-                    </tr>
-                    <tr align="left">
-                        <td width="100" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
-                            <b>Кому:</b>
-                        </td>
-                        <td width="460" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
-                            ${orig_msg.recipients_name} (${orig_msg.recipients})
-                        </td>
-                    </tr>
-                    <tr align="left">
-                        <td width="100" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
-                            <b>Тема:</b>
-                        </td>
-                        <td width="460" style="font-family:Arial, Helvetica, sans-serif;font-size:14px;">
-                            ${orig_msg.message_title}
-                        </td>
-                    </tr>
+                <table border="0" cellpadding="0" cellspacing="0" width="560" style="margin:0; padding:0;">
                     <tr>
-                        <td height="10" colspan="2"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            ${orig_msg.message_text}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            ${"-" * 15} Конец сообщения ${"-" * 15}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td height="10" colspan="2"></td>
+                        <td height="40"></td>
                     </tr>
                 </table>
-                <table border="0" cellpadding="10" cellspacing="0" style="margin:0; padding:0"  width="560">
+
+                <table border="0" cellpadding="10" cellspacing="0" width="560"
+                       style="margin:0; padding:0; border:0px solid #cccccc;border-radius: 5px;
+                                   display:block;">
                     <tr>
                         <td colspan="2" align="left">
                              <span style="color: #333333; font: 16px Arial, sans-serif; line-height: 30px;
@@ -105,8 +130,8 @@
                     <tr>
                         <td align="center">
                             <a href="${main_link}${msg_uuid}/${code1}" style="color: #ffffff">
-                            <table border="0" cellspacing="0" cellpadding="0" bgcolor="#cc3300" height="48"
-                                   style="border:1px solid #cc3300;border-radius: 10px;
+                            <table border="0" cellspacing="0" cellpadding="0" bgcolor="#cc6666" height="48"
+                                   style="border:1px solid #cc6666;border-radius: 10px;
                                    display:block;">
                                 <tr>
                                     <td height="48" width="16"></td>
@@ -122,8 +147,8 @@
                         </td>
                         <td align="center">
                             <a href="${main_link}${msg_uuid}/${code2}" style="color: #ffffff">
-                            <table border="0" cellspacing="0" cellpadding="0" bgcolor="#339933" height="48"
-                                   style="border:1px solid #339933;border-radius: 10px; box-shadow: 0 0 4px #666666;
+                            <table border="0" cellspacing="0" cellpadding="0" bgcolor="#99cc99" height="48"
+                                   style="border:1px solid #99cc99;border-radius: 10px; box-shadow: 0 0 4px #666666;
                                    -moz-box-shadow: 0 0 4px #666666; -webkit-box-shadow: 0 0 4px #666666;
                                    display:block;">
                                 <tr>
@@ -145,20 +170,16 @@
                 </table>
 
                 <!-- окончание -->
-                <table border="0" cellpadding="10" cellspacing="0" style="margin:0; padding:0" width="560">
+                <table border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0" width="560">
                     <tr>
                         <td height="20"></td>
                     </tr>
                     <tr>
                         <td align="left">
-                            <p class="copyright">
+                            <p style="color:#cccccc;font-family:Arial, Helvetica, sans-serif;
+                                        line-height:15px;font-size:10px">
                                 Copyright &copy; Conversation parser 2016. All Rights Reserved
                             </p>
-                        </td>
-                        <td align="right">
-                            <a href="https://www.facebook.com/Conparser">
-                                <span class="network-name">Facebook</span>
-                            </a>
                         </td>
                     </tr>
                 </table>

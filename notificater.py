@@ -16,6 +16,10 @@ import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+from mako.lookup import TemplateLookup
+lookup = TemplateLookup(directories=["./templates"], output_encoding="utf-8",
+                        input_encoding="utf-8", encoding_errors="replace")
+
 __author__ = 'sergey'
 
 """
@@ -61,7 +65,6 @@ def notify():
         # print category
         print categoryll
 
-        #send_email(category, msg, msg_uuid)
         cat, val = categoryll[0]
         # Если нужно оповещать только при конфликте
         if SEND_ONLY_WARNING and cat == "conflict":
@@ -121,14 +124,23 @@ def send_email(category, orig_msg, msg_uuid):
     \n""" % (CATEGORY[code1].category, main_link + "%s/%s" % (msg_uuid, CATEGORY[code1].code),
              CATEGORY[code2].category, main_link + "%s/%s" % (msg_uuid, CATEGORY[code2].code))
 
+    body = "Письмо было проанализовано. \n" + text + links_block + orig_text
+
     msg['From'] = from_addr
     msg['To'] = to_addr
     msg['Subject'] = Header("Сообщение от Conversation parser", "utf8")
-    body = "Письмо было проанализовано. \n" + text + links_block + orig_text
+
     msg.preamble = "This is a multi-part message in MIME format."
     msg.epilogue = "End of message"
 
-    msg.attach(email.MIMEText.MIMEText(body, "plain", "UTF-8"))
+    # HTML сообщение
+    tmpl = lookup.get_template("email_notification.html")
+    body_in_html = tmpl.render(main_link=main_link, cat_list=CATEGORY, cat=cat, orig_msg=orig_msg,
+                               msg_uuid=msg_uuid, code1=code1, code2=code2)
+    msg.attach(email.MIMEText.MIMEText(body_in_html, "html", "UTF-8"))
+
+    # PLAIN text сообщение
+    # msg.attach(email.MIMEText.MIMEText(body, "plain", "UTF-8"))
 
     smtp = SMTP_SSL()
     smtp.connect(smtp_server)
