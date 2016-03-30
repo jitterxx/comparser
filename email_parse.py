@@ -207,6 +207,23 @@ def exception(data):
     if email_re:
         isexception = True
 
+    # Проверяем что поля От, Кому и СС, содержат адреса из доменов подлежащих проверке
+    # Список доменов находится в CHECK_DOMAINS
+    no_check = True
+    addresses = re.split(",", data["sender"]) + re.split(",", data["recipients"]) + re.split(",", data["cc"])
+    domain_search = re.compile(CHECK_DOMAINS, re.I|re.U)
+    for one in addresses:
+        if domain_search.search(one):
+            no_check = False
+    if no_check:
+        isexception = True
+
+    if debug:
+        print "Addressess: ", addresses
+        print "Domains for check: ", re.split("|", CHECK_DOMAINS)
+        print "Result: ", not no_check
+        print "EXCEPTION: ", isexception
+
     return isexception
 
 
@@ -268,7 +285,7 @@ for row in raw_data:
     clear_data['references'] = row.references
     clear_data['in_reply_to'] = row.in_reply_to
     
-    clear_data = get_emails(row,clear_data)
+    clear_data = get_emails(row, clear_data)
     clear_data["message_title"] = get_title(row.message_title)
 
     # Если plain пустой, используем html вариант. Иначе в сообщении текста нет
@@ -298,7 +315,7 @@ for row in raw_data:
         print 'Текст:\n',clear_data['message_text']
         print 'Битое: ',clear_data['isbroken']
         print 'Исключение: ',clear_data['isexception']
-        print '*'*100,'\n'
+        print '#'*100,'\n'
 
     #Remember processed entry id
     #processed.append(int(row.id))
