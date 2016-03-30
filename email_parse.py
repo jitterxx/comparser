@@ -209,20 +209,22 @@ def exception(data):
 
     # Проверяем что поля От, Кому и СС, содержат адреса из доменов подлежащих проверке
     # Список доменов находится в CHECK_DOMAINS
-    no_check = True
-    addresses = re.split(",", data["sender"]) + re.split(",", data["recipients"]) + re.split(",", data["cc"])
-    domain_search = re.compile(CHECK_DOMAINS, re.I|re.U)
-    for one in addresses:
-        if domain_search.search(one):
-            no_check = False
-    if no_check:
-        isexception = True
+    # Проверка работает, если список не пустой
+    if CHECK_DOMAINS:
+        no_check = True
+        addresses = re.split(",", data["sender"]) + re.split(",", data["recipients"]) + re.split(",", data["cc"])
+        domain_search = re.compile(CHECK_DOMAINS, re.I|re.U)
+        for one in addresses:
+            if domain_search.search(one):
+                no_check = False
+        if no_check:
+            isexception = True
 
-    if debug:
-        print "Addressess: ", addresses
-        print "Domains for check: ", re.split("|", CHECK_DOMAINS)
-        print "Result: ", not no_check
-        print "EXCEPTION: ", isexception
+        if debug:
+            print "Addressess: ", addresses
+            print "Domains for check: ", re.split("|", CHECK_DOMAINS)
+            print "Result: ", not no_check
+            print "EXCEPTION: ", isexception
 
     return isexception
 

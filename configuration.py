@@ -36,5 +36,6 @@ STOP_WORDS = ["как", "или", "который", "которых", "тот", 
 EXCEPTION_EMAIL = u"root@rework.reshim.com|undisclosed-recipients"
 
 # Список доменов почта НА и С которых будет анализироваться системой
-CHECK_DOMAINS = u"akrikhin.ru|vgtransfer.com"
+# Если надо проверять все, оставить пустым
+CHECK_DOMAINS = u"akrikhin.ru"
 
