@@ -36,3 +36,7 @@ STOP_WORDS = ["как", "или", "который", "которых", "тот", 
 EXCEPTION_EMAIL = u"root@rework.reshim.com|undisclosed-recipients|hr@vipservice.ru|dobro@vipservice.ru|" \
                   u"dl-avia@vipct.ru|iway@iwayex.com|noreply@uralairlines.ru"
 
+# Список доменов почта НА и С которых будет анализироваться системой.
+# Список задатся именами доменов разделенных "|" без пробелов
+# Если надо проверять все, оставить пустым
+CHECK_DOMAINS = u"akrikhin.ru"
