@@ -50,7 +50,7 @@ def notify():
         ll = list()
         for cat in cats:
             m = re.split("-", cat)
-            print m
+            # print m
             if m[1] == "unknown":
                 m[1] = 0
             # l[m[0]] = float(m[1])
@@ -68,11 +68,17 @@ def notify():
         cat, val = categoryll[0]
         # Если нужно оповещать только при конфликте
         if SEND_ONLY_WARNING and cat == "conflict":
-            send_email(categoryll, msg, msg_uuid)
             print "Это %s. Отправляем уведомление." % cat
+            send_email(categoryll, msg, msg_uuid)
+            print "#" * 30
         elif not SEND_ONLY_WARNING:
             # Если нужно оповещать об всех сообщениях
+            print "Это %s. Отправляем уведомление." % cat
             send_email(categoryll, msg, msg_uuid)
+            print "#" * 30
+        else:
+            print "Уведомление не отправлено."
+            print "#" * 30
 
         msg.notified = 1
         session.commit()
@@ -138,16 +144,29 @@ def send_email(category, orig_msg, msg_uuid):
     body_in_html = tmpl.render(main_link=main_link, cat_list=CATEGORY, cat=cat, orig_msg=orig_msg,
                                msg_uuid=msg_uuid, code1=code1, code2=code2)
     msg.attach(email.MIMEText.MIMEText(body_in_html, "html", "UTF-8"))
-
+    print "Сообщение сформировано."
     # PLAIN text сообщение
     # msg.attach(email.MIMEText.MIMEText(body, "plain", "UTF-8"))
 
     smtp = SMTP_SSL()
-    smtp.connect(smtp_server)
-    smtp.login(from_addr, smtp_pass)
+    try:
+        smtp.connect(smtp_server)
+        smtp.login(from_addr, smtp_pass)
+    except Exception as e:
+        print "Ошибка подключения к серверу %s с логином %s."  % (smtp_server, from_addr)
+        print "Ошибка: ", str(e)
+
     text = msg.as_string()
-    smtp.sendmail(from_addr, to_addr, text)
-    smtp.quit()
+    try:
+        smtp.sendmail(from_addr, to_addr, text)
+    except Exception as e:
+        print "Ошибка отправки сообщения. ", str(e)
+    else:
+        print "Отправленно."
+    finally:
+        smtp.quit()
+
+    raw_input()
 
 
 notify()
