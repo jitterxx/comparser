@@ -140,6 +140,10 @@ def send_email(category, orig_msg, msg_uuid):
     tmpl = lookup.get_template("email_notification.html")
     body_in_html = tmpl.render(main_link=main_link, cat_list=CATEGORY, cat=cat, orig_msg=orig_msg,
                                msg_uuid=msg_uuid, code1=code1, code2=code2)
+
+    # Проверка генерации
+    body_in_html = create_attach(msg_id=orig_msg.message_id)
+
     msg.attach(email.MIMEText.MIMEText(body_in_html, "html", "UTF-8"))
     print "Сообщение сформировано."
     # PLAIN text сообщение
@@ -169,7 +173,7 @@ def send_email(category, orig_msg, msg_uuid):
                 print "Отправленно на адрес: %s" % addr
     finally:
         smtp.quit()
-        # raw_input()
+        raw_input()
 
 
 def create_attach(msg_id=None):

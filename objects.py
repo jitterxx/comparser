@@ -987,7 +987,7 @@ def get_thread_messages(message_id=None, thread_uuid=None):
 
     if message_id:
         try:
-            resp = session.query(MsgThread).filter(MsgThread.message_id == message_id).one_or_none()
+            resp = session.query(MsgThread).filter(MsgThread.message_id == message_id).one()
         except sqlalchemy.orm.exc.NoResultFound:
             print "get_thread. Сообщение не входит ни в один тред. MSGID: %s" % message_id
             return None

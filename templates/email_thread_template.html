@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html lang="ru">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Conversation parser email notification">
+    <meta name="author" content="Sergey Fomin, Ramil Galiullin">
+
+    <title>Conversation parser email notification</title>
+
+</head>
+
+<body>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0">
+        <tr>
+            <td height="100%" align="center">
+
+                <!-- заголовок -->
+                <table border="0" cellpadding="10" cellspacing="0" style="margin:0; padding:0" width="560">
+                    <tr>
+                        <td>
+                            <span style="color: #333333; font: 20px Arial, sans-serif; line-height: 40px;
+                            -webkit-text-size-adjust:none; display: block; font-weight: bold; ">
+                                Просим обратить внимание. <br>
+                                Предположительно, в данном письме проблема.
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- основное сообщение -->
+                <table border="0" cellpadding="10" cellspacing="0" style="margin:0; padding:0"  width="560">
+                    <tr>
+                        <td height="10"></td>
+                    </tr>
+                </table>
+
+                <!-- Тред -->
+                <table border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0" width="560">
+                    <tr>
+                        <td height="20"></td>
+                    </tr>
+                    <tr>
+                        <td align="left">
+                            <p style="color:#cccccc;font-family:Arial, Helvetica, sans-serif;
+                                        line-height:25px;font-size:20px">
+                                Полная переписка
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td height="20"></td>
+                    </tr>
+
+                    % for one in messages.values():
+                    %if one:
+                    <tr>
+                        <td>
+                            % if one.message_id == orig_msg:
+                            <table border="0" cellpadding="10" cellspacing="0" width="560"
+                                   style="margin:0; padding:0; border:3px solid #99cc99;border-radius: 5px;display:block;">
+                                <tr>
+                                    <td bgcolor="#cccccc" colspan="2">
+                            %else:
+                            <table border="0" cellpadding="10" cellspacing="0" width="560"
+                                   style="margin:0; padding:0; border:1px solid #cccccc;border-radius: 5px;display:block;">
+                                <tr>
+                                    <td bgcolor="#99cc99" colspan="2">
+                            %endif
+                                        <span style="color: #cccccc;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                            ${one.message_title}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr align="left">
+                                    <td width="80">
+                                        <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                            <b>Дата:</b>
+                                        </span>
+                                    </td>
+                                    <td width="460">
+                                        <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                            ${one.orig_date_str}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr align="left">
+                                    <td width="80">
+                                        <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                            <b>От кого:</b>
+                                        </span>
+                                    </td>
+                                    <td width="460">
+                                        <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                            ${one.sender}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr align="left">
+                                    <td width="80">
+                                        <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                            <b>Кому:</b>
+                                        </span>
+                                    </td>
+                                    <td width="460">
+                                        <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                            ${one.recipient}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr align="left">
+                                    <td width="80">
+                                        <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                            <b>Тема:</b>
+                                        </span>
+                                    </td>
+                                    <td width="460">
+                                        <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                            ${one.message_title}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="5" colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" align="left">
+                                        <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
+                                            %if one.message_text:
+                                            ${one.message_text}
+                                            %else:
+                                            ${one.message_text_html}
+                                            %endif
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td height="10" colspan="2"></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td height="10">
+                        </td>
+                    </tr>
+                    %else:
+                    <tr>
+                        <td align="left">
+                            <p style="color:#cccccc;font-family:Arial, Helvetica, sans-serif;
+                                        line-height:25px;font-size:15px">
+                                Сообщение пропущено.
+                            </p>
+                        </td>
+                    </tr>
+
+                    %endif
+                    % endfor
+
+                </table>
+
+
+                <!-- окончание -->
+                <table border="0" cellpadding="0" cellspacing="0" style="margin:0; padding:0" width="560">
+                    <tr>
+                        <td height="20"></td>
+                    </tr>
+                    <tr>
+                        <td align="left">
+                            <p style="color:#cccccc;font-family:Arial, Helvetica, sans-serif;
+                                        line-height:15px;font-size:10px">
+                                Copyright &copy; Conversation parser 2016. All Rights Reserved
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>
