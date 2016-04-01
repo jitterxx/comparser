@@ -172,5 +172,16 @@ def send_email(category, orig_msg, msg_uuid):
         # raw_input()
 
 
+def create_attach(msg_id=None):
+
+    messages = get_thread_messages(message_id=msg_id)
+    # HTML приложение с тредом
+    tmpl = lookup.get_template("email_thread_template.html")
+    attach_in_html = tmpl.render(orig_msg=msg_id, messages=messages)
+
+    return attach_in_html
+
+
+
 notify()
 

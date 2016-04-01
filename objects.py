@@ -970,6 +970,60 @@ def get_thread(thread_uuid=None, message_id=None):
             session.close()
 
 
+def get_thread_messages(message_id=None, thread_uuid=None):
+    """
+    Получить все сообщения в треде по ИД или по MSG-ID сообщения входящего в него.
+
+    :param thread_uuid:
+    :param message_id:
+    :return: словарь. Ключи - MSGID, значения - сообщения MsgRaw
+    """
+
+    session = Session()
+
+    if thread_uuid:
+        pass
+        return list()
+
+    if message_id:
+        try:
+            resp = session.query(MsgThread).filter(MsgThread.message_id == message_id).one_or_none()
+        except sqlalchemy.orm.exc.NoResultFound:
+            print "get_thread. Сообщение не входит ни в один тред. MSGID: %s" % message_id
+            return None
+        except sqlalchemy.orm.exc.MultipleResultsFound:
+            print "get_thread. Найдено много тредов с этим сообщением. MSGID: %s" % message_id
+            return None
+        except Exception as e:
+            print "get_thread. Ошибка при получении сообщения. %s" % str(e)
+            raise e
+        else:
+
+            # получаем список MSGID сообщений в треде
+            try:
+                resp2 = session.query(MsgThread).filter(MsgThread.thread_uuid == resp.thread_uuid).all()
+            except Exception as e:
+                print "get_thread. Ошибка при получении треда. %s" % str(e)
+                raise e
+            else:
+
+                messages = dict()
+                # Получаем сами сообщения
+                for one in resp2:
+                    try:
+                        resp3 = session.query(MsgRaw).filter(MsgRaw.message_id == one.message_id).one_or_none()
+                    except Exception as e:
+                        pass
+                        resp3 = None
+                    else:
+                        messages[one.message_id] = resp3
+
+                return messages
+
+        finally:
+            session.close()
+
+
 def add_message_to_thread(msg=None):
     """
     Добавляет сообщение в тред или создает новый.
@@ -1041,6 +1095,7 @@ def add_message_to_thread(msg=None):
 
                 # если код треда найден
                 if tread_id:
+                    """
                     # Записываем в тред само сообщение
                     new = MsgThread()
                     new.message_id = msg.message_id
@@ -1053,10 +1108,13 @@ def add_message_to_thread(msg=None):
                         print "add_message_to_thread(). Ошибка записи сообщения в тред. MSGID: %s" % msg.message_id
                         print "add_message_to_thread(). Ошибка: ", str(e)
                         raise e
+                    """
+                    pass
                 # если код не найден, то это новое сообщение в новом треде
                 else:
                     # Создаем новый тред
                     tread_id= uuid.uuid4().__str__()
+                    """
                     # Записываем в тред само сообщение
                     new = MsgThread()
                     new.message_id = msg.message_id
@@ -1069,8 +1127,10 @@ def add_message_to_thread(msg=None):
                         print "add_message_to_thread(). Ошибка записи сообщения в тред. MSGID: %s" % msg.message_id
                         print "add_message_to_thread(). Ошибка: ", str(e)
                         raise e
+                    """
 
                 # Записываем в тред все новые msg_id из references и in-reply-to
+                # Делаем это перед записью самого сообщения
                 for one in new_ref:
                     try:
                         # ищем сообщение в MsgRaw используем orig_date_str
@@ -1101,6 +1161,19 @@ def add_message_to_thread(msg=None):
                         print "add_message_to_thread(). Ошибка записи сообщения в тред. MSGID: %s" % msg.message_id
                         print "add_message_to_thread(). Ошибка: ", str(e)
                         raise e
+
+                # Записываем в тред само сообщение
+                new = MsgThread()
+                new.message_id = msg.message_id
+                new.thread_uuid = tread_id
+                new.orig_date_utc = orig_date_utc
+                try:
+                    session.add(new)
+                    session.commit()
+                except Exception as e:
+                    print "add_message_to_thread(). Ошибка записи сообщения в тред. MSGID: %s" % msg.message_id
+                    print "add_message_to_thread(). Ошибка: ", str(e)
+                    raise e
 
             else:
                 # если в сообщении   пустые References и InReplyTo, то считаем его новым (первым в треде)
