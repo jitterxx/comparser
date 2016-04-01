@@ -164,7 +164,5 @@ def send_email(category, orig_msg, msg_uuid):
     finally:
         smtp.quit()
 
-    raw_input()
-
 
 notify()
