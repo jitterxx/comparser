@@ -1,5 +1,9 @@
 #!/usr/bin/python -t
 # coding: utf8
+import os
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 import sqlalchemy
 from sqlalchemy import Table, Column, Integer, ForeignKey
@@ -14,11 +18,8 @@ from smtplib import SMTP_SSL
 import uuid
 import re
 from dateutil.parser import *
-
-import os
-import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
+from dateutil.parser import *
+from dateutil.tz import tzutc, tzlocal
 
 __author__ = 'sergey'
 
@@ -907,11 +908,215 @@ def get_message_for_train(msg_uuid):
     return [True, desc, answer]
 
 
-class Statistics(Base):
+class MsgThread(Base):
 
-    __tablename__ = "statistics"
+    __tablename__ = "threads"
 
     id = Column(sqlalchemy.Integer, primary_key=True)
-    tread_uuid = Column(sqlalchemy.String(256))  # код диалога
     message_id = Column(sqlalchemy.String(256))  # ИД сообщения которое относиться к диалогу
-    orig_date = Column(sqlalchemy.DATETIME())  # Дата получения оригинального сообщения в виде UTC
+    thread_uuid = Column(sqlalchemy.String(256))  # код диалога
+    orig_date_utc = Column(sqlalchemy.DATETIME())  # Дата получения оригинального сообщения в виде UTC
+
+    def __init__(self):
+        self.message_id = ""
+        self.thread_uuid = ""
+        self.orig_date_utc = ""
+
+
+def get_thread(thread_uuid=None, message_id=None):
+    """
+    Получить тред(все сообщения) по ИД или по MSG-ID сообщения входящего в него.
+
+    :param thread_uuid:
+    :param message_id:
+    :return:
+    """
+
+    session = Session()
+
+    if thread_uuid:
+        try:
+            resp = session.query(MsgThread).filter(MsgThread.thread_uuid == thread_uuid).all()
+        except Exception as e:
+            print "get_thread. Ошибка при получении треда. %s" % str(e)
+            raise e
+        else:
+            return resp
+        finally:
+            session.close()
+
+    if message_id:
+        try:
+            resp = session.query(MsgThread).filter(MsgThread.message_id == message_id).one_or_none()
+        except sqlalchemy.orm.exc.NoResultFound:
+            print "get_thread. Сообщение не входит ни в один тред. MSGID: %s" % message_id
+            return None
+        except sqlalchemy.orm.exc.MultipleResultsFound:
+            print "get_thread. Найдено много тредов с этим сообщением. MSGID: %s" % message_id
+            return None
+        except Exception as e:
+            print "get_thread. Ошибка при получении сообщения. %s" % str(e)
+            raise e
+        else:
+            try:
+                resp2 = session.query(MsgThread).filter(MsgThread.thread_uuid == resp.thread_uuid).all()
+            except Exception as e:
+                print "get_thread. Ошибка при получении треда. %s" % str(e)
+                raise e
+            else:
+                return resp2
+
+        finally:
+            session.close()
+
+
+def add_message_to_thread(msg=None):
+    """
+    Добавляет сообщение в тред или создает новый.
+
+    :param msg: сообщение (формат MsgRaw)
+    :return:
+    """
+
+    raw_ref = list()
+    if msg.references:
+        for one in re.split("\s+|[,]\s+", str(msg.references)):
+            if one:
+                raw_ref.append(one)
+
+    try:
+        orig_date_utc = parse(msg.orig_date_str).astimezone(tzutc()).replace(tzinfo=None)
+    except Exception as e:
+        print "MSGID: ", msg.message_id
+        print "Create date: ", msg.orig_date_str
+        print "add_message_to_thread(). Ошибка считывания времени в UTC. %s" % str(e)
+        orig_date_utc = None
+
+    session = Session()
+    try:
+        # ищем сообщение в тредах
+        resp = session.query(MsgThread).filter(MsgThread.message_id == msg.message_id).one_or_none()
+    except Exception as e:
+        print "add_message_to_thread(). Ошибка при поиске сообщения в тредах. MSGID: %s " % msg.message_id
+        print "add_message_to_thread(). Ошибка: ", str(e)
+        raise e
+
+    else:
+        if resp:
+            not_found = False
+        else:
+            not_found = True
+
+        # если не найдено - обрабатываем
+        if not_found:
+            new_ref = list()
+            if raw_ref or msg.in_reply_to:
+                # Формируем список для поиска
+                if msg.in_reply_to and raw_ref:
+                    if msg.in_reply_to in raw_ref:
+                        ref = raw_ref
+                    else:
+                        ref = raw_ref + [msg.in_reply_to]
+                elif msg.in_reply_to and not raw_ref:
+                    ref = [msg.in_reply_to]
+                elif not msg.in_reply_to and raw_ref:
+                    ref = raw_ref
+
+                # Ищем для сообщения существующий код треда по msg-id в references и in-reply-to
+                tread_id = None
+                for one in ref:
+                    try:
+                        # ищем сообщение в тредах
+                        resp = session.query(MsgThread).filter(MsgThread.message_id == one).one_or_none()
+                    except Exception as e:
+                        resp = None
+                        pass
+
+                    if resp:
+                        # запоминаем код треда
+                        tread_id = resp.thread_uuid
+                    else:
+                        # если сообщение не обрабатывалось, запоминаем его для обработки
+                        new_ref.append(one)
+
+                # если код треда найден
+                if tread_id:
+                    # Записываем в тред само сообщение
+                    new = MsgThread()
+                    new.message_id = msg.message_id
+                    new.thread_uuid = tread_id
+                    new.orig_date_utc = orig_date_utc
+                    try:
+                        session.add(new)
+                        session.commit()
+                    except Exception as e:
+                        print "add_message_to_thread(). Ошибка записи сообщения в тред. MSGID: %s" % msg.message_id
+                        print "add_message_to_thread(). Ошибка: ", str(e)
+                        raise e
+                # если код не найден, то это новое сообщение в новом треде
+                else:
+                    # Создаем новый тред
+                    tread_id= uuid.uuid4().__str__()
+                    # Записываем в тред само сообщение
+                    new = MsgThread()
+                    new.message_id = msg.message_id
+                    new.thread_uuid = tread_id
+                    new.orig_date_utc = orig_date_utc
+                    try:
+                        session.add(new)
+                        session.commit()
+                    except Exception as e:
+                        print "add_message_to_thread(). Ошибка записи сообщения в тред. MSGID: %s" % msg.message_id
+                        print "add_message_to_thread(). Ошибка: ", str(e)
+                        raise e
+
+                # Записываем в тред все новые msg_id из references и in-reply-to
+                for one in new_ref:
+                    try:
+                        # ищем сообщение в MsgRaw используем orig_date_str
+                        resp = session.query(MsgRaw).filter(MsgRaw.message_id == one).one_or_none()
+                    except Exception as e:
+                        pass
+                        resp = None
+
+                    new = MsgThread()
+                    new.message_id = one
+                    new.thread_uuid = tread_id
+                    if resp:
+                        try:
+                            orig_date_utc = parse(resp.orig_date_str).astimezone(tzutc()).replace(tzinfo=None)
+                        except Exception as e:
+                            print "MSGID: ", msg.message_id
+                            print "Create date: ", msg.orig_date_str
+                            print "add_message_to_thread(). Ошибка считывания времени в UTC. %s" % str(e)
+                            orig_date_utc = None
+                        new.orig_date_utc = orig_date_utc
+                    else:
+                        new.orig_date_utc = None
+
+                    try:
+                        session.add(new)
+                        session.commit()
+                    except Exception as e:
+                        print "add_message_to_thread(). Ошибка записи сообщения в тред. MSGID: %s" % msg.message_id
+                        print "add_message_to_thread(). Ошибка: ", str(e)
+                        raise e
+
+            else:
+                # если в сообщении   пустые References и InReplyTo, то считаем его новым (первым в треде)
+                # Иногда это не так и надо искать другими методами (например, по полю Тема)
+                new_id = uuid.uuid4().__str__()
+                new = MsgThread()
+                new.message_id = msg.message_id
+                new.thread_uuid = new_id
+                new.orig_date_utc = orig_date_utc
+                try:
+                    session.add(new)
+                    session.commit()
+                except Exception as e:
+                    print "add_message_to_thread(). Ошибка записи сообщения в тред. MSGID: %s" % msg.message_id
+                    print "add_message_to_thread(). Ошибка: ", str(e)
+                    raise e
+
+    finally:
+        session.close()
