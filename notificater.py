@@ -1,20 +1,17 @@
 #!/usr/bin/python -t
 # coding: utf8
 
-import sqlalchemy
-from sqlalchemy import Table, Column, Integer, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import and_
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
+
 from configuration import *
 from objects import *
 import re
 import email
 from email.header import Header
 from smtplib import SMTP_SSL
-
-import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
+import datetime
 
 from mako.lookup import TemplateLookup
 lookup = TemplateLookup(directories=["./templates"], output_encoding="utf-8",
@@ -59,6 +56,7 @@ def notify():
         # category = sorted(l.items(), key=lambda (k, v): v, reverse=True)
         categoryll = sorted(ll, key=lambda (k, v): v, reverse=True)
 
+        print "Дата запуска: ", datetime.datetime.now()
         print "От: %s (%s)" % (msg.sender, msg.sender_name)
         print "\n%s\n" % msg.message_text
 
