@@ -65,7 +65,7 @@ def notify():
 
         cat, val = categoryll[0]
         # Если нужно оповещать только при конфликте
-        if SEND_ONLY_WARNING and cat == "conflict":
+        if SEND_ONLY_WARNING and cat in WARNING_CATEGORY:
             print "Это %s. Отправляем уведомление." % cat
             send_email(categoryll, msg, msg_uuid)
             print "#" * 30
@@ -98,8 +98,11 @@ def send_email(category, orig_msg, msg_uuid):
 
     msg = email.MIMEMultipart.MIMEMultipart()
     from_addr = smtp_email
-    to_addr = to_address
 
+    # Получаем список адресов для отправки уведомления
+    to_addr = re.split("\\s", to_address)
+
+    # Формируем текст сообщения в plain
     orig_text = "\n\n---------------- Исходное сообщение -------------------\n"
     orig_text += "Дата: %s \n" % orig_msg.create_date
     orig_text += "От кого: %s (%s)\n" % (orig_msg.sender_name, orig_msg.sender)
@@ -130,10 +133,6 @@ def send_email(category, orig_msg, msg_uuid):
 
     body = "Письмо было проанализовано. \n" + text + links_block + orig_text
 
-    msg['From'] = from_addr
-    msg['To'] = to_addr
-    msg['Subject'] = Header("Сообщение от Conversation parser", "utf8")
-
     msg.preamble = "This is a multi-part message in MIME format."
     msg.epilogue = "End of message"
 
@@ -147,22 +146,31 @@ def send_email(category, orig_msg, msg_uuid):
     # msg.attach(email.MIMEText.MIMEText(body, "plain", "UTF-8"))
 
     smtp = SMTP_SSL()
+
     try:
         smtp.connect(smtp_server)
         smtp.login(from_addr, smtp_pass)
     except Exception as e:
         print "Ошибка подключения к серверу %s с логином %s."  % (smtp_server, from_addr)
         print "Ошибка: ", str(e)
-
-    text = msg.as_string()
-    try:
-        smtp.sendmail(from_addr, to_addr, text)
-    except Exception as e:
-        print "Ошибка отправки сообщения. ", str(e)
     else:
-        print "Отправленно."
+        msg['From'] = from_addr
+        msg['To'] = ""
+        msg['Subject'] = Header("Сообщение от Conversation parser", "utf8")
+        for addr in to_addr:
+            msg.replace_header("To", addr)
+            text = msg.as_string()
+            try:
+                smtp.sendmail(from_addr, addr, text)
+            except Exception as e:
+                print "Ошибка отправки сообщения на адрес: %s " % addr
+                print str(e)
+            else:
+                print "Отправленно на адрес: %s" % addr
     finally:
         smtp.quit()
+        # raw_input()
 
 
 notify()
+

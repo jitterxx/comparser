@@ -24,8 +24,14 @@ smtp_server = "smtp.yandex.ru"
 smtp_pass = "Qazcde123"
 
 # Кому будут направляться сообщения о классификации от имени аккаунта анализатора. см. выше.
-to_address = "sergey@reshim.com"
+to_address = "sergey@reshim.com sergey_fomin@list.ru"
+#to_address = "sergey@reshim.com"
+
+# Отправлять уведомления только  для категорий указанных в WARNING_CATEGORY
 SEND_ONLY_WARNING = True
+
+# Для каких категорий отправлять уведомления
+WARNING_CATEGORY = ["conflict"]
 
 STOP_WORDS = ["как", "или", "который", "которых", "тот", "около", "они", "для", "Для", "Это", "это", "При", "при",
              "Кроме", "того", "чем", "под", "них", "его", "лат", "Также", "также", "этой", "этого",
