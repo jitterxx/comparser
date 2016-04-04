@@ -1089,6 +1089,8 @@ def add_message_to_thread(msg=None):
                     ref = [msg.in_reply_to]
                 elif not msg.in_reply_to and raw_ref:
                     ref = raw_ref
+                else:
+                    ref = list()
 
                 # Ищем для сообщения существующий код треда по msg-id в references и in-reply-to
                 tread_id = None

@@ -374,6 +374,14 @@ for row in raw_data:
                 if debug:
                     print 'Data inserted to ClearDB.'
 
+            # Добавляем сообщение в тред
+            try:
+                CPO.add_message_to_thread(msg=row)
+            except Exception as e:
+                if debug:
+                    print "email_parse. Ошибка добавления сообщения в тред. Ошибка: ", str(e)
+                pass
+
     else:
         #message have error, to err db
         """
@@ -419,6 +427,14 @@ for row in raw_data:
             else:
                 if debug:
                     print 'Data inserted to ClearErrorDB.'
+
+            # Добавляем сообщение в тред
+            try:
+                CPO.add_message_to_thread(msg=row)
+            except Exception as e:
+                if debug:
+                    print "email_parse. Ошибка добавления сообщения в тред. Ошибка: ", str(e)
+                pass
 
 """
 if debug:
