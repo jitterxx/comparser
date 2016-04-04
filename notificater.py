@@ -212,7 +212,6 @@ def send_email(category, orig_msg, msg_uuid):
                 print "Отправленно на адрес: %s" % addr
     finally:
         smtp.quit()
-        exit()
 
 
 def create_attach(msg_id=None):
