@@ -276,17 +276,22 @@ except Exception as e:
 for row in raw_data:
     # row = dict(zip(dirty_con.column_names, data))
 
-    clear_data = {'message_id':'','sender':'','sender_name':'','recipients':'',
-                  'recipients_name':'','cc':'','cc_name':'','message_title':'',
-                  'message_text':'','orig_date':'','create_date':'','isbroken':0,'isexception':0}
-    #set unchanged fields
-    clear_data['message_id'] = row.message_id
-    clear_data['orig_date'] = row.orig_date
-    clear_data['create_date'] = row.create_date
-    clear_data['isbroken'] = row.isbroken
-    clear_data['references'] = row.references
-    clear_data['in_reply_to'] = row.in_reply_to
-    
+    clear_data = {'message_id': row.message_id,
+                  'sender': '',
+                  'sender_name': '',
+                  'recipients': '',
+                  'recipients_name': '',
+                  'cc': '',
+                  'cc_name': '',
+                  'message_title': '',
+                  'message_text': '',
+                  'orig_date': row.orig_date,
+                  'create_date': row.create_date,
+                  'isbroken': row.isbroken,
+                  'isexception': 0,
+                  'references': row.references,
+                  'in_reply_to': row.in_reply_to}
+
     clear_data = get_emails(row, clear_data)
     clear_data["message_title"] = get_title(row.message_title)
 
@@ -319,14 +324,14 @@ for row in raw_data:
         print 'Исключение: ',clear_data['isexception']
         print '#'*100,'\n'
 
-    #Remember processed entry id
-    #processed.append(int(row.id))
+    # Remember processed entry id
+    # processed.append(int(row.id))
     
-    #Insert clear message in Clear DBs
-    data = (clear_data['message_id'],clear_data['sender'],clear_data['sender_name'],
-            clear_data['recipients'],clear_data['recipients_name'],clear_data['cc'],
-            clear_data['cc_name'],clear_data['message_title'],clear_data['message_text'],
-            clear_data['orig_date'],clear_data['create_date'])
+    # Insert clear message in Clear DBs
+    # data = (clear_data['message_id'],clear_data['sender'],clear_data['sender_name'],
+    #        clear_data['recipients'],clear_data['recipients_name'],clear_data['cc'],
+    #        clear_data['cc_name'],clear_data['message_title'],clear_data['message_text'],
+    #        clear_data['orig_date'],clear_data['create_date'])
 
     if not (clear_data['isbroken']) and not(clear_data['isexception']):
         """

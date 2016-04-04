@@ -18,7 +18,6 @@ from smtplib import SMTP_SSL
 import uuid
 import re
 from dateutil.parser import *
-from dateutil.parser import *
 from dateutil.tz import tzutc, tzlocal
 
 __author__ = 'sergey'
@@ -157,6 +156,9 @@ def line_decoder (text_line):
 
 
 def remove_tags(data):
+
+    # Оставляем все теги для html сообщений в MsgRaw таблице
+    """
     # remove the newlines
     data = data.replace("\n", " ")
     data = data.replace("\r", " ")
@@ -185,6 +187,7 @@ def remove_tags(data):
     # remove all the tags
     p = re.compile(r'<[^<]*?>')
     data = p.sub('', data)
+    """
 
     return data
 
@@ -330,10 +333,21 @@ def parse_message(msg=None, debug=False):
         date_hdr = ""
 
     msg_datetime = datetime.datetime.now()
+
+    """
     try:
         dt = parse(date_hdr).replace(tzinfo=None)
     except Exception as e:
         print "Ошибка времени из сообщения. %s" % str(e)
+    else:
+        msg_datetime = dt
+    """
+
+    # Вычисляем время создания сообщения в UTC
+    try:
+        dt = parse(date_hdr).astimezone(tzutc()).replace(tzinfo=None)
+    except Exception as e:
+        print "Email_eater. Ошибка считывания времени из сообщения в UTC. %s" % str(e)
     else:
         msg_datetime = dt
 
@@ -989,13 +1003,13 @@ def get_thread_messages(message_id=None, thread_uuid=None):
         try:
             resp = session.query(MsgThread).filter(MsgThread.message_id == message_id).one()
         except sqlalchemy.orm.exc.NoResultFound:
-            print "get_thread. Сообщение не входит ни в один тред. MSGID: %s" % message_id
+            print "get_thread_messages. Сообщение не входит ни в один тред. MSGID: %s" % message_id
             return None
         except sqlalchemy.orm.exc.MultipleResultsFound:
-            print "get_thread. Найдено много тредов с этим сообщением. MSGID: %s" % message_id
+            print "get_thread_messages. Найдено много тредов с этим сообщением. MSGID: %s" % message_id
             return None
         except Exception as e:
-            print "get_thread. Ошибка при получении сообщения. %s" % str(e)
+            print "get_thread_messages. Ошибка при получении сообщения. %s" % str(e)
             raise e
         else:
 
@@ -1003,7 +1017,7 @@ def get_thread_messages(message_id=None, thread_uuid=None):
             try:
                 resp2 = session.query(MsgThread).filter(MsgThread.thread_uuid == resp.thread_uuid).all()
             except Exception as e:
-                print "get_thread. Ошибка при получении треда. %s" % str(e)
+                print "get_thread_messages. Ошибка при получении треда. %s" % str(e)
                 raise e
             else:
 
