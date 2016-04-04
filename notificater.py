@@ -12,6 +12,7 @@ import email
 from email.header import Header
 from smtplib import SMTP_SSL
 import datetime
+import pdfkit
 
 from mako.lookup import TemplateLookup
 lookup = TemplateLookup(directories=["./templates"], output_encoding="utf-8",
@@ -158,13 +159,28 @@ def send_email(category, orig_msg, msg_uuid):
     body_in_html = tmpl.render(main_link=main_link, cat_list=CATEGORY, cat=cat, orig_msg=orig_msg,
                                msg_uuid=msg_uuid, code1=code1, code2=code2)
 
-    # Проверка генерации
-    # body_in_html = create_attach(msg_id=orig_msg.message_id)
-
     msg.attach(email.MIMEText.MIMEText(body_in_html, "html", "UTF-8"))
     print "Сообщение сформировано."
     # PLAIN text сообщение
     # msg.attach(email.MIMEText.MIMEText(body, "plain", "UTF-8"))
+
+    # Генерация приложения
+    FILE_ATTACH_TYPE = "pdf"
+    if FILE_ATTACH_TYPE == "html":
+        attach_in_html = create_attach(msg_id=orig_msg.message_id)
+        part = email.MIMEBase.MIMEBase('application', "octet-stream")
+        part.set_payload(attach_in_html)
+        email.Encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment; filename="full thread.html"')
+        msg.attach(part)
+    else:
+        attach_in_html = create_attach(msg_id=orig_msg.message_id)
+        pdf = pdfkit.from_string(attach_in_html, False)
+        part = email.MIMEBase.MIMEBase('application', "octet-stream")
+        part.set_payload(pdf)
+        email.Encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment; filename="full thread.pdf"')
+        msg.attach(part)
 
     smtp = SMTP_SSL()
 
@@ -190,10 +206,9 @@ def send_email(category, orig_msg, msg_uuid):
                 print "Отправленно на адрес: %s" % addr
     finally:
         smtp.quit()
-        # raw_input()
+        exit()
 
 
-"""
 def create_attach(msg_id=None):
 
     messages = get_thread_messages(message_id=msg_id)
@@ -201,8 +216,8 @@ def create_attach(msg_id=None):
     tmpl = lookup.get_template("email_thread_template.html")
     attach_in_html = tmpl.render(orig_msg=msg_id, messages=messages)
 
+
     return attach_in_html
-"""
 
 
 notify()
