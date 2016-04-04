@@ -154,33 +154,39 @@ def send_email(category, orig_msg, msg_uuid):
     msg.preamble = "This is a multi-part message in MIME format."
     msg.epilogue = "End of message"
 
+    # Генерация приложения
+    try:
+        attach_in_html = create_attach(msg_id=orig_msg.message_id)
+
+        if FILE_ATTACH_TYPE == "html" and attach_in_html:
+            part = email.MIMEBase.MIMEBase('application', "octet-stream")
+            part.set_payload(attach_in_html)
+            email.Encoders.encode_base64(part)
+            part.add_header('Content-Disposition', 'attachment; filename="full thread.html"')
+            msg.attach(part)
+        elif FILE_ATTACH_TYPE == "pdf" and attach_in_html:
+            pdf = pdfkit.from_string(attach_in_html, False)
+            part = email.MIMEBase.MIMEBase('application', "octet-stream")
+            part.set_payload(pdf)
+            email.Encoders.encode_base64(part)
+            part.add_header('Content-Disposition', 'attachment; filename="full thread.pdf"')
+            msg.attach(part)
+    except Exception as e:
+        print "notificater. Adding attach to notification. Ошибка: ", str(e)
+        attach_in_html = None
+        pass
+    else:
+        print "notificater. Приложение с тредом добавлено к уведомлению."
+
     # HTML сообщение
     tmpl = lookup.get_template("email_notification.html")
     body_in_html = tmpl.render(main_link=main_link, cat_list=CATEGORY, cat=cat, orig_msg=orig_msg,
-                               msg_uuid=msg_uuid, code1=code1, code2=code2)
+                               msg_uuid=msg_uuid, code1=code1, code2=code2, attach=attach_in_html)
 
     msg.attach(email.MIMEText.MIMEText(body_in_html, "html", "UTF-8"))
     print "Сообщение сформировано."
     # PLAIN text сообщение
     # msg.attach(email.MIMEText.MIMEText(body, "plain", "UTF-8"))
-
-    # Генерация приложения
-    FILE_ATTACH_TYPE = "pdf"
-    if FILE_ATTACH_TYPE == "html":
-        attach_in_html = create_attach(msg_id=orig_msg.message_id)
-        part = email.MIMEBase.MIMEBase('application', "octet-stream")
-        part.set_payload(attach_in_html)
-        email.Encoders.encode_base64(part)
-        part.add_header('Content-Disposition', 'attachment; filename="full thread.html"')
-        msg.attach(part)
-    else:
-        attach_in_html = create_attach(msg_id=orig_msg.message_id)
-        pdf = pdfkit.from_string(attach_in_html, False)
-        part = email.MIMEBase.MIMEBase('application', "octet-stream")
-        part.set_payload(pdf)
-        email.Encoders.encode_base64(part)
-        part.add_header('Content-Disposition', 'attachment; filename="full thread.pdf"')
-        msg.attach(part)
 
     smtp = SMTP_SSL()
 
@@ -211,14 +217,20 @@ def send_email(category, orig_msg, msg_uuid):
 
 def create_attach(msg_id=None):
 
-    messages = get_thread_messages(message_id=msg_id)
-    # HTML приложение с тредом
-    tmpl = lookup.get_template("email_thread_template.html")
-    attach_in_html = tmpl.render(orig_msg=msg_id, messages=messages)
+    try:
+        messages = get_thread_messages(message_id=msg_id)
+    except Exception as e:
+        print "notificater. create_attach(). Ошибка: ", str(e)
+        raise e
+    else:
+        if messages:
+            # HTML приложение с тредом
+            tmpl = lookup.get_template("email_thread_template.html")
+            attach_in_html = tmpl.render(orig_msg=msg_id, messages=messages)
 
-
-    return attach_in_html
-
+            return attach_in_html
+        else:
+            return ""
 
 notify()
 
