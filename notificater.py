@@ -159,7 +159,7 @@ def send_email(category, orig_msg, msg_uuid):
                                msg_uuid=msg_uuid, code1=code1, code2=code2)
 
     # Проверка генерации
-    body_in_html = create_attach(msg_id=orig_msg.message_id)
+    # body_in_html = create_attach(msg_id=orig_msg.message_id)
 
     msg.attach(email.MIMEText.MIMEText(body_in_html, "html", "UTF-8"))
     print "Сообщение сформировано."
@@ -193,6 +193,7 @@ def send_email(category, orig_msg, msg_uuid):
         # raw_input()
 
 
+"""
 def create_attach(msg_id=None):
 
     messages = get_thread_messages(message_id=msg_id)
@@ -201,7 +202,7 @@ def create_attach(msg_id=None):
     attach_in_html = tmpl.render(orig_msg=msg_id, messages=messages)
 
     return attach_in_html
-
+"""
 
 
 notify()
