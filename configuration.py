@@ -46,3 +46,10 @@ EXCEPTION_EMAIL = u"root@rework.reshim.com|undisclosed-recipients|hr@vipservice.
 # Список задатся именами доменов разделенных "|" без пробелов
 # Если надо проверять все, оставить пустым
 CHECK_DOMAINS = u"akrikhin.ru"
+
+# Тип приложения которое будет прикреаляться к уведомлению и содержать пеерписку
+# в которой учавствует подозрительное письмо
+# Может быть pdf или html
+FILE_ATTACH_TYPE = "pdf"
+
+
