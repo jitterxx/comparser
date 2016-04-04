@@ -25,7 +25,7 @@ smtp_pass = "Qazcde123"
 
 # Кому будут направляться сообщения о классификации от имени аккаунта анализатора. см. выше.
 # Можно добавить несколько адресов получателей через пробел.
-to_address = "v.vlasova@vipct.ru"
+to_address = "v.vlasova@vipct.ru y.nikitina@vipct.ru"
 
 # Отправка уведомлений только для категорий из WARNING_CATEGORY
 SEND_ONLY_WARNING = True
