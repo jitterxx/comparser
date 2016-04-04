@@ -57,6 +57,7 @@ def notify():
         categoryll = sorted(ll, key=lambda (k, v): v, reverse=True)
 
         print "Дата запуска: ", datetime.datetime.now()
+        print "MSGID: %s " % msg.message_id
         print "От: %s (%s)" % (msg.sender, msg.sender_name)
         print "\n%s\n" % msg.message_text
 
@@ -189,7 +190,7 @@ def send_email(category, orig_msg, msg_uuid):
                 print "Отправленно на адрес: %s" % addr
     finally:
         smtp.quit()
-        raw_input()
+        # raw_input()
 
 
 def create_attach(msg_id=None):
