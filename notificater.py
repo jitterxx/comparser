@@ -120,7 +120,7 @@ def send_email(category, orig_msg, msg_uuid):
 
     # Формируем текст сообщения в plain
     orig_text = "\n\n---------------- Исходное сообщение -------------------\n"
-    orig_text += "Дата: %s \n" % orig_msg.create_date
+    orig_text += "Дата: %s \n" % orig_msg.orig_date
     orig_text += "От кого: %s (%s)\n" % (orig_msg.sender_name, orig_msg.sender)
     orig_text += "Кому: %s (%s) \n" % (orig_msg.recipients_name, orig_msg.recipients)
     orig_text += "Тема: %s" % orig_msg.message_title
