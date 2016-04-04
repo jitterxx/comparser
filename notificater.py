@@ -67,19 +67,35 @@ def notify():
         # Если нужно оповещать только при конфликте
         if SEND_ONLY_WARNING and cat in WARNING_CATEGORY:
             print "Это %s. Отправляем уведомление." % cat
-            send_email(categoryll, msg, msg_uuid)
+
+            try:
+                send_email(categoryll, msg, msg_uuid)
+            except Exception as e:
+                print "Ошибка отправки сообщения. Ошибка: ", str(e)
+                raise e
+
             print "#" * 30
         elif not SEND_ONLY_WARNING:
             # Если нужно оповещать об всех сообщениях
             print "Это %s. Отправляем уведомление." % cat
-            send_email(categoryll, msg, msg_uuid)
+
+            try:
+                send_email(categoryll, msg, msg_uuid)
+            except Exception as e:
+                print "Ошибка отправки сообщения. Ошибка: ", str(e)
+                raise e
+
             print "#" * 30
         else:
             print "Уведомление не отправлено."
             print "#" * 30
 
-        msg.notified = 1
-        session.commit()
+        try:
+            msg.notified = 1
+            session.commit()
+        except Exception as e:
+            print "Ошибка при отметке уведомления для сообщения. Ошибка: ", str(e)
+            raise e
 
         # Чистые сообщения используются для переобучения системы, если была совершена ошибка и пользователь об этом
         # сообщил. При отправке результатов не чистим.
