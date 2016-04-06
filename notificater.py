@@ -165,14 +165,17 @@ def send_email(category, orig_msg, msg_uuid):
             part.add_header('Content-Disposition', 'attachment; filename="full thread.html"')
             msg.attach(part)
         elif FILE_ATTACH_TYPE == "pdf" and attach_in_html:
-            pdf = pdfkit.from_string(attach_in_html, False)
+            # без X сервера, нужно делать хак от поставщика. Меняется путь к исполняемому файлу
+            # https://github.com/JazzCore/python-pdfkit/wiki/Using-wkhtmltopdf-without-X-server
+            config = pdfkit.configuration(wkhtmltopdf="/usr/local/bin/wkhtmltopdf")
+            pdf = pdfkit.from_string(attach_in_html, False, configuration=config)
             part = email.MIMEBase.MIMEBase('application', "octet-stream")
             part.set_payload(pdf)
             email.Encoders.encode_base64(part)
             part.add_header('Content-Disposition', 'attachment; filename="full thread.pdf"')
             msg.attach(part)
     except Exception as e:
-        print "notificater. Adding attach to notification. Ошибка: ", str(e)
+        print "notificater. Ошибка при создании приложения. Ошибка: ", str(e)
         attach_in_html = None
         pass
     else:
