@@ -93,8 +93,8 @@
                                     <td width="460">
                                         <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
                                             <%
-                                                sender = one.sender.replace("(", "&lt;")
-                                                sender = sender.replace(")", "&gt;")
+                                                sender = one.sender.replace("<", "(")
+                                                sender = sender.replace(">", ")")
                                             %>
                                             ${sender}
                                         </span>
@@ -109,8 +109,8 @@
                                     <td width="460">
                                         <span style="color: #333333;font-family:Arial, Helvetica, sans-serif;font-size:14px;">
                                             <%
-                                                rctp = one.recipient.replace("(", "&lt;")
-                                                rctp = rctp.replace(")", "&gt;")
+                                                rctp = one.recipient.replace("<", "(")
+                                                rctp = rctp.replace(">", ")")
                                             %>
                                             ${rctp}
                                         </span>
