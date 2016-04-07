@@ -51,4 +51,5 @@ CHECK_DOMAINS = u"akrikhin.ru"
 # Может быть pdf или html
 FILE_ATTACH_TYPE = "pdf"
 
-
+# Место положение скрипта для решения проблемы с отсутствием X сервера
+WK_HTML_TO_PDF_PATH = "/usr/bin/wkhtmltopdf"

@@ -167,7 +167,7 @@ def send_email(category, orig_msg, msg_uuid):
         elif FILE_ATTACH_TYPE == "pdf" and attach_in_html:
             # без X сервера, нужно делать хак от поставщика. Меняется путь к исполняемому файлу
             # https://github.com/JazzCore/python-pdfkit/wiki/Using-wkhtmltopdf-without-X-server
-            config = pdfkit.configuration(wkhtmltopdf="/usr/local/bin/wkhtmltopdf")
+            config = pdfkit.configuration(wkhtmltopdf=WK_HTML_TO_PDF_PATH)
             pdf = pdfkit.from_string(attach_in_html, False, configuration=config)
             part = email.MIMEBase.MIMEBase('application', "octet-stream")
             part.set_payload(pdf)
@@ -188,6 +188,7 @@ def send_email(category, orig_msg, msg_uuid):
 
     msg.attach(email.MIMEText.MIMEText(body_in_html, "html", "UTF-8"))
     print "Сообщение сформировано."
+
     # PLAIN text сообщение
     # msg.attach(email.MIMEText.MIMEText(body, "plain", "UTF-8"))
 
