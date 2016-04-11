@@ -86,7 +86,7 @@ class ThreadClient(threading.Thread):
             blabla
         """
         mline = "{0}{1}".format(line, CRLF)
-        print("B>", line)
+        # print("B>", line)
         self.mbuffer.append(line)
 
     def flush_body(self):
@@ -96,7 +96,7 @@ class ThreadClient(threading.Thread):
         """
         for line in self.mbuffer:
             mline = "{0}{1}".format(line, CRLF)
-            print("~B>", mline)
+            # print("~B>", mline)
             self.message += mline.encode()
             # self.remote.send(mline.encode())
 
@@ -108,7 +108,7 @@ class ThreadClient(threading.Thread):
         """All header lines (subject, date, mailer, ...) are processed here.
         """
         mline = "{0}{1}".format(line, CRLF)
-        print("H>", line)
+        # print("H>", line)
         self.message += mline.encode()
         # self.remote.send(mline.encode())
 
@@ -120,7 +120,7 @@ class ThreadClient(threading.Thread):
             MAIL FROM: foo@bar.tld
         """
         mline = "{0}{1}".format(line, CRLF)
-        print(">>", line)
+        # print(">>", line)
         # self.remote.send(mline.encode())
 
     def run(self):
@@ -214,8 +214,8 @@ class ThreadClient(threading.Thread):
             """
         # self.remote.close()
 
-        print("SMTP daemon. Message :")
-        print(self.message, "-" * 30, "\n")
+        # print("SMTP daemon. Message :")
+        # print(self.message, "-" * 30, "\n")
 
         if not eater(data=self.message):
             # Вернуть код ошибки, чтобы сообщение попало в deffered очередь postfix
@@ -277,9 +277,9 @@ def eater(data=None):
         finally:
             session.close()
 
-    print("Eater. Message :")
-    print(msg)
-    print("-" * 30)
+    # print("Eater. Message :")
+    # print(msg)
+    # print("-" * 30)
 
 srv = Server(("127.0.0.1", 10025), ("127.0.0.1", 10026))
 

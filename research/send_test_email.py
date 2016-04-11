@@ -37,7 +37,7 @@ def send_email(category=None, orig_msg=None, msg_uuid=None):
     msg.preamble = "This is a multi-part message in MIME format."
     msg.epilogue = "End of message"
 
-    f = open("_ace5e882e7693a1a4babb033e6afc616_NumPy_-SciPy_-Matplotlib-intro.ipynb", "r")
+    f = open("/home/sergey/Downloads/_978803ada596ebb23988fe6406c5c7ec_Osnovy-matematicheskogo-analiza.pdf", "r")
     pdf = f.read()
     part = email.MIMEBase.MIMEBase('application', "octet-stream")
     part.set_payload(pdf)
@@ -61,12 +61,14 @@ def send_email(category=None, orig_msg=None, msg_uuid=None):
     else:
         msg['message-id'] = uuid.uuid4().__str__()
         msg['Date'] = datetime.datetime.now().__str__() + " +0300"
-        msg['From'] = from_addr
+        # msg['From'] = from_addr
+        msg['From'] = "wsd55cfuh@reshim.com"
         msg['To'] = ""
         msg['Subject'] = Header("Сообщение от Conversation parser", "utf8")
 
         for addr in to_addr:
-            msg.replace_header("To", "golubkov@vipct.ru")
+            # msg.replace_header("To", "golubkov@vipct.ru")
+            msg.replace_header("To", "tttry333y@geoprice.mobi")
             text = msg.as_string()
             try:
                 smtp.sendmail(from_addr, addr, text)
@@ -79,6 +81,6 @@ def send_email(category=None, orig_msg=None, msg_uuid=None):
         smtp.quit()
 
 
-for i in range(1):
+for i in range(1000):
     send_email()
 
