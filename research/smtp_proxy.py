@@ -6,6 +6,10 @@ from __future__ import print_function
 import re, sys, os, socket, threading, signal
 from select import select
 import pdb
+# conversation parser object
+import objects as CPO
+import argparse
+
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
@@ -209,10 +213,18 @@ class ThreadClient(threading.Thread):
             """
         # self.remote.close()
 
-        mline = "{0}{1}".format("250 ok terminate", CRLF)
-        self.local.send(mline.encode())
+        print("SMTP daemon. Message :")
+        print(self.message, "-" * 30, "\n")
 
-        print("Message :", self.message)
+        if not eater(msg=self.message):
+            # Вернуть код ошибки, чтобы сообщение попало в deffered очередь postfix
+            mline = "{0}{1}".format("421 Message not writed to MsgRaw. Close transmission channel.", CRLF)
+            self.local.send(mline.encode())
+
+        else:
+            # Все нормально сообщение записано
+            mline = "{0}{1}".format("250 ok terminate", CRLF)
+            self.local.send(mline.encode())
 
         self.local.close()
         self.server.accepted.pop(self.getName())
@@ -220,6 +232,51 @@ class ThreadClient(threading.Thread):
     def die(self):
         self.please_die = True
 
+
+def eater(msg=None):
+
+    parser = argparse.ArgumentParser(description='Debug option')
+    parser.add_argument('-d', action='store_true', dest='debug', help='print debug info')
+    args = parser.parse_args()
+    debug = args.debug
+
+    if msg:
+        try:
+            session = CPO.Session()
+
+            message = CPO.parse_message(msg=msg, debug=debug)
+
+            new = CPO.MsgRaw()
+            new.message_id = message[0]  # msg_id
+            new.sender = message[1]  # from_
+            new.recipient = message[2]  # to
+            new.cc_recipient = message[3]  # cc
+            new.message_title = message[4]  # subject
+            new.message_text = message[5]  # text2[0]
+            new.message_text_html = message[6]  # text2[1]
+            new.orig_date = message[7]  # msg_datetime
+            new.isbroken = message[8]  # int(broken_msg)
+            new.references = message[9]  # references
+            new.in_reply_to = message[10]  # in-reply-to header
+            new.orig_date_str = message[11]  # original date header string with timezone info
+
+            session.add(new)
+            session.commit()
+        except Exception as e:
+            print("Ошибка записи нового сообщения. %s" % str(e))
+            print("Message ID: %s" % msg['message-id'])
+            return False
+        else:
+            if debug:
+                print('Перенос в прочитанные...\n')
+                print('Битое: ', message[8])
+            return True
+        finally:
+            session.close()
+
+    print("Eater. Message :")
+    print(msg)
+    print("-" * 30)
 
 srv = Server(("127.0.0.1", 10025), ("127.0.0.1", 10026))
 

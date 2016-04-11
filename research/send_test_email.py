@@ -67,6 +67,6 @@ def send_email(category=None, orig_msg=None, msg_uuid=None):
         smtp.quit()
 
 
-for i in range(100):
+for i in range(1):
     send_email()
 
