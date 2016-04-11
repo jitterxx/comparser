@@ -9,6 +9,7 @@ import pdb
 # conversation parser object
 import objects as CPO
 import argparse
+import email
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -216,7 +217,7 @@ class ThreadClient(threading.Thread):
         print("SMTP daemon. Message :")
         print(self.message, "-" * 30, "\n")
 
-        if not eater(msg=self.message):
+        if not eater(data=self.message):
             # Вернуть код ошибки, чтобы сообщение попало в deffered очередь postfix
             mline = "{0}{1}".format("421 Message not writed to MsgRaw. Close transmission channel.", CRLF)
             self.local.send(mline.encode())
@@ -233,12 +234,15 @@ class ThreadClient(threading.Thread):
         self.please_die = True
 
 
-def eater(msg=None):
+def eater(data=None):
 
     parser = argparse.ArgumentParser(description='Debug option')
     parser.add_argument('-d', action='store_true', dest='debug', help='print debug info')
     args = parser.parse_args()
     debug = args.debug
+
+    # собираем объект email для парсинга
+    msg = email.message_from_string(data)
 
     if msg:
         try:
@@ -264,7 +268,6 @@ def eater(msg=None):
             session.commit()
         except Exception as e:
             print("Ошибка записи нового сообщения. {0}".format(str(e)))
-            print("Message ID: {0}".format(message[0]))
             return False
         else:
             if debug:
