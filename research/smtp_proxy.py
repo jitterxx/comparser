@@ -264,7 +264,7 @@ def eater(msg=None):
             session.commit()
         except Exception as e:
             print("Ошибка записи нового сообщения. {0}".format(str(e)))
-            print("Message ID: {0}".format(msg['message-id']))
+            print("Message ID: {0}".format(message[0]))
             return False
         else:
             if debug:
