@@ -37,8 +37,18 @@ def send_email(category=None, orig_msg=None, msg_uuid=None):
     msg.preamble = "This is a multi-part message in MIME format."
     msg.epilogue = "End of message"
 
+    f = open("_ace5e882e7693a1a4babb033e6afc616_NumPy_-SciPy_-Matplotlib-intro.ipynb", "r")
+    pdf = f.read()
+    part = email.MIMEBase.MIMEBase('application', "octet-stream")
+    part.set_payload(pdf)
+    email.Encoders.encode_base64(part)
+    part.add_header('Content-Disposition', 'attachment; filename="attach.pdf"')
+    msg.attach(part)
+    f.close()
+
     # PLAIN text сообщение
     msg.attach(email.MIMEText.MIMEText(body, "plain", "UTF-8"))
+
 
     smtp = SMTP()
 
@@ -49,10 +59,12 @@ def send_email(category=None, orig_msg=None, msg_uuid=None):
         print "Ошибка подключения к серверу %s с логином %s."  % ("", from_addr)
         print "Ошибка: ", str(e)
     else:
+        msg['message-id'] = uuid.uuid4().__str__()
+        msg['Date'] = datetime.datetime.now().__str__() + " +0300"
         msg['From'] = from_addr
         msg['To'] = ""
         msg['Subject'] = Header("Сообщение от Conversation parser", "utf8")
-        msg['message-id'] = uuid.uuid4().__str__()
+
         for addr in to_addr:
             msg.replace_header("To", "golubkov@vipct.ru")
             text = msg.as_string()
