@@ -8,13 +8,14 @@ from select import select
 import pdb
 # conversation parser object
 import objects as CPO
+from configuration import *
 import email
 import requests
 import json
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
-
+sys.path.extend(['/home/sergey/dev/conflict analyser'])
 
 CRLF="\r\n"
 
@@ -230,7 +231,7 @@ class ThreadClient(threading.Thread):
                 new.orig_date_str = message[11]  # original date header string with timezone info
 
                 # отправка в сервис
-                if send_to_reciever(msg=message):
+                if send_to_receiver(msg=message):
                     print("Smtp_proxy(). Успешно отправлено в сервис. Пишем в базу.")
                     session.add(new)
                     session.commit()
@@ -268,23 +269,23 @@ class ThreadClient(threading.Thread):
         self.please_die = True
 
 
-def send_to_reciever(msg=None):
+def send_to_receiver(msg=None):
 
     msg[7] = msg[7].__str__()
     data = ""
     try:
         data = json.dumps(msg)
-        r = requests.post('http://127.0.0.1:9595/post', data={'json_data': data}, allow_redirects=False, timeout=20)
+        r = requests.post(receiver_url, data={'json_data': data}, allow_redirects=False, timeout=20)
     except Exception as e:
-        print("Send_to_reciever(). Ошибка запроса на отправку данных. \n Ошибка: {}".format(str(e)))
+        print("Send_to_receiver(). Ошибка запроса на отправку данных. \n Ошибка: {}".format(str(e)))
         return False
     else:
-        print("Send_to_reciever(). Status code: ", r.status_code)
+        print("Send_to_receiver(). Status code: ", r.status_code)
         if r.status_code == requests.codes.ok:
-            print("Send_to_reciever(). Отправка успешна.")
+            print("Send_to_receiver(). Отправка успешна.")
             return True
         else:
-            print("Send_to_reciever(). Ошибка при отправке.")
+            print("Send_to_receiver(). Ошибка при отправке.")
             return False
 
 

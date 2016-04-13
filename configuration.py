@@ -53,3 +53,7 @@ FILE_ATTACH_TYPE = "pdf"
 
 # Место положение скрипта для решения проблемы с отсутствием X сервера
 WK_HTML_TO_PDF_PATH = "/usr/bin/wkhtmltopdf"
+
+# Service receiver URL. Accept connection and data from email_eater and write MsgRaw to DB
+receiver_url = "http://127.0.0.1:9595/post"
+
