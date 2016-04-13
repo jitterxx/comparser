@@ -8,11 +8,13 @@ from select import select
 import pdb
 # conversation parser object
 import objects as CPO
-import argparse
 import email
+import requests
+import json
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
+
 
 CRLF="\r\n"
 
@@ -197,34 +199,66 @@ class ThreadClient(threading.Thread):
             # Check if the server side has something to say:
             # ready_to_read, ready_to_write, in_error = select([self.remote], [], [], 0.1)
 
-            """
-            if len(ready_to_read) > 0:
-                try:
-                    msg = self.remote.recv(1024)
-                except Exception as err:
-                    print(str(self.getName()) + " > " + str(err))
-                    break
-                else:
-                    dmsg = msg.decode()
-                    if dmsg != "":
-                        print("<< {0}".format(repr(msg.decode())))
-                        self.local.send(dmsg.encode())
-                    else:
-                        break
-            """
-        # self.remote.close()
-
         # print("SMTP daemon. Message :")
         # print(self.message, "-" * 30, "\n")
 
-        if not eater(data=self.message):
-            # Вернуть код ошибки, чтобы сообщение попало в deffered очередь postfix
-            mline = "{0}{1}".format("421 Message not writed to MsgRaw. Close transmission channel.", CRLF)
-            self.local.send(mline.encode())
+        debug = False
+        # собираем объект email для парсинга
+        try:
+            msg = email.message_from_string(self.message)
+        except Exception as e:
+            print("smtp_proxy(). Ошибка при получении объекта email из строки. \n Ошибка: {0}".format(str(e)))
+            msg = None
+
+        if msg:
+            session = CPO.Session()
+            try:
+                message = CPO.parse_message(msg=msg, debug=debug)
+
+                new = CPO.MsgRaw()
+                new.message_id = message[0]  # msg_id
+                new.sender = message[1]  # from_
+                new.recipient = message[2]  # to
+                new.cc_recipient = message[3]  # cc
+                new.message_title = message[4]  # subject
+                new.message_text = message[5]  # text2[0]
+                new.message_text_html = message[6]  # text2[1]
+                new.orig_date = message[7]  # msg_datetime
+                new.isbroken = message[8]  # int(broken_msg)
+                new.references = message[9]  # references
+                new.in_reply_to = message[10]  # in-reply-to header
+                new.orig_date_str = message[11]  # original date header string with timezone info
+
+                # отправка в сервис
+                if send_to_reciever(msg=message):
+                    print("Smtp_proxy(). Успешно отправлено в сервис. Пишем в базу.")
+                    session.add(new)
+                    session.commit()
+                else:
+                    print("Smtp_proxy(). Ошибка при отправке в сервис.")
+
+            except Exception as e:
+                print("Smtp_proxy(). Ошибка записи нового сообщения. {0}".format(str(e)))
+                eater = False
+            else:
+                eater = True
+
+            finally:
+                session.close()
+
+            if not eater:
+                # Вернуть код ошибки, чтобы сообщение попало в deffered очередь postfix
+                mline = "{0}{1}".format("421 Message not writed to MsgRaw. Close transmission channel.", CRLF)
+                self.local.send(mline.encode())
+
+            else:
+                # Все нормально сообщение записано
+                mline = "{0}{1}".format("250 ok terminate", CRLF)
+                self.local.send(mline.encode())
 
         else:
-            # Все нормально сообщение записано
-            mline = "{0}{1}".format("250 ok terminate", CRLF)
+            # Вернуть код deffered. Пустое сообщение
+            mline = "{0}{1}".format("421 Message is empty. Close transmission channel.", CRLF)
             self.local.send(mline.encode())
 
         self.local.close()
@@ -234,20 +268,37 @@ class ThreadClient(threading.Thread):
         self.please_die = True
 
 
+def send_to_reciever(msg=None):
+
+    msg[7] = msg[7].__str__()
+    data = ""
+    try:
+        data = json.dumps(msg)
+        r = requests.post('http://127.0.0.1:9595/post', data={'json_data': data}, allow_redirects=False, timeout=20)
+    except Exception as e:
+        print("Send_to_reciever(). Ошибка запроса на отправку данных. \n Ошибка: {}".format(str(e)))
+        return False
+    else:
+        print("Send_to_reciever(). Status code: ", r.status_code)
+        if r.status_code == requests.codes.ok:
+            print("Send_to_reciever(). Отправка успешна.")
+            return True
+        else:
+            print("Send_to_reciever(). Ошибка при отправке.")
+            return False
+
+
+"""
 def eater(data=None):
 
-    parser = argparse.ArgumentParser(description='Debug option')
-    parser.add_argument('-d', action='store_true', dest='debug', help='print debug info')
-    args = parser.parse_args()
-    debug = args.debug
+    debug = False
 
     # собираем объект email для парсинга
     msg = email.message_from_string(data)
 
     if msg:
+        session = CPO.Session()
         try:
-            session = CPO.Session()
-
             message = CPO.parse_message(msg=msg, debug=debug)
 
             new = CPO.MsgRaw()
@@ -280,6 +331,8 @@ def eater(data=None):
     # print("Eater. Message :")
     # print(msg)
     # print("-" * 30)
+
+"""
 
 srv = Server(("127.0.0.1", 10025), ("127.0.0.1", 10026))
 
