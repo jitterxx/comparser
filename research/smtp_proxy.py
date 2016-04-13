@@ -237,7 +237,7 @@ class ThreadClient(threading.Thread):
                     session.commit()
                 else:
                     print("Smtp_proxy(). Ошибка при отправке в сервис.")
-
+                    eater = False
             except Exception as e:
                 print("Smtp_proxy(). Ошибка записи нового сообщения. {0}".format(str(e)))
                 eater = False
