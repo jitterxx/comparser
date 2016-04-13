@@ -37,6 +37,30 @@ def send_email(category=None, orig_msg=None, msg_uuid=None):
     msg.preamble = "This is a multi-part message in MIME format."
     msg.epilogue = "End of message"
 
+    msg['Message-ID'] = uuid.uuid4().__str__()
+    msg["Received"] = "from imap.yandex.ru [213.180.204.124] by rework.reshim.com with IMAP (fetchmail-6.3.26) " \
+                      "for <vipct@localhost> (single-drop); Thu, 03 Mar 2016 12:43:01 +0300 (MSK)"
+
+    msg["Received"] = "from mxfront8o.mail.yandex.net ([127.0.0.1]) " \
+                      "by mxfront8o.mail.yandex.net with LMTP id jbPxZQhY" \
+                      "for <vipct@conparser.ru>; Thu, 3 Mar 2016 12:42:02 +0300"
+
+    msg["Received"] = "from mail.vipct.ru (mail.vipct.ru [193.232.117.207])" \
+                      "by mxfront8o.mail.yandex.net (nwsmtp/Yandex) with SMTP id 4LzAluubij-g2jaGMWS; " \
+                      "Thu, 03 Mar 2016 12:42:02 +0300"
+
+    msg["Return-Path"] = "v.sviridov@vipct.ru"
+    msg["X-Yandex-Front"] = "mxfront8o.mail.yandex.net"
+    msg["X-Yandex-TimeMark"] = "1456998122"
+    msg["X-Yandex-Spam"] = "1"
+    msg["References"] = "<56D805B7.3000803@vipct.ru>"
+
+    msg['Date'] = datetime.datetime.now().__str__() + " +0300"
+    # msg['From'] = from_addr
+    msg['From'] = "wsd55cfuh@reshim.com"
+    msg['To'] = ""
+    msg['Subject'] = Header("Сообщение от Conversation parser", "utf8")
+
     f = open("/home/sergey/Downloads/_978803ada596ebb23988fe6406c5c7ec_Osnovy-matematicheskogo-analiza.pdf", "r")
     pdf = f.read()
     part = email.MIMEBase.MIMEBase('application', "octet-stream")
@@ -59,12 +83,6 @@ def send_email(category=None, orig_msg=None, msg_uuid=None):
         print "Ошибка подключения к серверу %s с логином %s."  % ("", from_addr)
         print "Ошибка: ", str(e)
     else:
-        msg['message-id'] = uuid.uuid4().__str__()
-        msg['Date'] = datetime.datetime.now().__str__() + " +0300"
-        # msg['From'] = from_addr
-        msg['From'] = "wsd55cfuh@reshim.com"
-        msg['To'] = ""
-        msg['Subject'] = Header("Сообщение от Conversation parser", "utf8")
 
         for addr in to_addr:
             # msg.replace_header("To", "golubkov@vipct.ru")
