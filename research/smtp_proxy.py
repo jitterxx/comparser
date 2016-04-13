@@ -231,18 +231,22 @@ class ThreadClient(threading.Thread):
                 new.orig_date_str = message[11]  # original date header string with timezone info
 
                 # отправка в сервис
-                if send_to_receiver(msg=message):
+                send_to = send_to_receiver(msg=message)
+                if send_to:
                     print("Smtp_proxy(). Успешно отправлено в сервис. Пишем в базу.")
                     session.add(new)
                     session.commit()
                 else:
                     print("Smtp_proxy(). Ошибка при отправке в сервис.")
-                    eater = False
+
             except Exception as e:
                 print("Smtp_proxy(). Ошибка записи нового сообщения. {0}".format(str(e)))
                 eater = False
             else:
-                eater = True
+                if send_to:
+                    eater = True
+                else:
+                    eater = False
 
             finally:
                 session.close()
