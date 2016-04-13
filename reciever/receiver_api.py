@@ -9,22 +9,14 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 sys.path.extend(['/home/sergey/dev/conflict analyser'])
 
-from configuration import *
 import objects as CPO
 import cherrypy
-from bs4 import BeautifulSoup
-from mako.lookup import TemplateLookup
-import user_agents
 import dateutil.parser
 import dateutil.tz
 import datetime
 import json
 
 __author__ = 'sergey'
-
-lookup = TemplateLookup(directories=["./templates"], output_encoding="utf-8",
-                        input_encoding="utf-8", encoding_errors="replace")
-
 
 class Root(object):
 
@@ -34,8 +26,8 @@ class Root(object):
         try:
             message = json.loads(json_data)
 
-            for key in message:
-                print "\t", key
+            #for key in message:
+            #    print "\t", key
 
         except Exception as e:
             cherrypy.response.status = 500
@@ -54,7 +46,7 @@ class Root(object):
             else:
                 if resp:
                     # Если существует, значит передача уже состоялась
-                    pass
+                    # print "Message already writed."
                     cherrypy.response.status = 200
                     return "Message already writed."
                 else:
