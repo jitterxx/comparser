@@ -21,6 +21,16 @@ h6 {
     font-weight: 700;
 }
 
+.image {
+    background: url(/static/img/space_background1.jpeg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+
+
 .topnav {
     font-size: 14px; 
 }

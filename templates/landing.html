@@ -63,7 +63,7 @@
 
 <body>
 
-
+<%doc>
     <!-- Navigation -->
     <nav class="navbar navbar-default topnav" role="navigation">
         <div class="container topnav">
@@ -89,55 +89,64 @@
         </div>
         <!-- /.container -->
     </nav>
-
+</%doc>
     <!-- Header -->
     <a name="about"></a>
-    <div class="intro-header">
+    <div class="image">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12 col-xs-12 col-md-12 col-sm-12" align="center">
-                    <div class="intro-message">
+                    <br style="margin-top: 100px">
+                    <div class="intro-message" style="color: #ffffff">
                         % if user_agent.is_mobile or user_agent.is_tablet:
                             <h2>
-                                Вовремя узнайте <br>о письмах клиентов, <br> оставшихся без ответа
+                                CONVERSATION PARSER
                             </h2>
                             <h4>
-                                узнайте о переписке, приводящей к конфликту, <br>
-                                не читая десятки писем.<br>
-                                Решайте проблемы до их возникновения.
+                                мониторинг коммуникаций с клиентами
                             </h4>
-                            <hr style="width: 60%; margin: 50px">
-                            <div style="width: 60%;">
-                                <a href="#connect" class="btn btn-success btn-lg btn-block">
-                                    14 дней бесплатно
-                                </a>
-                            </div>
                         % else:
                             <h1>
-                                Вовремя узнайте <br>о письмах клиентов, <br> оставшихся без ответа
+                                CONVERSATION PARSER
                             </h1>
                             <h3>
-                                узнайте о переписке, приводящей к конфликту, <br>
-                                не читая десятки писем.<br>
-                                Решайте проблемы до их возникновения.
+                                мониторинг коммуникаций с клиентами
                             </h3>
-                            <hr style="width: 60%; margin: 50px">
-                            <div style="width: 60%;">
-                                <a href="#connect" class="btn btn-success btn-lg btn-block" type="button">
-                                    14 дней бесплатно
-                                </a>
-                            </div>
                         % endif
                     </div>
+                    <br style="margin-top: 200px">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12 col-xs-12 col-md-12 col-sm-12" align="center"
+                style="margin-top: 50px; margin-bottom: 100px;">
+                    <a href="">
+                        <h4 style="color: #ffffff">info@conparser.ru</h4>
+                    </a>
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                    <a href="/static/docs/conversation_parser_confident_policy.pdf">
+                        <p class="small" style="color: #ffffff">Политика конфиденциальности</p>
+                    </a>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6" align="right">
+                    <div class="fb-like"
+                         data-href="https://www.facebook.com/Conparser" data-width="100" data-layout="button"
+                         data-action="like" data-show-faces="false" data-share="true">
+                    </div>
+                </div>
+                <br>
+                <br>
+                <br>
+            </div>
+
         </div>
-        <!-- /.container -->
-
     </div>
-    <!-- /.intro-header -->
 
+<%doc>
     <!-- Page Content -->
 
 	<a  name="services"></a>
@@ -581,6 +590,7 @@
         </div>
     </div>
 
+
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -638,7 +648,11 @@
     </script>
     -->
 
+
+</%doc>
+
     <div id="fb-root"></div>
+
     <script>(function(d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
