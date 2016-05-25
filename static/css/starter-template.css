@@ -32,19 +32,25 @@ hr {
 
 .section-a {}
 
-.section-b {}
+.section-b {
+    background-color: #eee;
+}
 
 .header {
-    padding-top: 100px;
-    padding-bottom: 100px;
+    padding-top: 3em;
+    padding-bottom: 7em;
     text-align: center;
+    background: url(/static/img/header-bg-waves.png) no-repeat center 40%;
+    background-size: cover;
+    height: 40em;
+
 
 }
 
 .header-phrase {
     color: #0083dd;
     position: relative;
-    margin: 0;
+    margin-top: 2em;
     text-shadow: 2px 2px 3px #cccccc;
     font-size: 4em;
     font-weight: 700;

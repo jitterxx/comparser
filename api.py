@@ -207,6 +207,39 @@ class Root(object):
         return ShowNotification().index(text, "/")
 
     @cherrypy.expose
+    def promo(self, qr=None):
+        if not qr:
+            name = ""
+            phone = ""
+            mail = ""
+        else:
+            promo_codes = {
+                "PROMOXSW": {"name": "Артур Владимирович", "phone": "+78127024242", "email": ""},
+                "PROMOZAQ": {"name": "Андреас Василис", "phone": "+78124540506", "email": ""},
+                "PROMOCDE": {"name": "Александр Дубовенко", "phone": "+78003331111", "email": ""},
+                "PROMOVFR": {"name": "", "phone": "+78123209620", "email": ""},
+                "PROMOBGT": {"name": "", "phone": " +78126032688", "email": ""},
+                "PROMONHY": {"name": "Владимир Николаевич", "phone": "+78126406021", "email": ""},
+                "PROMOMJU": {"name": "Валерий Сергеевич", "phone": "+78553393604 ", "email": ""},
+                "PROMOPOI": {"name": "Александр Константинович", "phone": "+78124061395", "email": ""}
+            }
+
+            if str(qr).upper() in promo_codes.keys():
+                name = promo_codes[str(qr).upper()]["name"]
+                phone = promo_codes[str(qr).upper()]["phone"]
+                mail = promo_codes[str(qr).upper()]["email"]
+            else:
+                name = ""
+                phone = ""
+                mail = ""
+
+        tmpl = lookup.get_template("promo_landing_ver3.html")
+
+        return tmpl.render(mail=mail, name=name, phone=phone)
+
+
+
+    @cherrypy.expose
     def send_contacts_demo(self, customer_email=None, customer_name=None, pd=None, ads_code=None):
         if not customer_email:
             customer_email = "не указан"
@@ -228,6 +261,27 @@ class Root(object):
         """ % customer_name
 
         return ShowNotification().index(text, "/")
+
+    @cherrypy.expose
+    def send_contacts_promo(self, customer_email=None, customer_name=None, customer_phone=None):
+        if not customer_email:
+            customer_email = "не указан"
+        if not customer_name:
+            customer_name = "не указано"
+        if not customer_phone:
+            customer_phone = "не указано"
+
+        try:
+            landing_customer_contacts(customer_email=customer_email, customer_name=customer_name,
+                                      customer_session=cherrypy.request.headers, customer_phone=customer_phone)
+        except Exception as e:
+            print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
+
+        print customer_email, customer_name,  cherrypy.request.headers, customer_phone
+
+        tmpl = lookup.get_template("contacts_ok_landing_ver3.html")
+
+        return tmpl.render()
 
 
 cherrypy.config.update("server.config")
