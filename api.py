@@ -169,7 +169,7 @@ class Root(object):
         :return:
         """
 
-        tmpl = lookup.get_template("landing.html")
+        tmpl = lookup.get_template("landing_ver3.html")
 
         if not ads:
             ads = "organic"
