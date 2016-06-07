@@ -10,7 +10,7 @@ import datetime
 import email
 from email.header import Header
 from smtplib import SMTP_SSL
-from mod_classifier import fisherclassifier, specfeatures
+# from mod_classifier import fisherclassifier, specfeatures #  старые функции классификации для старого демо
 import uuid
 import re
 
@@ -209,7 +209,7 @@ def landing_customer_contacts(customer_email=None, customer_phone=None, customer
     smtp.sendmail(from_addr, to_addr.split(","), text)
     smtp.quit()
 
-
+"""
 def demo_classify(description):
 
     answer = ["", 0]
@@ -283,7 +283,7 @@ def demo_classify(description):
         session.close()
 
     return answer, record_uid
-
+"""
 
 def get_message_for_train(msg_uuid):
     session = Session()
