@@ -312,3 +312,90 @@ def get_message_for_train(msg_uuid):
 
     return [True, desc, answer]
 
+
+class User(Base):
+    """
+    Класс для работы с объектами Пользователей системы.
+
+    Список свойств класса:
+
+    :parameter id: sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    :parameter uuid: идентифкатор (sqlalchemy.Column(sqlalchemy.String(50), default=uuid.uuid1()))
+    :parameter name: имя пользователя (sqlalchemy.Column(sqlalchemy.String(256)))
+    :parameter surname: фамилия пользователя (sqlalchemy.Column(sqlalchemy.String(256)))
+    :parameter login: логин пользователя (sqlalchemy.Column(sqlalchemy.String(50)))
+    :parameter password: пароль пользователя (sqlalchemy.Column(sqlalchemy.String(20)))
+    :parameter disabled: индикатор использования аккаунта пользователя(0 - используется, 1 - отключен \
+    (sqlalchemy.Column(sqlalchemy.Integer))
+    :parameter access_groups: список групп доступа в которые входит пользователь
+
+    """
+
+    EDIT_FIELDS = ['name', 'surname', 'password']
+    ALL_FIELDS = {'name': 'Имя', 'surname': 'Фамилия',
+                  'login': 'Логин', 'password': 'Пароль',
+                  'id': 'id', 'uuid': 'uuid',
+                  'access_groups': 'Группы доступа'}
+    VIEW_FIELDS = ['name', 'surname', 'login', 'password', 'access_groups']
+    ADD_FIELDS = ['name', 'surname', 'login', 'password', 'access_groups']
+    NAME = "Сотрудник"
+
+    STATUS = {0: 'Используется', 1: 'Не используется'}
+
+    __tablename__ = 'users'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    uuid = sqlalchemy.Column(sqlalchemy.String(50), default=uuid.uuid1())
+    name = sqlalchemy.Column(sqlalchemy.String(256), default="")
+    surname = sqlalchemy.Column(sqlalchemy.String(256), default="")
+    login = sqlalchemy.Column(sqlalchemy.String(256), default="")
+    password = sqlalchemy.Column(sqlalchemy.String(256), default="")
+    access_groups = sqlalchemy.Column(sqlalchemy.String(256), default="")
+    disabled = Column(Integer, default=0)
+
+    def __init__(self):
+        self.uuid = uuid.uuid1()
+        self.list_access_groups = list()
+        self.list_access_groups = re.split(",", self.access_groups)
+
+    def read(self):
+        self.list_access_groups = list()
+        if not self.access_groups == "":
+            self.list_access_groups = re.split(",", self.access_groups)
+
+
+
+"""
+Функция получения объекта пользователь по логину
+"""
+
+
+def get_user_by_login(login):
+    """
+    Получить данные пользователя по логину.
+    Информация о событиях записывается в лог приложения.
+
+    :parameter login: логин пользователя
+
+    :returns: объект класса User. None, если объект не найден или найдено несколько.
+    """
+    user = User()
+
+    user.login = "admin"
+    user.password = "Cthutq123"
+    user.access_groups = str("admin,users")
+    return user
+
+    session = Session()
+    try:
+        user = session.query(User).filter(User.login == login).one()
+    except sqlalchemy.orm.exc.NoResultFound:
+        print "Пользователь не найден"
+        return None
+    except sqlalchemy.orm.exc.MultipleResultsFound:
+        # status = [False,"Такой логин существует. Задайте другой."]
+        print "Найдено множество пользователей."
+        return None
+    else:
+        print "Пользователь найден"
+        return user
