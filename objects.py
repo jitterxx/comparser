@@ -1255,6 +1255,7 @@ class User(Base):
     def __init__(self):
         self.uuid = uuid.uuid1()
         self.access_groups = str("admin,users")
+        self.disabled = 0
         self.list_access_groups = list()
         self.list_access_groups = re.split(",", self.access_groups)
 

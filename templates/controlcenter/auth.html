@@ -1,4 +1,4 @@
-<%inherit file="base.html"/>
+<%inherit file="control_center_base.html"/>
 
 <%block name="title">
 
@@ -8,11 +8,16 @@
 
 </%block>
 
+<%block name="navigation">
+</%block>
+
+<%block name="menu">
+</%block>
 
 <%block name="base">
 
   <form class="form-signin" method="post" action="/control-center/auth/login">
-      <h2 class="form-signin-heading text-center">Control panel</h2>
+      <h2 class="form-signin-heading text-center">Панель управления</h2>
       <div class="form-group">
           <label for="inputEmail" class="sr-only">Пользователь</label>
           <input type="text" id="inputEmail" class="form-control" placeholder="Имя пользователя" required autofocus name="username">

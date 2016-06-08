@@ -36,12 +36,14 @@ def check_credentials(username, password):
 
     if user is None:
         return u"Username %s is unknown to me." % username
-    elif user.password != password:
-        # objects.add_to_log("Указан неверный пароль для пользователя %s." % username, "w")
-        return u"Incorrect password"
-    elif user.disabled != 0:
+
+    if user.disabled:
         # objects.add_to_log("Пользователь %s отключен." % username, "w")
         return u"User disabled."
+
+    if str(user.password) != str(password):
+        # objects.add_to_log("Указан неверный пароль для пользователя %s." % username, "w")
+        return u"Incorrect password"
     else:
         return None
 
@@ -151,13 +153,13 @@ class AuthController(object):
     def on_logout(self, username):
         """Called on logout"""
     
-    def get_loginform(self, username, msg="Enter login information", from_page="/"):
+    def get_loginform(self, username, msg="Enter login information", from_page="/control_center"):
         tmpl = lookup.get_template("auth.html")        
         
         return tmpl.render(username = username, msg=msg, from_page = from_page)
     
     @cherrypy.expose
-    def login(self, username=None, password=None, from_page="/"):
+    def login(self, username=None, password=None, from_page="/control_center"):
         if username is None or password is None:
             return self.get_loginform("", from_page=from_page)
         
@@ -170,14 +172,14 @@ class AuthController(object):
             cherrypy.session[SESSION_KEY] = cherrypy.request.login = username
             cherrypy.session['session_context'] = {'login': str(username)}
             self.on_login(username)
-            raise cherrypy.HTTPRedirect(from_page or "/")    
+            raise cherrypy.HTTPRedirect(from_page or "/control_center")
 
     @cherrypy.expose
-    def logout(self, from_page="/"):
+    def logout(self, from_page="/control_center"):
         sess = cherrypy.session
         username = sess.get(SESSION_KEY, None)
         sess[SESSION_KEY] = None
         if username:
             cherrypy.request.login = None
             self.on_logout(username)
-        raise cherrypy.HTTPRedirect(from_page or "/")
+        raise cherrypy.HTTPRedirect(from_page or "/control_center")

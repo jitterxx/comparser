@@ -442,8 +442,6 @@ class ControlCenter(object):
         return tmpl.render(error="Главная страница центра управления")
 
 
-
-
 class Root(object):
     """
         Основой сервис для запуска API и центров управления
