@@ -539,6 +539,39 @@ def get_clear_message(msg_id=None, for_day=None):
             session.close()
 
 
+def get_only_cat_message(for_day=None, cat=None, client_access_list=None, empl_access_list=None):
+    """
+    Получение сообщений только указанной категории.
+
+    :param for_day: день за который нужны сообщения
+    :param cat: к какой категории должны относиться сообщения
+
+    :return: словарь
+    """
+
+    if for_day and cat:
+        # получаем сообщения за определенный день
+        start = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (for_day.year, for_day.month, for_day.day),
+                                           "%Y-%m-%d %H:%M:%S")
+        end = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
+                                         "%Y-%m-%d %H:%M:%S")
+        session = Session()
+        try:
+            result = session.query(Msg).filter(and_(Msg.create_date >= start,
+                                                    Msg.create_date <= end),
+                                               Msg.category.like(cat + "%")).order_by(Msg.create_date.desc()).all()
+        except Exception as e:
+            print "Get_clear_message(). Ошибка получения сообщений за день: %s. %s" % (for_day, str(e))
+            raise e
+        else:
+            return result
+        finally:
+            session.close()
+
+    else:
+        return None
+
+
 def get_raw_message(msg_id=None):
     session = Session()
 
@@ -614,6 +647,40 @@ def get_train_record(msg_id=None, uuid=None, for_epoch=None):
             return result
         finally:
             session.close()
+
+
+def get_cat_train_api_records(for_day=None, client_access_list=None, empl_access_list=None):
+    """
+    Получение записей из API для сообщений только в указанный день.
+
+    :param for_day: день за который нужны сообщения
+
+    :return: словарь
+    """
+
+    if for_day:
+        # получаем сообщения за определенный день
+        start = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (for_day.year, for_day.month, for_day.day),
+                                           "%Y-%m-%d %H:%M:%S")
+        end = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
+                                         "%Y-%m-%d %H:%M:%S")
+        session = Session()
+        try:
+            result = session.query(TrainAPIRecords).filter(and_(TrainAPIRecords.date >= start,
+                                                                TrainAPIRecords.date <= end)).all()
+        except Exception as e:
+            print "get_cat_train_api_records(). Ошибка получения TrainAPI records за день: %s. %s" % (for_day, str(e))
+            raise e
+        else:
+            result1 = dict()
+            for one in result:
+                result1[one.message_id] = one
+            return result1
+        finally:
+            session.close()
+
+    else:
+        return None
 
 
 class UserTrainData(Base):
@@ -1282,6 +1349,8 @@ def get_user_by_login(login):
     user = User()
 
     user.login = "admin"
+    user.name = "Иван"
+    user.surname = "Петров"
     user.password = "Cthutq123"
     user.access_groups = str("admin,users")
     return user

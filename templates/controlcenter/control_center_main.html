@@ -10,7 +10,10 @@
         <li class="active"><a href="actions">События</a></li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-             aria-expanded="false">Имя Фамилия <span class="caret"></span></a>
+             aria-expanded="false">
+                ${session_context["user"].name}
+                ${session_context["user"].surname}
+                <span class="caret"></span></a>
             <ul class="dropdown-menu">
                 <li><a href="settings">Настройки</a></li>
                 <li><a href="profile">Профиль</a></li>
@@ -24,13 +27,87 @@
 
 
 <%block name="base">
+
 <div class="row">
-    <div class="col-sm-12 col-md-12">
-        <p>
-            ${session_context}
-        </p>
+    <div class="col-sm-12 col-md-12" align="center">
+        <nav>
+            <ul class="pagination">
+                <li>
+                    <a href="#" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/control_center/?day=${(cur_day - delta).strftime('%d-%m-%Y')}">
+                        ${(cur_day - delta).strftime('%d-%m-%Y')}
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="/control_center/?day=${cur_day.strftime('%d-%m-%Y')}">
+                        ${cur_day.strftime('%d-%m-%Y')}
+                    </a>
+                </li>
+                <li>
+                    <a href="/control_center/?day=${(cur_day + delta).strftime('%d-%m-%Y')}">
+                        ${(cur_day + delta).strftime('%d-%m-%Y')}
+                    </a>
+                </li>
+                <li>
+                    <a href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+          </ul>
+        </nav>
+
     </div>
 </div>
+
+%if actions != []:
+    %for one in actions:
+    <div class="row">
+        <div class="col-sm-12 col-md-12" align="left">
+            %if actions_train_api[one.message_id].user_action:
+            <div class="panel panel-default">
+            %else:
+            <div class="panel panel-warning">
+            %endif
+                <div class="panel-heading" align="right">
+                    <a href="#" title="Полная переписка"><i class="fa fa-list-alt"></i></a>
+                    |
+                    %if actions_train_api[one.message_id].user_action:
+                    ${category[actions_train_api[one.message_id].user_answer].category}
+                    %else:
+                    <span>
+                        <a href="${main_link}${actions_train_api[one.message_id].uuid}/${category.keys()[0]}">
+                            ${category.values()[0].category}
+                        </a>
+                        <a href="${main_link}${actions_train_api[one.message_id].uuid}/${category.keys()[1]}">
+                            ${category.values()[1].category}
+                        </a>
+                    </span>
+                    %endif
+                    |
+                    <a href="#" title="Требуется действие"><i class="fa fa-question-circle"></i></a>
+                    <a href="#" title="Проблема решена"><i class="fa fa-check-circle-o fa-2x"></i></i></a>
+
+                </div>
+                <div class="panel-heading">
+                    <p><span class="attention">Дата:</span> ${one.orig_date.strftime('%d-%m-%Y')}</p>
+                    <p><span class="attention">От кого:</span> ${one.sender_name} (${one.sender})</p>
+                    <p><span class="attention">Кому:</span> ${one.recipients_name} (${one.recipients})</p>
+                    <p><span class="attention">Тема:</span> ${one.message_title}</p>
+                </div>
+                <div class="panel-body">
+                    ${one.message_text}
+                </div>
+            </div>
+        </div>
+
+    </div>
+    %endfor
+%endif
+
 </%block>
 
 

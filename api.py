@@ -432,7 +432,7 @@ class ControlCenter(object):
 
     @cherrypy.expose
     @require(member_of("users"))
-    def index(self):
+    def index(self, day=None):
         """
         Основная страница центра управления.
         """
@@ -440,7 +440,52 @@ class ControlCenter(object):
         tmpl = self.lookup.get_template("control_center_main.html")
         context = cherrypy.session['session_context']
 
-        return tmpl.render(session_context=context)
+        today = datetime.datetime.now()
+        delta_1 = datetime.timedelta(days=1)
+        if day:
+            print day
+            cur_day = datetime.datetime.strptime(str(day), "%d-%m-%Y")
+        else:
+            cur_day = today
+
+        print delta_1
+        print cur_day
+        print today
+
+        # Загружаем сообщения требующие внимания в указанную дату cur_day
+        # Указываем кто запрашивает сообщения (доступ по спискам доступа)
+
+        cat = "conflict"
+        empl_access_list = []  # список емайл адресов сотрудников или доменов к которым у этого пользователя есть доступ
+        client_access_list = []  # список емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
+
+        try:
+            actions = CPO.get_only_cat_message(for_day=cur_day, cat=cat, empl_access_list=empl_access_list,
+                                               client_access_list=client_access_list)
+        except Exception as e:
+            print "Ошибка. %s" % str(e)
+            actions = None
+        else:
+            if actions:
+                print actions
+            else:
+                print "Actions is empty."
+
+        try:
+            actions_train_api = CPO.get_cat_train_api_records(for_day=cur_day, empl_access_list=empl_access_list,
+                                                              client_access_list=client_access_list)
+        except Exception as e:
+            print "Ошибка. %s" % str(e)
+            actions_train_api = None
+        else:
+            if actions_train_api:
+                print actions_train_api
+            else:
+                print "Actions_train_api is empty."
+
+        return tmpl.render(session_context=context, today=today, cur_day=cur_day,
+                           delta=delta_1, actions=actions, main_link=main_link,
+                           category=CPO.GetCategory(), actions_train_api=actions_train_api)
 
 
 class Root(object):

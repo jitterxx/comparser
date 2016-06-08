@@ -148,7 +148,8 @@ class AuthController(object):
     
     def on_login(self, username):
         """Called on successful login"""
-        #user = BMTObjects.get_user_by_login(username)
+        user = objects.get_user_by_login(username)
+        cherrypy.session['session_context']["user"] = user
 
     def on_logout(self, username):
         """Called on logout"""
@@ -171,6 +172,7 @@ class AuthController(object):
             cherrypy.session.regenerate()
             cherrypy.session[SESSION_KEY] = cherrypy.request.login = username
             cherrypy.session['session_context'] = {'login': str(username)}
+
             self.on_login(username)
             raise cherrypy.HTTPRedirect(from_page or "/control_center")
 
