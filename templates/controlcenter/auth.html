@@ -1,0 +1,33 @@
+<%inherit file="base.html"/>
+
+<%block name="title">
+
+    <title>Авторизация</title>
+    <!-- Custom styles for this template -->
+    <link href="/static/css/signin.css" rel="stylesheet">
+
+</%block>
+
+
+<%block name="base">
+
+  <form class="form-signin" method="post" action="/control-center/auth/login">
+      <h2 class="form-signin-heading text-center">Control panel</h2>
+      <div class="form-group">
+          <label for="inputEmail" class="sr-only">Пользователь</label>
+          <input type="text" id="inputEmail" class="form-control" placeholder="Имя пользователя" required autofocus name="username">
+      </div>
+      <div class="form-group">
+          <label for="inputPassword" class="sr-only">Пароль</label>
+          <input type="password" id="inputPassword" class="form-control" placeholder="Пароль" required
+                 name="password">
+      </div>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Вход</button>
+  </form>
+</%block>
+
+<%block name="footer">
+<div class="row">
+    <p class="text-center">v 0.1</p>
+</div>
+</%block>
