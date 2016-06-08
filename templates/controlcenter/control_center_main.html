@@ -1,0 +1,39 @@
+<%inherit file="control_center_base.html"/>
+
+<%block name="title">
+  <title>Панель управления</title>
+</%block>
+
+<%block name="navigation">
+<div id="navbar" class="navbar-collapse collapse">
+    <ul class="nav navbar-nav navbar-right navbar-style">
+        <li class="active"><a href="actions">События</a></li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+             aria-expanded="false">Имя Фамилия <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="settings">Настройки</a></li>
+                <li><a href="profile">Профиль</a></li>
+                <li><a href="/help?menu=" >Помощь</a></li>
+                <li><a href="auth/logout">Выход</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+</%block>
+
+
+<%block name="base">
+<div class="row">
+    <div class="col-sm-12 col-md-12">
+        <p>
+            ${session_context}
+        </p>
+    </div>
+</div>
+</%block>
+
+
+
+
+<%block name="footer"/>

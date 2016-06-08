@@ -437,9 +437,10 @@ class ControlCenter(object):
         Основная страница центра управления.
         """
 
-        tmpl = lookup.get_template("error.html")
+        tmpl = self.lookup.get_template("control_center_main.html")
+        context = cherrypy.session['session_context']
 
-        return tmpl.render(error="Главная страница центра управления")
+        return tmpl.render(session_context=context)
 
 
 class Root(object):
