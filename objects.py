@@ -1416,14 +1416,6 @@ def get_user_by_login(login):
 
     :returns: объект класса User. None, если объект не найден или найдено несколько.
     """
-    user = User()
-
-    user.login = "admin"
-    user.name = "Иван"
-    user.surname = "Петров"
-    user.password = "Cthutq123"
-    user.access_groups = str("admin,users")
-    return user
 
     session = Session()
     try:
@@ -1440,3 +1432,78 @@ def get_user_by_login(login):
         return user
 
 
+class Task(Base):
+
+    __tablename__ = 'tasks'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    uuid = sqlalchemy.Column(sqlalchemy.String(50), default=uuid.uuid1())  # Task UUID
+    responsible = sqlalchemy.Column(sqlalchemy.String(256), default="")  # User UUID
+    message_id = sqlalchemy.Column(sqlalchemy.String(256), default="")  # Message ID
+    comment = sqlalchemy.Column(sqlalchemy.TEXT, default="")
+    status = Column(Integer, default=0)
+
+TASK_STATUS = ["Новая", "В работе", "Закрыта"]
+
+
+def get_tasks(msg_id_list=None):
+
+    session = Session()
+
+    try:
+        if msg_id_list:
+            result = session.query(Task).filter(Task.message_id.in_(msg_id_list)).all()
+        else:
+            result = session.query(Task).all()
+    except Exception as e:
+        print "Objects.get_tasks(). Ошибка получения Tasks. %s" % str(e)
+        raise e
+    else:
+        result1 = dict()
+        for one in result:
+            result1[one.message_id] = one
+        return result1
+    finally:
+        session.close()
+
+
+def create_task(responsible=None, message_id=None, comment=None, status=None):
+    """
+    Создание таски для сообщения из WARNING_CATEGORY.
+
+    :param responsible:
+    :param message_id:
+    :param comment:
+    :param status:
+    :return:
+    """
+
+    session = Session()
+
+    new_task = Task()
+    if responsible:
+        new_task.responsible = responsible
+    else:
+        excp = ValueError("Ответственный должен быть указан обязательно.")
+        raise excp
+
+    if message_id:
+        new_task.message_id = message_id
+    else:
+        excp = ValueError("Идентификатор сообщения должен быть указан обязательно.")
+        raise excp
+
+    if comment:
+        new_task.comment = comment
+
+    if status:
+        new_task.status = status
+
+    try:
+        session.add(new_task)
+        session.commit()
+    except Exception as e:
+        print "Objects.create_task(). Ошибка создания Task. %s" % str(e)
+        raise e
+    finally:
+        session.close()

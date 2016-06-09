@@ -75,7 +75,7 @@
                 <div class="panel-heading" align="right">
                     <a href="/control_center/show_full_thread?msg_id=${one.message_id}" target="_blank"
                        title="Полная переписка">
-                        <i class="fa fa-list-alt"></i>
+                        <i class="fa fa-list-alt fa-2x"></i>
                     </a>
                     |
                     %if actions_train_api[one.message_id].user_action:
@@ -91,8 +91,23 @@
                     </span>
                     %endif
                     |
-                    <a href="#" title="Требуется действие"><i class="fa fa-question-circle"></i></a>
-                    <a href="#" title="Проблема решена"><i class="fa fa-check-circle-o fa-2x"></i></i></a>
+                    %if one.message_id in tasks.keys():
+                        %if tasks[one.message_id].status == 2:
+                            <a href="/control_center/task?uuid=${tasks[one.message_id].uuid}" title="Проблема решена">
+                                <i class="fa fa-check-circle-o fa-2x text-success"></i>
+                            </a>
+                        %else:
+                            <a href="/control_center/task?uuid=${tasks[one.message_id].uuid}" title="Проблема не решена">
+                                <i class="fa fa-question-circle fa-2x text-danger"></i>
+                            </a>
+                        %endif
+                    %else:
+                        <a href="/control_center/create_task" title="Требуется действие">
+                            <i class="fa fa-question-circle fa-2x text-danger"></i>
+                        </a>
+                    %endif
+
+
 
                 </div>
                 <div class="panel-heading">

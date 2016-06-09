@@ -495,10 +495,23 @@ class ControlCenter(object):
 
             # Запрашиваем данные тредов. Треды выводятся в попапе и подгружаются по запросу через JS
             # Запрашиваем данные по действиям предпринятым для разрешения ситуаций
+            try:
+                # TODO: Таски добавляются когда для сообщений определяется категория из WARNING_CATEGORY
+                # TODO: Таска добавляется при ручной категории (после проверки) из из WARNING_CATEGORY
+
+                tasks = CPO.get_tasks(msg_id_list=actions_msg_id)
+            except Exception as e:
+                print "ControlCenter.index(). Ошибка. %s" % str(e)
+                tasks = None
+            else:
+                print tasks
+                pass
+
 
         return tmpl.render(session_context=context, today=today, cur_day=cur_day,
                            delta=delta_1, actions=actions, main_link=main_link,
-                           category=CPO.GetCategory(), actions_train_api=actions_train_api)
+                           category=CPO.GetCategory(), actions_train_api=actions_train_api,
+                           tasks=tasks, task_status=CPO.TASK_STATUS)
 
     @cherrypy.expose
     @require(member_of("users"))
