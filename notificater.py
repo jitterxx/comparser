@@ -156,7 +156,7 @@ def send_email(category, orig_msg, msg_uuid):
 
     # Генерация приложения
     try:
-        attach_in_html = create_attach(msg_id=orig_msg.message_id)
+        attach_in_html = create_full_thread_html_document(msg_id=orig_msg.message_id)
 
         if FILE_ATTACH_TYPE == "html" and attach_in_html:
             part = email.MIMEBase.MIMEBase('application', "octet-stream")
@@ -217,23 +217,6 @@ def send_email(category, orig_msg, msg_uuid):
     finally:
         smtp.quit()
 
-
-def create_attach(msg_id=None):
-
-    try:
-        messages = get_thread_messages(message_id=msg_id)
-    except Exception as e:
-        print "notificater. create_attach(). Ошибка: ", str(e)
-        raise e
-    else:
-        if messages:
-            # HTML приложение с тредом
-            tmpl = lookup.get_template("email_thread_template.html")
-            attach_in_html = tmpl.render(orig_msg=msg_id, messages=messages)
-
-            return attach_in_html
-        else:
-            return ""
 
 notify()
 

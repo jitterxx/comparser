@@ -561,10 +561,15 @@ def get_only_cat_message(for_day=None, cat=None, client_access_list=None, empl_a
                                                     Msg.create_date <= end),
                                                Msg.category.like(cat + "%")).order_by(Msg.create_date.desc()).all()
         except Exception as e:
-            print "Get_clear_message(). Ошибка получения сообщений за день: %s. %s" % (for_day, str(e))
+            print "Get_only_cat_message(). Ошибка получения сообщений за день: %s. %s" % (for_day, str(e))
             raise e
         else:
-            return result
+            # ДОполнительно к списку сообщений, возвращаем список с их идентификаторами.
+            # Необходимо для поиска данных в других функциях
+            only_msg_id = list()
+            for one in result:
+                only_msg_id.append(one.message_id)
+            return result, only_msg_id
         finally:
             session.close()
 
@@ -649,11 +654,14 @@ def get_train_record(msg_id=None, uuid=None, for_epoch=None):
             session.close()
 
 
-def get_cat_train_api_records(for_day=None, client_access_list=None, empl_access_list=None):
+def get_cat_train_api_records(for_day=None, client_access_list=None, empl_access_list=None, actions_msg_id=None):
     """
     Получение записей из API для сообщений только в указанный день.
 
     :param for_day: день за который нужны сообщения
+    :param client_access_list:
+    :param empl_access_list:
+    :param actions_msg_id: список идентификаторов сообщений для которых запрашиваются записи
 
     :return: словарь
     """
@@ -666,8 +674,14 @@ def get_cat_train_api_records(for_day=None, client_access_list=None, empl_access
                                          "%Y-%m-%d %H:%M:%S")
         session = Session()
         try:
-            result = session.query(TrainAPIRecords).filter(and_(TrainAPIRecords.date >= start,
-                                                                TrainAPIRecords.date <= end)).all()
+            if actions_msg_id:
+                result = session.query(TrainAPIRecords).\
+                    filter(and_(TrainAPIRecords.date >= start,
+                                TrainAPIRecords.date <= end,
+                                TrainAPIRecords.message_id.in_(actions_msg_id))).all()
+            else:
+                result = session.query(TrainAPIRecords).filter(and_(TrainAPIRecords.date >= start,
+                                                                    TrainAPIRecords.date <= end)).all()
         except Exception as e:
             print "get_cat_train_api_records(). Ошибка получения TrainAPI records за день: %s. %s" % (for_day, str(e))
             raise e
@@ -1261,6 +1275,7 @@ def add_message_to_thread(msg=None):
             else:
                 # если в сообщении   пустые References и InReplyTo, то считаем его новым (первым в треде)
                 # Иногда это не так и надо искать другими методами (например, по полю Тема)
+                # TODO: искать другими методами (например, по полю Тема)
                 new_id = uuid.uuid4().__str__()
                 new = MsgThread()
                 new.message_id = msg.message_id
@@ -1277,6 +1292,61 @@ def add_message_to_thread(msg=None):
     finally:
         session.close()
 
+
+def create_full_thread_html_document(msg_id=None):
+    """
+    Функция возвращает по идентфиикатору сообщения полный тред переписки в которой оно учавствовало
+
+    :param msg_id: идентификатор сообщения
+    :return:
+    """
+
+    from mako.lookup import TemplateLookup
+    lookup = TemplateLookup(directories=["./templates"], output_encoding="utf-8",
+                            input_encoding="utf-8", encoding_errors="replace")
+
+    try:
+        messages = get_thread_messages(message_id=msg_id)
+    except Exception as e:
+        print "notificater. create_attach(). Ошибка: ", str(e)
+        raise e
+    else:
+        if messages:
+            # HTML приложение с тредом
+            tmpl = lookup.get_template("email_thread_template.html")
+            attach_in_html = tmpl.render(orig_msg=msg_id, messages=messages)
+
+            return attach_in_html
+        else:
+            return ""
+
+
+def control_center_full_thread_html_document(msg_id=None):
+    """
+    Функция возвращает по идентфиикатору сообщения полный тред переписки в которой оно учавствовало
+
+    :param msg_id: идентификатор сообщения
+    :return:
+    """
+
+    from mako.lookup import TemplateLookup
+    lookup = TemplateLookup(directories=["./templates/controlcenter"], output_encoding="utf-8",
+                            input_encoding="utf-8", encoding_errors="replace")
+
+    try:
+        messages = get_thread_messages(message_id=msg_id)
+    except Exception as e:
+        print "ControlCenter.show_full_thread(). Ошибка: ", str(e)
+        raise e
+    else:
+        if messages:
+            # HTML приложение с тредом
+            tmpl = lookup.get_template("control_center_email_thread_template.html")
+            attach_in_html = tmpl.render(orig_msg=msg_id, messages=messages)
+
+            return attach_in_html
+        else:
+            return ""
 
 
 class User(Base):

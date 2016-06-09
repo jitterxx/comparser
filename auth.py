@@ -161,6 +161,7 @@ class AuthController(object):
     
     @cherrypy.expose
     def login(self, username=None, password=None, from_page="/control_center"):
+        print "Login from_page ", from_page
         if username is None or password is None:
             return self.get_loginform("", from_page=from_page)
         

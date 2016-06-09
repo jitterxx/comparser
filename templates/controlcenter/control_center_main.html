@@ -73,7 +73,10 @@
             <div class="panel panel-warning">
             %endif
                 <div class="panel-heading" align="right">
-                    <a href="#" title="Полная переписка"><i class="fa fa-list-alt"></i></a>
+                    <a href="/control_center/show_full_thread?msg_id=${one.message_id}" target="_blank"
+                       title="Полная переписка">
+                        <i class="fa fa-list-alt"></i>
+                    </a>
                     |
                     %if actions_train_api[one.message_id].user_action:
                     ${category[actions_train_api[one.message_id].user_answer].category}

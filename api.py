@@ -456,36 +456,76 @@ class ControlCenter(object):
         # Указываем кто запрашивает сообщения (доступ по спискам доступа)
 
         cat = "conflict"
-        empl_access_list = []  # список емайл адресов сотрудников или доменов к которым у этого пользователя есть доступ
-        client_access_list = []  # список емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
+        # список емайл адресов сотрудников или доменов, к которым у этого пользователя есть доступ
+        empl_access_list = list()
+        # список емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
+        client_access_list = list()
+        # список данных из API
+        actions_train_api = list()
 
         try:
-            actions = CPO.get_only_cat_message(for_day=cur_day, cat=cat, empl_access_list=empl_access_list,
-                                               client_access_list=client_access_list)
+            actions, actions_msg_id = CPO.get_only_cat_message(for_day=cur_day, cat=cat,
+                                                               empl_access_list=empl_access_list,
+                                                               client_access_list=client_access_list)
         except Exception as e:
             print "Ошибка. %s" % str(e)
             actions = None
         else:
             if actions:
-                print actions
+                pass
+                # print actions
             else:
                 print "Actions is empty."
 
-        try:
-            actions_train_api = CPO.get_cat_train_api_records(for_day=cur_day, empl_access_list=empl_access_list,
-                                                              client_access_list=client_access_list)
-        except Exception as e:
-            print "Ошибка. %s" % str(e)
-            actions_train_api = None
-        else:
-            if actions_train_api:
-                print actions_train_api
+            # Запрашиваем данные API для создания ссылок на проверку и результатов проверки, если она уже была
+            try:
+                actions_train_api = CPO.get_cat_train_api_records(for_day=cur_day,
+                                                                  empl_access_list=empl_access_list,
+                                                                  client_access_list=client_access_list,
+                                                                  actions_msg_id=actions_msg_id)
+            except Exception as e:
+                print "Ошибка. %s" % str(e)
+                actions_train_api = None
             else:
-                print "Actions_train_api is empty."
+                if actions_train_api:
+                    pass
+                    # print actions_train_api
+                else:
+                    print "Actions_train_api is empty."
+
+            # Запрашиваем данные тредов. Треды выводятся в попапе и подгружаются по запросу через JS
+            # Запрашиваем данные по действиям предпринятым для разрешения ситуаций
 
         return tmpl.render(session_context=context, today=today, cur_day=cur_day,
                            delta=delta_1, actions=actions, main_link=main_link,
                            category=CPO.GetCategory(), actions_train_api=actions_train_api)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def show_full_thread(self, msg_id=None):
+        """
+        Фунция возвращает  HTML документ. Если ошибка, код - 500, если ничего не найдено, код - 404, если
+        что-то найдено, код - 200.
+
+        :param msg_id: идентификтор сообщения
+        :return: документ с тредом переписки с указанным сообщением
+        """
+        full_thread = ""
+
+        try:
+            full_thread = CPO.control_center_full_thread_html_document(msg_id=msg_id)
+        except Exception as e:
+            print "ControlCenter.show_full_thread(). Ошибка. %s" % str(e)
+            cherrypy.response.status = 500
+            full_thread = None
+        else:
+            if full_thread:
+                cherrypy.response.status = 200
+            else:
+                cherrypy.response.status = 404
+
+        finally:
+            return full_thread
 
 
 class Root(object):
