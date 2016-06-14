@@ -1465,6 +1465,12 @@ TASK_STATUS = ["Новая", "В работе", "Закрыта"]
 
 
 def get_tasks(msg_id_list=None):
+    """
+    Получить задачи для сообщений из списка.
+
+    :param msg_id_list:
+    :return:
+    """
 
     session = Session()
 
@@ -1483,6 +1489,28 @@ def get_tasks(msg_id_list=None):
         return result1
     finally:
         session.close()
+
+
+def get_task_by_uuid(task_uuid=None):
+    """
+    Получить задачу по uuid.
+
+    :param task_uuid:
+    :return:
+    """
+
+    if task_uuid:
+        session = Session()
+
+        try:
+            result = session.query(Task).filter(Task.uuid == task_uuid).one()
+        except Exception as e:
+            print "Objects.get_task_by_uuid(). Ошибка получения задачи. %s" % str(e)
+            raise e
+        else:
+            return result
+        finally:
+            session.close()
 
 
 def create_task(responsible=None, message_id=None, comment=None, status=None):
@@ -1518,11 +1546,14 @@ def create_task(responsible=None, message_id=None, comment=None, status=None):
         new_task.status = status
 
     try:
+        new_task.uuid = uuid.uuid4().__str__()
         session.add(new_task)
         session.commit()
     except Exception as e:
         print "Objects.create_task(). Ошибка создания Task. %s" % str(e)
         raise e
+    else:
+        return new_task.uuid
     finally:
         session.close()
 

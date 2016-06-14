@@ -64,7 +64,7 @@ class UserTrain(object):
                 print str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
             else:
-                # TODO: Если ответ пользователя не совпадает с WARNING_CATEGORY,
+                # Если ответ пользователя не совпадает с WARNING_CATEGORY,
                 # необходимо закрыть таску открытую для этого сообщения
                 if category not in WARNING_CATEGORY:
                     # Формируем сообщение
@@ -560,6 +560,59 @@ class ControlCenter(object):
 
         finally:
             return full_thread
+
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def create_task(self, msg_id=None):
+        """
+        Создание задачи для сообщения.
+        :param msg_id:
+        :return:
+        """
+
+        if msg_id:
+            try:
+                session_context = cherrypy.session['session_context']
+                task_uuid = CPO.create_task(responsible=session_context["user"].login,
+                                            message_id=msg_id, comment="", status=0)
+            except Exception as e:
+                print "ControlCenter.create_task(). Ошибка: %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+            else:
+                raise cherrypy.HTTPRedirect("/control_center/task?uuid=%s" % task_uuid)
+        else:
+            print "ControlCenter.create_task(). Ошибка: не указан MSG_ID сообщения."
+            return ShowNotification().index("Произошла внутренняя ошибка. Не указан ID сообщения.")
+
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def task(self, uuid=None):
+        """
+        Функция показа задачи.
+        :param uuid:
+        :return:
+        """
+
+        if uuid:
+            try:
+                # получаем задачу и сообщение
+                task = CPO.get_task_by_uuid(task_uuid=uuid)
+                message = CPO.get_raw_message(msg_id=task.message_id)
+            except Exception as e:
+                print "ControlCenter.task(). Ошибка: %s." % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+            else:
+                tmpl = lookup.get_template("control_center_task_show.html")
+                return tmpl.render(task=task, message=message,
+                                   session_context=cherrypy.session['session_context'],
+                                   task_status=CPO.TASK_STATUS)
+
+        else:
+            print "ControlCenter.task(). Ошибка: не указан UUID задачи."
+            return ShowNotification().index("Произошла внутренняя ошибка. Не указан UUID задачи.")
+
 
 
 class Root(object):
