@@ -630,7 +630,23 @@ def get_train_record(msg_id=None, uuid=None, for_epoch=None):
             session.close()
 
     elif uuid:
-        pass
+        # Возвращает запись о проверке сообщения по указанному UUID проверки
+        session = Session()
+        try:
+            result = session.query(TrainAPIRecords).filter(TrainAPIRecords.uuid == uuid).one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            print "get_train_record(uuid). Сообщение еще не классифицированно. MSGID: %s" % msg_id
+            return None
+        except sqlalchemy.orm.exc.MultipleResultsFound:
+            print "get_train_record(uuid). Найдено много тренировочных записей. MSGID: %s" % msg_id
+            return None
+        except Exception as e:
+            print "get_train_record(uuid). Ошибка. %s" % str(e)
+            raise e
+        else:
+            return result
+        finally:
+            session.close()
     else:
         # все записи о проверках
         session = Session()
@@ -1509,3 +1525,60 @@ def create_task(responsible=None, message_id=None, comment=None, status=None):
         raise e
     finally:
         session.close()
+
+
+def change_task_status(api_uuid=None, status=None, message=None):
+    """
+    Функция смены статуса задач, параметры обязательные.
+
+    :param api_uuid:
+    :param status:
+    :param message:
+    :return:
+    """
+
+    if status and message and api_uuid:
+
+        try:
+            api_train_rec = get_train_record(uuid=api_uuid)
+        except Exception as e:
+            print "CPO.change_task_status(). Не могу сменить статус задачи. Ошибка: %s" % str(e)
+
+        else:
+            if api_train_rec:
+                session = Session()
+                try:
+                    # получаем идентификатор сообщения
+                    task = session.query(Task).filter(Task.message_id == api_train_rec.message_id).one()
+                except sqlalchemy.orm.exc.NoResultFound as e:
+                    print "change_task_status. Задача для сообщения %s не найдена. " % api_train_rec.message_id
+                    raise e
+                except sqlalchemy.orm.exc.MultipleResultsFound as e:
+                    print "change_task_status. Найдено много задач для сообщения %s. " % api_train_rec.message_id
+                    raise e
+                except Exception as e:
+                    print "change_task_status. Ошибка. %s" % str(e)
+                    raise e
+
+                else:
+                    # Записываем сообщение и новый статус задачи
+                    if task.comment:
+                        task.comment = str(task.comment) + str(message)
+                    else:
+                        task.comment = str(message)
+                    task.status = int(status)
+
+                    session.commit()
+                finally:
+                    session.close()
+
+
+
+
+
+
+
+
+
+
+

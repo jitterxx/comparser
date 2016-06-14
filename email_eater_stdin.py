@@ -56,6 +56,17 @@ if msg:
         new.in_reply_to = message[10]  # in-reply-to header
         new.orig_date_str = message[11]  # original date header string with timezone info
 
+        # TODO: Ошибка при обработке некоторых сообщений и записи данных в базу.
+        # Из-за ошибки записи, сообщение не считается принятым и при каждом подключении принимается getmail снова
+        """
+            Incorrect string value: '\xCE\xBB, \xCF\x86...' for column 'raw_body' at row 1 #21
+            http://stackoverflow.com/questions/1168036/how-to-fix-incorrect-string-value-errors
+
+            Обходной вариант решения, уд
+
+        """
+
+
         session.add(new)
         session.commit()
     except Exception as e:

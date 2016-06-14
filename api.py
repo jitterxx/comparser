@@ -57,12 +57,31 @@ class UserTrain(object):
         if uuid and category:
             # 1. записать указанный емайл и категорию в пользовательские тренировочные данные
             # 2. Пометить в таблице train_api ответ.
+
             try:
                 status = CPO.set_user_train_data(uuid, category)
             except Exception as e:
                 print str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
             else:
+                # TODO: Если ответ пользователя не совпадает с WARNING_CATEGORY,
+                # необходимо закрыть таску открытую для этого сообщения
+                if category not in WARNING_CATEGORY:
+                    # Формируем сообщение
+                    session_context = cherrypy.session['session_context']
+                    try:
+                        text = "Закрыто пользователем %s %s после проверки." % (session_context["user"].name,
+                                                                                session_context["user"].surname)
+                    except Exception as e:
+                        print str(e)
+                        text = "Закрыто пользователем после проверки."
+
+                    # Меняем статус задачи на Закрыто
+                    try:
+                        CPO.change_task_status(api_uuid=uuid, status=2, message=text)
+                    except Exception as e:
+                        print "api.message(). Ошибка при смене статуса задачи. %s" % str(e)
+
                 tmpl = lookup.get_template("usertrain_page.html")
                 return tmpl.render(status=status)
 
@@ -512,6 +531,8 @@ class ControlCenter(object):
                            delta=delta_1, actions=actions, main_link=main_link,
                            category=CPO.GetCategory(), actions_train_api=actions_train_api,
                            tasks=tasks, task_status=CPO.TASK_STATUS)
+
+
 
     @cherrypy.expose
     @require(member_of("users"))
