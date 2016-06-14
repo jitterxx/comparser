@@ -599,13 +599,14 @@ class ControlCenter(object):
             try:
                 # получаем задачу и сообщение
                 task = CPO.get_task_by_uuid(task_uuid=uuid)
-                message = CPO.get_raw_message(msg_id=task.message_id)
+                message = CPO.get_clear_message(msg_id=task.message_id)
+                responsible = CPO.get_user_by_login(task.responsible)
             except Exception as e:
                 print "ControlCenter.task(). Ошибка: %s." % str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
             else:
-                tmpl = lookup.get_template("control_center_task_show.html")
-                return tmpl.render(task=task, message=message,
+                tmpl = self.lookup.get_template("control_center_task_show.html")
+                return tmpl.render(task=task, message=message, responsible=responsible,
                                    session_context=cherrypy.session['session_context'],
                                    task_status=CPO.TASK_STATUS)
 
