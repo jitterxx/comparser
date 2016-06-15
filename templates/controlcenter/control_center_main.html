@@ -82,10 +82,12 @@
                     ${category[actions_train_api[one.message_id].user_answer].category}
                     %else:
                     <span>
-                        <a href="${main_link}${actions_train_api[one.message_id].uuid}/${category.keys()[0]}">
+                        <a href="${main_link}${actions_train_api[one.message_id].uuid}/${category.keys()[0]}"
+                         target="_blank">
                             ${category.values()[0].category}
                         </a>
-                        <a href="${main_link}${actions_train_api[one.message_id].uuid}/${category.keys()[1]}">
+                        <a href="${main_link}${actions_train_api[one.message_id].uuid}/${category.keys()[1]}"
+                         target="_blank">
                             ${category.values()[1].category}
                         </a>
                     </span>
@@ -93,16 +95,19 @@
                     |
                     %if one.message_id in tasks.keys():
                         %if tasks[one.message_id].status == 2:
-                            <a href="/control_center/task?uuid=${tasks[one.message_id].uuid}" title="Проблема решена">
+                            <a href="/control_center/task?uuid=${tasks[one.message_id].uuid}" title="Проблема решена"
+                             target="_blank">
                                 <i class="fa fa-check-circle-o fa-2x text-success"></i>
                             </a>
                         %else:
-                            <a href="/control_center/task?uuid=${tasks[one.message_id].uuid}" title="Проблема не решена">
+                            <a href="/control_center/task?uuid=${tasks[one.message_id].uuid}" title="Проблема не решена"
+                             target="_blank">
                                 <i class="fa fa-question-circle fa-2x text-danger"></i>
                             </a>
                         %endif
                     %else:
-                        <a href="/control_center/create_task?msg_id=${one.message_id}" title="Требуется действие">
+                        <a href="/control_center/create_task?msg_id=${one.message_id}" title="Требуется действие"
+                         target="_blank">
                             <i class="fa fa-question-circle fa-2x text-danger"></i>
                         </a>
                     %endif

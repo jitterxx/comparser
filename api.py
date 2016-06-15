@@ -600,7 +600,9 @@ class ControlCenter(object):
                 # получаем задачу и сообщение
                 task = CPO.get_task_by_uuid(task_uuid=uuid)
                 message = CPO.get_clear_message(msg_id=task.message_id)
+                api_data = CPO.get_train_record(msg_id=task.message_id)
                 responsible = CPO.get_user_by_login(task.responsible)
+                users = CPO.get_all_users(sort="surname")
             except Exception as e:
                 print "ControlCenter.task(). Ошибка: %s." % str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
@@ -608,12 +610,27 @@ class ControlCenter(object):
                 tmpl = self.lookup.get_template("control_center_task_show.html")
                 return tmpl.render(task=task, message=message, responsible=responsible,
                                    session_context=cherrypy.session['session_context'],
-                                   task_status=CPO.TASK_STATUS)
+                                   task_status=CPO.TASK_STATUS, api_data=api_data,
+                                   category=CPO.GetCategory(), users=users)
 
         else:
             print "ControlCenter.task(). Ошибка: не указан UUID задачи."
             return ShowNotification().index("Произошла внутренняя ошибка. Не указан UUID задачи.")
 
+    @cherrypy.expose
+    @require(member_of("users"))
+    def change_task_status(self, task_uuid=None, status=None, from_url=None):
+        pass
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def change_task_reponsible(self, task_uuid=None, responsible=None, from_url=None):
+        pass
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def add_task_comment(self, task_uuid=None, comment=None, from_url=None):
+        pass
 
 
 class Root(object):

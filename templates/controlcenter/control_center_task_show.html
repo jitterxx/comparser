@@ -35,11 +35,63 @@
         </div>
         <div class="panel panel-default">
             <div class="panel-heading">
-                <p><span class="attention">Статус: </span> ${task_status[task.status]}</p>
-                <p><span class="attention">Ответственный: </span> ${responsible.name} ${responsible.surname}</p>
+                <p>
+                    <span class="attention">Статус: </span> ${task_status[task.status]}
+                    <span style="margin-left: 0.5em;"></span>
+                    <a data-toggle="collapse" href="#collapse_1"
+                       aria-expanded="false" aria-controls="collapse_1">
+                        <i class="fa fa-exchange"></i>
+                    </a>
+                </p>
+                <div class="collapse" id="collapse_1">
+                    <div class="well">
+                        %for one in range(0, len(task_status)):
+                        <a role="button" class="btn btn-default"
+                           href="/control_center/change_task_status?task_uuid=${task.uuid}&status=${one}&from_url=">
+                            ${task_status[one]}
+                        </a>
+                        %endfor
+                    </div>
+                </div>
+                <p>
+                    <span class="attention">Ответственный: </span> ${responsible.name} ${responsible.surname}
+                    <span style="margin-left: 0.5em;"></span>
+                    <a data-toggle="collapse" href="#collapse_2"
+                       aria-expanded="false" aria-controls="collapse_2">
+                        <i class="fa fa-exchange"></i>
+                    </a>
+                </p>
+                <div class="collapse" id="collapse_2">
+                    <div class="well">
+                        %for one in users:
+                        <a role="button" class="btn btn-default"
+                           href="/control_center/change_task_responsible?task_uuid=${task.uuid}&responsible=${one.login}&from_url=">
+                            ${one.name} ${one.surname}
+                        </a>
+                        %endfor
+                    </div>
+                </div>
             </div>
             <div class="panel-heading">
-                <p><span class="attention">Комментарии</span></p>
+                <p>
+                    <span class="attention">Комментарии</span>
+                    <span style="margin-left: 0.5em;"></span>
+                    <a data-toggle="collapse" href="#collapse_3"
+                       aria-expanded="false" aria-controls="collapse_3">
+                        <i class="fa fa-plus"></i>
+                    </a>
+                </p>
+                <div class="collapse" id="collapse_3">
+                    <div class="well">
+                        <form class="form" action="/control_center/add_task_comment">
+                            <input hidden name="task_uuid" value="${task.uuid}">
+                            <div class="from-group">
+                                <textarea size="3" cols="100" name="comment"></textarea>
+                            </div>
+                            <button class="btn btn-default" type="submit">Добавить комментарий</button>
+                        </form>
+                    </div>
+                </div>
             </div>
             <div class="panel-body">
                 ${task.comment}
@@ -48,6 +100,17 @@
         <div class="panel panel-default">
             <div class="panel-heading" align="center">
                 <p align="center"><h3>Сообщение</h3></p>
+            </div>
+            <div class="panel-heading">
+                %if api_data.user_answer != "":
+                <p><span class="attention">Категория:</span> ${category[api_data.user_answer].category}</p>
+                %else:
+                <%
+                    auto_cat = None
+                    auto_cat = str(api_data.category).split("-", 1)[0]
+                %>
+                <p><span class="attention">Категория:</span> ${category[auto_cat].category}</p>
+                %endif
             </div>
             <div class="panel-heading">
                 <p><span class="attention">Дата:</span> ${message.orig_date.strftime('%d-%m-%Y')}</p>

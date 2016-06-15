@@ -1448,6 +1448,35 @@ def get_user_by_login(login):
     else:
         print "Пользователь найден"
         return user
+    finally:
+        session.close()
+
+
+def get_all_users(sort=None):
+    """
+    Получить данные всех пользователей.
+
+    :param sort: один из вариантов для сортировки ['name', 'surname', 'login']
+    :returns: список пользователей отсортированный по указанному полю
+    """
+
+    session = Session()
+    try:
+        if sort == "name":
+            resp = session.query(User).filter(User.disabled == 0).order_by(User.name.desc()).all()
+        elif sort == "surname":
+            resp = session.query(User).filter(User.disabled == 0).order_by(User.surname.desc()).all()
+        elif sort == "login":
+            resp = session.query(User).filter(User.disabled == 0).order_by(User.login.desc()).all()
+        else:
+            resp = session.query(User).filter(User.disabled == 0).all()
+    except Exception as e:
+        print "get_all_user(). Ошибка: %s" % str(e)
+        return list()
+    else:
+        return resp
+    finally:
+        session.close()
 
 
 class Task(Base):
