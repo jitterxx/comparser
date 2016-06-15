@@ -1404,6 +1404,7 @@ class User(Base):
     password = sqlalchemy.Column(sqlalchemy.String(256), default="")
     access_groups = sqlalchemy.Column(sqlalchemy.String(256), default="")
     disabled = Column(Integer, default=0)
+    email = sqlalchemy.Column(sqlalchemy.String(256), default="")
 
     def __init__(self):
         self.uuid = uuid.uuid1()
@@ -1452,7 +1453,7 @@ def get_user_by_login(login):
         session.close()
 
 
-def get_all_users(sort=None):
+def get_all_users(sort=None, disabled=False):
     """
     Получить данные всех пользователей.
 
@@ -1462,10 +1463,15 @@ def get_all_users(sort=None):
 
     session = Session()
     try:
+        if disabled:
+            dis = [0, 1]
+        else:
+            dis = [0]
+
         if sort == "name":
             resp = session.query(User).filter(User.disabled == 0).order_by(User.name.desc()).all()
         elif sort == "surname":
-            resp = session.query(User).filter(User.disabled == 0).order_by(User.surname.desc()).all()
+            resp = session.query(User).filter(User.disabled.in_(dis)).order_by(User.surname.desc()).all()
         elif sort == "login":
             resp = session.query(User).filter(User.disabled == 0).order_by(User.login.desc()).all()
         else:
@@ -1475,6 +1481,31 @@ def get_all_users(sort=None):
         return list()
     else:
         return resp
+    finally:
+        session.close()
+
+
+def change_users_status(user_uuid=None):
+    """
+    Меняет статус пользователя между состояниями.
+
+    :param user_uuid:
+    :return:
+    """
+
+    session = Session()
+    try:
+        user = session.query(User).filter(User.uuid == user_uuid).one()
+    except Exception as e:
+        print "change_users_status(). Ошибка. %s" % str(e)
+        raise e
+    else:
+        if user.disabled:
+            user.disabled = 0
+        else:
+            user.disabled = 1
+        session.commit()
+
     finally:
         session.close()
 
@@ -1489,8 +1520,6 @@ class Task(Base):
     message_id = sqlalchemy.Column(sqlalchemy.String(256), default="")  # Message ID
     comment = sqlalchemy.Column(sqlalchemy.TEXT, default="")
     status = Column(Integer, default=0)
-
-TASK_STATUS = ["Новая", "В работе", "Закрыта"]
 
 
 def get_tasks(msg_id_list=None):

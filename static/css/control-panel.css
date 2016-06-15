@@ -226,3 +226,8 @@ hr {
     font-weight: 800;
     font-size: 1.2em;
 }
+
+.task_comment_time {
+    color: #cccccc;
+# font-size: 0.8em;
+}

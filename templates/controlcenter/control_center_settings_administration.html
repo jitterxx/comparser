@@ -1,0 +1,84 @@
+<%inherit file="control_center_base.html"/>
+
+<%block name="title">
+  <title>Панель управления - Настройки</title>
+</%block>
+
+
+<%block name="navigation">
+<div id="navbar" class="navbar-collapse collapse">
+    <ul class="nav navbar-nav navbar-right navbar-style">
+        <li><a href="/control_center">На главную</a></li>
+    </ul>
+</div>
+</%block>
+
+<%block name="base">
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+        <div align="left">
+            <h2>Управление пользователями</h2>
+            <p class="text-muted">Добавление, редактирование, отключение пользователей.</p>
+            <div style="margin-bottom: 1em;">
+                <a href="new_user">
+                    <i class="fa fa-plus-circle fa-2x"></i>
+                </a>
+            </div>
+            <table class="table table-condensed table-hover" border="0">
+            %for one in users:
+                <tr align="center">
+                    <td width="20%">${one.name} ${one.surname}</td>
+                    <td width="10%">${one.login}</td>
+                    <td width="10%">${one.email}</td>
+                    <td width="5%">${user_status[one.disabled]}</td>
+                    <td width="10%">
+                        <a href="edit_user?user_uuid=${one.uuid}">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+                        %if one.disabled:
+                        <a href="change_user_status?user_uuid=${one.uuid}">
+                            <i class="fa fa-check-circle-o text-success"></i>
+                        </a>
+                        %else:
+                        <a href="change_user_status?user_uuid=${one.uuid}">
+                            <i class="fa fa-ban text-danger"></i>
+                        </a>
+                        %endif
+                    </td>
+                    <td></td>
+
+                </tr>
+            %endfor
+
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+        <h2>Управление уведомлениями</h2>
+        <p>
+            Назначение пользователей на получение уведомлений от системы. <br>
+            Пользователь будет получать уведомления, если в полях От, Кому, Копия будут обнаружены адреса входящие
+            в его список наблюдения.<br>
+            Адрес может быть указан полностью или только домен (часть после @).<br>
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+        <h2>Управление исключениями</h2>
+        <p>
+            Сообщения у которых указанные адреса встретятся в полях От, Кому, Копия не будут обрабатываться.
+        </p>
+    </div>
+</div>
+</%block>
+
+
+
+
+<%block name="footer"/>

@@ -1,0 +1,42 @@
+<%inherit file="control_center_base.html"/>
+
+<%block name="title">
+  <title>Панель управления - Настройки</title>
+</%block>
+
+
+<%block name="navigation">
+<div id="navbar" class="navbar-collapse collapse">
+    <ul class="nav navbar-nav navbar-right navbar-style">
+        % if is_admin:
+        <li><a href="administration">Администрирование</a></li>
+        %endif
+        <li><a href="${from_url}">Назад</a></li>
+    </ul>
+</div>
+</%block>
+
+<%block name="base">
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+        <div align="center">
+            ${session_context["user"].login}<br>
+            ${is_admin}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+        <p>Редактирование имени, фамилии</p>
+        <p>Переключатель: показывать все сообщения или только с уведомлениями</p>
+    </div>
+</div>
+
+</%block>
+
+
+
+
+<%block name="footer"/>

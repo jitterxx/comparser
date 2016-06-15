@@ -78,6 +78,8 @@ class UserTrain(object):
 
                     # Меняем статус задачи на Закрыто
                     try:
+                        cur_time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
+                        text = "<p><i class='task_comment_time'>%s</i> %s</p>" % (cur_time, str(text))
                         CPO.change_task_status(api_uuid=uuid, status=2, message=text)
                     except Exception as e:
                         print "api.message(). Ошибка при смене статуса задачи. %s" % str(e)
@@ -438,6 +440,90 @@ class Panel(object):
                            category=category, main_link=main_link, delta=delta)
 
 
+class Settings(object):
+
+    lookup = TemplateLookup(directories=["./templates/controlcenter"], output_encoding="utf-8",
+                            input_encoding="utf-8", encoding_errors="replace")
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def index(self):
+        # Показываем общие для админов и не админов настройки
+        from_url = cherrypy.request.headers.get('Referer')
+        tmpl = self.lookup.get_template("control_center_settings.html")
+        is_admin = member_of("admin")()
+
+        return tmpl.render(from_url=from_url, session_context=cherrypy.session['session_context'],
+                           is_admin=is_admin)
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def administration(self):
+        # административные настройки: создание, редактирование пользователей портала(те кто получает уведомления).
+        # Настройка списков уведомлений=доступа к сообщениям и событиям
+        try:
+            # получаем данные о пользователях
+            users = CPO.get_all_users(sort="surname", disabled=True)
+            # данные для редактирования названия категорий
+            categories = CPO.GetCategory()
+            # какие категории генерируют уведомления
+            cat_warning_list = CPO.WARNING_CATEGORY
+
+        except Exception as e:
+            print "ControlCenter.Settings.Administration(). Ошибка: %s." % str(e)
+            return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+            tmpl = self.lookup.get_template("control_center_settings_administration.html")
+            return tmpl.render(session_context=cherrypy.session['session_context'], users=users,
+                               categories=categories, user_status=CPO.USER_STATUS)
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def new_user(self, message=None):
+        tmpl = self.lookup.get_template("control_center_new_user.html")
+        return tmpl.render(session_context=cherrypy.session['session_context'], message=message,
+                           user_status=CPO.USER_STATUS, access_groups=CPO.ACCESS_GROUPS)
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def create_user(self, login=None, name=None, surname=None, email=None, password=None, access_groups=None,
+                    status=None):
+        print login
+        print name
+        print surname
+        print email
+        print password
+        print access_groups
+        print status
+
+
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def edit_user(self, user_uuid=None):
+        pass
+
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def save_user_data(self, user_uuid=None, login=None, name=None, surname=None, email=None, password=None,
+                       access_groups=None):
+        pass
+
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def change_user_status(self, user_uuid=None):
+        if user_uuid:
+            try:
+                CPO.change_users_status(user_uuid=user_uuid)
+            except Exception as e:
+                print "ControlCenter.Settings.Administration(). Ошибка: %s." % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+
+        raise cherrypy.HTTPRedirect("administration")
+
+
 class ControlCenter(object):
 
     """
@@ -448,6 +534,7 @@ class ControlCenter(object):
                             input_encoding="utf-8", encoding_errors="replace")
 
     auth = AuthController()
+    settings = Settings()
 
     @cherrypy.expose
     @require(member_of("users"))
@@ -648,7 +735,8 @@ class ControlCenter(object):
     def add_task_comment(self, task_uuid=None, comment=None, from_url=None):
         if task_uuid:
             try:
-                comment = "<p>" + str(comment) + "</p>"
+                cur_time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
+                comment = "<p><i class='task_comment_time'>%s</i> %s</p>" % (cur_time, str(comment))
                 CPO.add_task_comment(task_uuid=task_uuid, comment=comment)
             except Exception as e:
                 print "add_task_comment(). Ошибка при добавлении комментария. %s" % str(e)

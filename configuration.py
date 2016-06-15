@@ -57,3 +57,13 @@ WK_HTML_TO_PDF_PATH = "/usr/bin/wkhtmltopdf"
 # Service receiver URL. Accept connection and data from email_eater and write MsgRaw to DB
 receiver_url = "http://127.0.0.1:9595/post"
 
+# Группы доступа для пользователей
+# users -  обычные пользвоатели без привелегий
+# admin - администраторы. Доступно управление пользователями и настройка системы уведомлений
+ACCESS_GROUPS = {"users": "Пользователи", "admin": "Администраторы"}
+
+USER_STATUS = ["Активен", "Отключен"]
+
+TASK_STATUS = ["Новая", "В работе", "Закрыта"]
+
+
