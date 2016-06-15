@@ -620,17 +620,42 @@ class ControlCenter(object):
     @cherrypy.expose
     @require(member_of("users"))
     def change_task_status(self, task_uuid=None, status=None, from_url=None):
-        pass
+        if task_uuid:
+            try:
+                CPO.change_task_status(task_uuid=task_uuid, status=status)
+            except Exception as e:
+                print "change_task_status(). Ошибка при смене статуса. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center")
+        raise cherrypy.HTTPRedirect(from_url or "/control_center/task?uuid=%s" % task_uuid)
 
     @cherrypy.expose
     @require(member_of("users"))
-    def change_task_reponsible(self, task_uuid=None, responsible=None, from_url=None):
-        pass
+    def change_task_responsible(self, task_uuid=None, responsible=None, from_url=None):
+        if task_uuid:
+            try:
+                CPO.change_task_responsible(task_uuid=task_uuid, responsible=responsible)
+            except Exception as e:
+                print "change_task_responsible(). Ошибка при смене ответственного. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center")
+        raise cherrypy.HTTPRedirect(from_url or "/control_center/task?uuid=%s" % task_uuid)
 
     @cherrypy.expose
     @require(member_of("users"))
     def add_task_comment(self, task_uuid=None, comment=None, from_url=None):
-        pass
+        if task_uuid:
+            try:
+                comment = "<p>" + str(comment) + "</p>"
+                CPO.add_task_comment(task_uuid=task_uuid, comment=comment)
+            except Exception as e:
+                print "add_task_comment(). Ошибка при добавлении комментария. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center")
+        raise cherrypy.HTTPRedirect(from_url or "/control_center/task?uuid=%s" % task_uuid)
 
 
 class Root(object):

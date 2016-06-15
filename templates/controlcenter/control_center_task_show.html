@@ -47,7 +47,7 @@
                     <div class="well">
                         %for one in range(0, len(task_status)):
                         <a role="button" class="btn btn-default"
-                           href="/control_center/change_task_status?task_uuid=${task.uuid}&status=${one}&from_url=">
+                           href="/control_center/change_task_status?task_uuid=${task.uuid}&status=${one}">
                             ${task_status[one]}
                         </a>
                         %endfor

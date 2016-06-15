@@ -1587,7 +1587,7 @@ def create_task(responsible=None, message_id=None, comment=None, status=None):
         session.close()
 
 
-def change_task_status(api_uuid=None, status=None, message=None):
+def change_task_status(api_uuid=None, status=None, message=None, task_uuid=None):
     """
     Функция смены статуса задач, параметры обязательные.
 
@@ -1608,7 +1608,7 @@ def change_task_status(api_uuid=None, status=None, message=None):
             if api_train_rec:
                 session = Session()
                 try:
-                    # получаем идентификатор сообщения
+                    # получаем задачу по MSG_ID
                     task = session.query(Task).filter(Task.message_id == api_train_rec.message_id).one()
                 except sqlalchemy.orm.exc.NoResultFound as e:
                     print "change_task_status. Задача для сообщения %s не найдена. " % api_train_rec.message_id
@@ -1631,10 +1631,94 @@ def change_task_status(api_uuid=None, status=None, message=None):
                     session.commit()
                 finally:
                     session.close()
+    elif status and task_uuid:
+        session = Session()
+        try:
+            # получаем задачу по TASK_UUID
+            task = session.query(Task).filter(Task.uuid == task_uuid).one()
+        except sqlalchemy.orm.exc.NoResultFound as e:
+            print "change_task_status. Задача с UUID %s не найдена. " % task_uuid
+            raise e
+        except sqlalchemy.orm.exc.MultipleResultsFound as e:
+            print "change_task_status. Найдено много задач c UUID %s. " % task_uuid
+            raise e
+        except Exception as e:
+            print "change_task_status. Ошибка при поиске по UUID. %s" % str(e)
+            raise e
+
+        else:
+            # Записываем сообщение и новый статус задачи
+            task.status = int(status)
+
+            session.commit()
+        finally:
+            session.close()
 
 
+def change_task_responsible(task_uuid=None, responsible=None):
+    """
+    Функция смены ответственного задач, параметры обязательные.
+
+    :return:
+    """
+
+    if responsible and task_uuid:
+        session = Session()
+        try:
+            # получаем задачу по TASK_UUID
+            task = session.query(Task).filter(Task.uuid == task_uuid).one()
+        except sqlalchemy.orm.exc.NoResultFound as e:
+            print "change_task_responsible. Задача с UUID %s не найдена. " % task_uuid
+            raise e
+        except sqlalchemy.orm.exc.MultipleResultsFound as e:
+            print "change_task_responsible. Найдено много задач c UUID %s. " % task_uuid
+            raise e
+        except Exception as e:
+            print "change_task_responsible. Ошибка при поиске по UUID. %s" % str(e)
+            raise e
+
+        else:
+            # Записываем сообщение и новый статус задачи
+            task.responsible = str(responsible)
+
+            session.commit()
+        finally:
+            session.close()
 
 
+def add_task_comment(task_uuid=None, comment=None):
+    """
+    Функция комментирования задач, параметры обязательные.
+
+    :return:
+    """
+
+    if comment and task_uuid:
+        session = Session()
+        try:
+            # получаем задачу по TASK_UUID
+            task = session.query(Task).filter(Task.uuid == task_uuid).one()
+        except sqlalchemy.orm.exc.NoResultFound as e:
+            print "add_task_comment. Задача с UUID %s не найдена. " % task_uuid
+            raise e
+        except sqlalchemy.orm.exc.MultipleResultsFound as e:
+            print "add_task_comment. Найдено много задач c UUID %s. " % task_uuid
+            raise e
+        except Exception as e:
+            print "add_task_comment. Ошибка при поиске по UUID. %s" % str(e)
+            raise e
+
+        else:
+            # Записываем сообщение и новый статус задачи
+            # Записываем сообщение и новый статус задачи
+            if task.comment:
+                task.comment = str(task.comment) + str(comment)
+            else:
+                task.comment = str(comment)
+
+            session.commit()
+        finally:
+            session.close()
 
 
 
