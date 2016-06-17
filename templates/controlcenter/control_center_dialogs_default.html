@@ -1,0 +1,191 @@
+<%inherit file="control_center_base.html"/>
+
+<%block name="title">
+  <title>Панель управления - Диалоги</title>
+</%block>
+
+<%block name="navigation">
+<div id="navbar" class="navbar-collapse collapse">
+    <ul class="nav navbar-nav navbar-right navbar-style">
+        <li class="dropdown">
+            <a href="dialogs" class="dropdown-toggle active" data-toggle="dropdown" role="button" aria-haspopup="true"
+             aria-expanded="false">
+                Диалоги
+                <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <%
+                    cats = session_context["category"]
+                %>
+                %for one in cats.keys():
+                %if one == active_cat:
+                <li class="active"><a href="?cat=${one}">${cats[one].category}</a></li>
+                %else:
+                <li><a href="?cat=${one}">${cats[one].category}</a></li>
+                %endif
+                %endfor
+                %if active_cat == "all":
+                <li class="active"><a href="?cat=all" >Все</a></li>
+                %else:
+                <li><a href="?cat=all" >Все</a></li>
+                %endif
+            </ul>
+        </li>
+        <li><a href="/control_center/tasks">Задачи</a></li>
+        <li class="dropdown">
+            <a href="staistics" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+             aria-expanded="false">
+                Статистика
+                <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="statistics/clients">Клиенты</a></li>
+                <li><a href="statistics/employee">Сотрудники</a></li>
+                <li><a href="statistics/system" >Общая</a></li>
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+             aria-expanded="false">
+                ${session_context["user"].name}
+                ${session_context["user"].surname}
+                <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="settings">Настройки</a></li>
+                <li><a href="profile">Профиль</a></li>
+                <li><a href="/help?menu=" >Помощь</a></li>
+                <li><a href="auth/logout">Выход</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+</%block>
+
+<%block name="base">
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+        <div align="center">
+            ${session_context["user"].login}<br>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="center">
+        <nav>
+            <ul class="pagination">
+                <li>
+                    <a href="#" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="?day=${(cur_day - delta).strftime('%d-%m-%Y')}">
+                        ${(cur_day - delta).strftime('%d-%m-%Y')}
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="?day=${cur_day.strftime('%d-%m-%Y')}">
+                        ${cur_day.strftime('%d-%m-%Y')}
+                    </a>
+                </li>
+                <li>
+                    <a href="?day=${(cur_day + delta).strftime('%d-%m-%Y')}">
+                        ${(cur_day + delta).strftime('%d-%m-%Y')}
+                    </a>
+                </li>
+                <li>
+                    <a href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+          </ul>
+        </nav>
+
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+        <p>${dialog}</p>
+        <p>Кол-во непроверенных: ${len(unchecked)}</p>
+        <p>Кол-во проверенных c открытыми задачами: ${len(checked_with_task)}</p>
+    </div>
+</div>
+
+%if message_list != []:
+    %for one in message_list:
+    <div class="row">
+        <a id="${one.message_id}"></a>
+        <div class="col-sm-12 col-md-12" align="left">
+            %if api_list[one.message_id].user_action:
+            <div class="panel panel-default">
+            %else:
+            <div class="panel panel-warning">
+            %endif
+                <div class="panel-heading" align="right">
+                    <a href="/control_center/show_full_thread?msg_id=${one.message_id}" target="_blank"
+                       title="Полная переписка">
+                        <i class="fa fa-list-alt fa-2x"></i>
+                    </a>
+                    |
+                    %if api_list[one.message_id].user_action:
+                    ${category[api_list[one.message_id].user_answer].category}
+                    %else:
+                    <span>
+                        <a href="${main_link}${api_list[one.message_id].uuid}/${category.keys()[0]}"
+                         target="_blank">
+                            ${category.values()[0].category}
+                        </a>
+                        <a href="${main_link}${api_list[one.message_id].uuid}/${category.keys()[1]}"
+                         target="_blank">
+                            ${category.values()[1].category}
+                        </a>
+                    </span>
+                    %endif
+                    |
+                    %if one.message_id in task_list.keys():
+                        %if task_list[one.message_id].status == 2:
+                            <a href="/control_center/task?uuid=${task_list[one.message_id].uuid}" title="Проблема решена"
+                             target="_blank">
+                                <i class="fa fa-check-circle-o fa-2x text-success"></i>
+                            </a>
+                        %else:
+                            <a href="/control_center/task?uuid=${task_list[one.message_id].uuid}" title="Проблема не решена"
+                             target="_blank">
+                                <i class="fa fa-question-circle fa-2x text-danger"></i>
+                            </a>
+                        %endif
+                    %else:
+                        <a href="/control_center/create_task?msg_id=${one.message_id}" title="Требуется действие"
+                         target="_blank">
+                            <i class="fa fa-exclamation-circle fa-2x text-danger"></i>
+                        </a>
+                    %endif
+
+
+
+                </div>
+                <div class="panel-heading">
+                    <p><span class="attention">Дата:</span> ${one.orig_date.strftime('%d-%m-%Y')}</p>
+                    <p><span class="attention">От кого:</span> ${one.sender_name} (${one.sender})</p>
+                    <p><span class="attention">Кому:</span> ${one.recipients_name} (${one.recipients})</p>
+                    <p><span class="attention">Тема:</span> ${one.message_title}</p>
+                </div>
+                <div class="panel-body">
+                    ${one.message_text}
+                </div>
+            </div>
+        </div>
+
+    </div>
+    %endfor
+%endif
+
+</%block>
+
+
+
+
+<%block name="footer"/>

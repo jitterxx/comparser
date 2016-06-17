@@ -150,6 +150,7 @@ class AuthController(object):
         """Called on successful login"""
         user = objects.get_user_by_login(username)
         cherrypy.session['session_context']["user"] = user
+        cherrypy.session['session_context']["category"] = objects.GetCategory()
 
     def on_logout(self, username):
         """Called on logout"""

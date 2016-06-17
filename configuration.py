@@ -66,4 +66,5 @@ USER_STATUS = ["Активен", "Отключен"]
 
 TASK_STATUS = ["Новая", "В работе", "Закрыта"]
 
+TASK_CLOSED_STATUS = 2
 

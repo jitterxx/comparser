@@ -524,6 +524,108 @@ class Settings(object):
         raise cherrypy.HTTPRedirect("administration")
 
 
+class Dialogs(object):
+
+    lookup = TemplateLookup(directories=["./templates/controlcenter"], output_encoding="utf-8",
+                            input_encoding="utf-8", encoding_errors="replace")
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def index(self, cat=None, day=None):
+        print "cat:", cat
+        print "day", day
+
+        cats = CPO.GetCategory()
+
+        # Формируем сегодняшнее число или получаем указанную дату
+        today = datetime.datetime.now()
+        delta_1 = datetime.timedelta(days=1)
+        if day:
+            print day
+            try:
+                cur_day = datetime.datetime.strptime(str(day), "%d-%m-%Y")
+            except Exception as e:
+                print "Dialogs.index(). Ошибка получения даты. %s" % str(e)
+                cur_day = today
+        else:
+            cur_day = today
+
+        if cat == "all":
+            # Выводим все диалоги за указанный день. Если день не указан, то за текущий
+            # Считаем число из WARNING_CAT общее = проверенные + непроверенные
+
+            tmpl = self.lookup.get_template("control_center_dialogs_default.html")
+            return tmpl.render(session_context=cherrypy.session['session_context'], dialog="show %s" % str("all"),
+                               active_cat="all")
+        elif cat in cats.keys():
+            # Выводим диалоги указанной категории за указанные день. Если день не указан, то за текущий
+            # Диалоги с указанной категорией выводятся проверенные и не проверенные.
+            # Если категория из WARNING_CAT:
+            # - считаем число НЕ проверенных
+            # - считаем число проверенных с НЕ закрытыми задачами
+
+            tmpl = self.lookup.get_template("control_center_dialogs_default.html")
+            return tmpl.render(session_context=cherrypy.session['session_context'], dialog="show %s" % str(cat),
+                               active_cat=cat)
+        else:
+            # Выводим диалоги (проверенные и не проверенные) с категорией из WARNING_CAT за указанные день.
+            # Если день не указан, то выводим за текущий
+            # - считаем число НЕ проверенных
+            # - считаем чило проверенных с НЕ закрытыми задачами
+
+            # Загружаем диалоги из WARNING_CAT в указанную дату cur_day
+            # Указываем кто запрашивает (доступ по спискам доступа)
+
+            cat = CPO.WARNING_CATEGORY
+            # список емайл адресов сотрудников или доменов, к которым у этого пользователя есть доступ
+            empl_access_list = list()
+            # список емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
+            client_access_list = list()
+            # список данных из API
+            actions_train_api = list()
+
+            try:
+                api_list, message_list, message_id_list, unchecked, checked = \
+                    CPO.get_dialogs(for_day=cur_day, cat=cat,
+                                    empl_access_list=empl_access_list,
+                                    client_access_list=client_access_list)
+            except Exception as e:
+                print "Ошибка. %s" % str(e)
+                message_id_list = list()
+                checked = list()
+                api_list = list()
+                message_list = list()
+                unchecked = list()
+
+            else:
+                pass
+                print "API list: %s" % api_list
+                print "Msg list: %s" % message_list
+                print "MSG_ID list: %s" % message_id_list
+                print "Unchecked list: %s" % unchecked
+                print "Сhecked list: %s" % checked
+
+            try:
+                task_list = CPO.get_tasks(msg_id_list=message_id_list)
+                task_list2 = CPO.get_tasks(msg_id_list=checked, task_status="not closed")
+            except Exception as e:
+                print "ControlCenter.index(). Ошибка. %s" % str(e)
+                task_list = list()
+                task_list2 = list()
+            else:
+                print "Task list: %s" % task_list
+                print "Not closed task list: %s" % task_list2
+                pass
+
+            tmpl = self.lookup.get_template("control_center_dialogs_default.html")
+            return tmpl.render(session_context=cherrypy.session['session_context'], dialog="show %s" % str("default"),
+                               active_cat=None,
+                               today=today, cur_day=cur_day, delta=delta_1, main_link=main_link,
+                               category=CPO.GetCategory(), task_status=CPO.TASK_STATUS,
+                               task_list=task_list, message_list=message_list, unchecked=unchecked,
+                               api_list=api_list, checked_with_task=task_list2)
+
+
 class ControlCenter(object):
 
     """
@@ -533,8 +635,23 @@ class ControlCenter(object):
     lookup = TemplateLookup(directories=["./templates/controlcenter"], output_encoding="utf-8",
                             input_encoding="utf-8", encoding_errors="replace")
 
+
+    # TODO: Не показывать нейтральные закрытые события
+    # TODO: Список сообщений должен отражать количество проверенных и не проверенных, чтобы было просто
+    #       найти непроверенные сообщения
+    # TODO: Если я ставлю задачу, то где мне смотреть все задачи которые я назначил кому-то или оставил себе
+    # TODO: Раздел помощи. Написать.
+    # TODO: Пользователи не являющиеся пользователями системы при назначении задачи, получают уведомление.
+    #       Контроль исполнения лежит на пользователе системы.
+    # TODO: Статистику простую (кол-во по дням, классам и тд)
+    # TODO: Календарь при выборе дня показа событий
+    # TODO: Форма вывода списка задач: по дням, на мне, на ком-то другом, все задачи и тд
+
+
+
     auth = AuthController()
     settings = Settings()
+    dialogs = Dialogs()
 
     @cherrypy.expose
     @require(member_of("users"))

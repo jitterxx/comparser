@@ -601,6 +601,7 @@ class TrainAPIRecords(Base):
     id = Column(sqlalchemy.Integer, primary_key=True)
     uuid = Column(sqlalchemy.String(256))
     message_id = Column(sqlalchemy.String(256))
+    auto_cat = Column(sqlalchemy.String(256), default="")
     category = Column(sqlalchemy.String(256))
     date = Column(sqlalchemy.DATETIME())
     user_action = Column(sqlalchemy.Integer)
@@ -711,6 +712,90 @@ def get_cat_train_api_records(for_day=None, client_access_list=None, empl_access
 
     else:
         return None
+
+
+def get_dialogs(for_day=None, cat=None, client_access_list=None, empl_access_list=None):
+    """
+    Получаем диалоги для вывода
+
+    :param for_day: день
+    :param cat: категории которые ищем
+    :param client_access_list: список клиентов
+    :param empl_access_list: список сотрудников
+    :return:
+    """
+
+    if for_day and cat:
+        if not isinstance(cat, list):
+            cat = [cat]
+
+        # получаем сообщения за определенный день
+        start = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (for_day.year, for_day.month, for_day.day),
+                                           "%Y-%m-%d %H:%M:%S")
+        end = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
+                                         "%Y-%m-%d %H:%M:%S")
+
+        session = Session()
+        # Получаем список индентификаторов сообщений (нужен для получения самих сообщений)
+        try:
+            resp = session.query(TrainAPIRecords).\
+                filter(and_(TrainAPIRecords.date >= start,
+                            TrainAPIRecords.date <= end),
+                       or_(and_(TrainAPIRecords.user_action == 1, TrainAPIRecords.user_answer.in_(cat)),
+                           and_(TrainAPIRecords.user_action == 0, TrainAPIRecords.auto_cat.in_(cat)))).\
+                order_by(TrainAPIRecords.date.desc()).all()
+        except Exception as e:
+            print "Get_dialogs(). Ошибка получения ID сообщений за день: %s. %s" % (for_day, str(e))
+            raise e
+            session.close()
+        else:
+            message_id_list = list()
+            api_list = dict()
+            for one in resp:
+                message_id_list.append(one.message_id)
+                api_list[one.message_id] = one
+
+        # Получаем сами сообщения
+        try:
+            message_list = session.query(Msg).\
+                filter(Msg.message_id.in_(message_id_list)).order_by(Msg.create_date.desc()).all()
+        except Exception as e:
+            print "Get_dialogs(). Ошибка получения сообщений за день: %s. %s" % (for_day, str(e))
+            raise e
+            session.close()
+
+        # Получаем не проверенные сообщения
+        try:
+            resp = session.query(TrainAPIRecords.message_id).\
+                filter(and_(TrainAPIRecords.message_id.in_(message_id_list),
+                            TrainAPIRecords.user_action == 0)).\
+                order_by(TrainAPIRecords.date.desc()).all()
+        except Exception as e:
+            print "Get_dialogs(). Ошибка получения не проверенных ID сообщений за день: %s. %s" % (for_day, str(e))
+            raise e
+            session.close()
+        else:
+            unchecked = [r for r, in resp]
+
+        # Получаем проверенные сообщения и ищем не закрытые задачи
+        try:
+            resp = session.query(TrainAPIRecords.message_id).\
+                filter(and_(TrainAPIRecords.message_id.in_(message_id_list),
+                            TrainAPIRecords.user_action == 1)).\
+                order_by(TrainAPIRecords.date.desc()).all()
+        except Exception as e:
+            print "Get_dialogs(). Ошибка получения проверенных ID сообщений за день: %s. %s" % (for_day, str(e))
+            raise e
+            session.close()
+        else:
+            checked = [r for r, in resp]
+
+        return api_list, message_list, message_id_list, unchecked, checked
+        session.close()
+
+    else:
+        return None
+
 
 
 class UserTrainData(Base):
@@ -1522,7 +1607,7 @@ class Task(Base):
     status = Column(Integer, default=0)
 
 
-def get_tasks(msg_id_list=None):
+def get_tasks(msg_id_list=None, task_status=None):
     """
     Получить задачи для сообщений из списка.
 
@@ -1534,9 +1619,15 @@ def get_tasks(msg_id_list=None):
 
     try:
         if msg_id_list:
-            result = session.query(Task).filter(Task.message_id.in_(msg_id_list)).all()
+            if task_status == "not closed":
+                result = session.query(Task).\
+                    filter(and_(Task.message_id.in_(msg_id_list),
+                                Task.status != TASK_CLOSED_STATUS)).all()
+            else:
+                result = session.query(Task).filter(Task.message_id.in_(msg_id_list)).all()
         else:
-            result = session.query(Task).all()
+            # result = session.query(Task).all()
+            return list()
     except Exception as e:
         print "Objects.get_tasks(). Ошибка получения Tasks. %s" % str(e)
         raise e
