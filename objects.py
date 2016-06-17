@@ -757,12 +757,17 @@ def get_dialogs(for_day=None, cat=None, client_access_list=None, empl_access_lis
 
         # Получаем сами сообщения
         try:
-            message_list = session.query(Msg).\
+            resp = session.query(Msg).\
                 filter(Msg.message_id.in_(message_id_list)).order_by(Msg.create_date.desc()).all()
         except Exception as e:
             print "Get_dialogs(). Ошибка получения сообщений за день: %s. %s" % (for_day, str(e))
             raise e
             session.close()
+        else:
+            message_list = dict()
+            for one in resp:
+                message_list[one.message_id] = one
+
 
         # Получаем не проверенные сообщения
         try:
@@ -795,6 +800,10 @@ def get_dialogs(for_day=None, cat=None, client_access_list=None, empl_access_lis
 
     else:
         return None
+
+
+def get_dialogs_warn(for_msg_id=None, for_cat=None):
+    pass
 
 
 
@@ -1627,7 +1636,7 @@ def get_tasks(msg_id_list=None, task_status=None):
                 result = session.query(Task).filter(Task.message_id.in_(msg_id_list)).all()
         else:
             # result = session.query(Task).all()
-            return list()
+            return dict()
     except Exception as e:
         print "Objects.get_tasks(). Ошибка получения Tasks. %s" % str(e)
         raise e
