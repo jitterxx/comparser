@@ -64,7 +64,7 @@ else:
         # классификация
         try:
             # answer = predictor.classify(data=row)
-            answer = predictor.classify_new(data=row, debug=args.debug)
+            short_answer, answer = predictor.classify_new(data=row, debug=args.debug)
         except Exception as e:
             if args.debug:
                 print "ERROR. Ошибка классфикации для записи. MSGID: %s, ID: %s" % (row.message_id, row.id)
@@ -88,6 +88,7 @@ else:
                     new = CPO.TrainAPIRecords()
                     new.uuid = uuid.uuid4().__str__()
                     new.message_id = row.message_id
+                    new.auto_cat = short_answer
                     new.category = answer
                     new.date = datetime.datetime.now()
                     new.user_action = 0

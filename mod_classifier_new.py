@@ -274,9 +274,9 @@ class ClassifierNew(object):
             print "Классификация: %s" % pred
 
         if (float(complex_pred) / 3) > 0.5:
-            return "normal-1:" + "-0.5:".join(pred) + "-0.5"
+            return "normal", "normal-1:" + "-0.5:".join(pred) + "-0.5"
         else:
-            return "conflict-1:" + "-0.5:".join(pred) + "-0.5"
+            return "conflict", "conflict-1:" + "-0.5:".join(pred) + "-0.5"
 
 
 def features_extractor(entry):

@@ -53,6 +53,33 @@ sql.append("ALTER TABLE `train_data` ADD COLUMN `references` TEXT NULL AFTER `cr
 sql.append("ALTER TABLE `email_raw_data`"
            "ADD COLUMN `orig_date_str` VARCHAR(255) NULL AFTER `in_reply_to`;")
 
+# 12
+sql.append("ALTER TABLE `train_api` "
+           "ADD COLUMN `auto_cat` VARCHAR(255) NULL DEFAULT NULL AFTER `message_id`;")
+
+
+def update_12():
+
+    session = CPO.Session()
+    try:
+        resp = session.query(CPO.TrainAPIRecords).all()
+    except Exception as e:
+        print "Ошибка в обновлении №12. %s" % str(e)
+    else:
+        for one in resp:
+            try:
+                one.auto_cat = str(one.category).split("-", 1)[0]
+            except Exception as e:
+                print "Ошибка в обновлении №12. Выделение авто категории. Запись: %s. %s" % (one.uuid, str(e))
+
+        session.commit()
+        print "Обновление №12 проведено успешно."
+    finally:
+        session.close()
+
+
+
+
 
 # Создаем новые таблицы
 CPO.create_tables()
@@ -148,6 +175,16 @@ except Exception as e:
     print e.message, e.args
 else:
     print result
+
+
+try:
+    result = connection.execute(sql[12])
+    update_12()
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
+
 
 connection.close()
 
