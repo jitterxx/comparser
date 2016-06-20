@@ -28,7 +28,7 @@
                     <div class="well">
                         %for one in range(0, len(task_status)):
                         <a role="button" class="btn btn-default"
-                           href="/control_center/change_task_status?task_uuid=${task.uuid}&status=${one}">
+                           href="/control_center/tasks/change_task_status?task_uuid=${task.uuid}&status=${one}">
                             ${task_status[one]}
                         </a>
                         %endfor
@@ -46,7 +46,8 @@
                     <div class="well">
                         %for one in users:
                         <a role="button" class="btn btn-default"
-                           href="/control_center/change_task_responsible?task_uuid=${task.uuid}&responsible=${one.login}&from_url=">
+                           href="/control_center/tasks/change_task_responsible?
+                           task_uuid=${task.uuid}&responsible=${one.uuid}&from_url=">
                             ${one.name} ${one.surname}
                         </a>
                         %endfor
@@ -64,7 +65,7 @@
                 </p>
                 <div class="collapse" id="collapse_3">
                     <div class="well">
-                        <form class="form" action="/control_center/add_task_comment">
+                        <form class="form" action="/control_center/tasks/add_task_comment">
                             <input hidden name="task_uuid" value="${task.uuid}">
                             <div class="from-group">
                                 <textarea size="3" cols="100" name="comment"></textarea>

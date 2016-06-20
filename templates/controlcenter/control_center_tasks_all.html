@@ -1,0 +1,147 @@
+<%inherit file="control_center_base.html"/>
+
+<%block name="title">
+  <title>Панель управления - Список задач</title>
+</%block>
+
+<%block name="navigation">
+
+<div id="navbar" class="navbar-collapse collapse">
+    <ul class="nav navbar-nav navbar-right navbar-style">
+        <li><a href="/control_center/dialogs/warning">Обратить внимание</a></li>
+        <li><a href="/control_center/dialogs/all">Смотреть Все</a></li>
+        <li><a class="active" href="/control_center/tasks">Задачи</a></li>
+        <li class="dropdown">
+            <a href="/control_center/staistics" class="dropdown-toggle" data-toggle="dropdown"
+               role="button" aria-haspopup="true"
+             aria-expanded="false">
+                Статистика
+                <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="/control_center/statistics/clients">Клиенты</a></li>
+                <li><a href="/control_center/statistics/employee">Сотрудники</a></li>
+                <li><a href="/control_center/statistics/system" >Общая</a></li>
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+             aria-expanded="false">
+                ${session_context["user"].name}
+                ${session_context["user"].surname}
+                <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="/control_center/settings">Настройки</a></li>
+                <li><a href="/control_center/profile">Профиль</a></li>
+                <li><a href="/control_center/help?menu=" >Помощь</a></li>
+                <li><a href="/control_center/auth/logout">Выход</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+</%block>
+
+<%block name="base">
+    <%
+        status_color_style = ["danger", "warning", "success"]
+    %>
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+        %for i in range(0, len(task_status)):
+        <a href="#id_${i}" class="btn btn-${status_color_style[i]}" type="button">
+            ${task_status[i]}
+            %if task_list.get(i):
+            <span class="badge">${len(task_list.get(i))}</span>
+            %else:
+            <span class="badge">0</span>
+            %endif
+        </a>
+        %endfor
+
+    </div>
+</div>
+
+%for i in range(0, len(task_status)):
+    %if task_list.get(i):
+    <div class="row">
+        <div class="col-sm-12 col-md-12" align="center">
+            <a id="id_${i}"></a>
+            <div style="margin-bottom: 3.5em;"></div>
+        </div>
+    </div>
+        %for task in task_list.get(i):
+
+        <div class="row">
+            <div class="col-sm-12 col-md-12" align="left">
+                <div class="panel panel-${status_color_style[i]}">
+                    <div class="panel-heading">
+                        <p>
+                            <span class="attention">Статус: </span> ${task_status[task.status]}
+                            <span style="margin-left: 0.5em;"></span>
+                            <a data-toggle="collapse" href="#collapse_1_${task.uuid}"
+                               aria-expanded="false" aria-controls="collapse_1_${task.uuid}">
+                                <i class="fa fa-exchange"></i>
+                            </a>
+                        </p>
+                        <div class="collapse" id="collapse_1_${task.uuid}">
+                            <div class="well">
+                                %for one in range(0, len(task_status)):
+                                <a role="button" class="btn btn-default"
+                                   href="/control_center/tasks/change_task_status?task_uuid=${task.uuid}&status=${one}&from_url=/control_center/tasks">
+                                    ${task_status[one]}
+                                </a>
+                                %endfor
+                            </div>
+                        </div>
+                        <p>
+                            <span class="attention">Ответственный: </span>
+
+                            ${users.get(task.responsible).name} ${users.get(task.responsible).surname}
+                            <span style="margin-left: 0.5em;"></span>
+                            <a data-toggle="collapse" href="#collapse_2_${task.uuid}"
+                               aria-expanded="false" aria-controls="collapse_2_${task.uuid}">
+                                <i class="fa fa-exchange"></i>
+                            </a>
+                        </p>
+                        <div class="collapse" id="collapse_2_${task.uuid}">
+                            <div class="well">
+                                %for one in users.values():
+                                <a role="button" class="btn btn-default"
+                                   href="/control_center/tasks/change_task_responsible?task_uuid=${task.uuid}&responsible=${one.uuid}&from_url=/control_center/tasks">
+                                    ${one.name} ${one.surname}
+                                </a>
+                                %endfor
+                            </div>
+                        </div>
+                        <%
+                            message = msg_list.get(task.message_id)
+                        %>
+                    </div>
+                    <div class="panel-body">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <p><span class="attention">Дата:</span> ${message.orig_date.strftime('%d-%m-%Y')}</p>
+                                <p><span class="attention">От кого:</span> ${message.sender_name} (${message.sender})</p>
+                                <p><span class="attention">Кому:</span> ${message.recipients_name} (${message.recipients})</p>
+                                <p><span class="attention">Тема:</span> ${message.message_title}</p>
+                            </div>
+                            <div class="panel-body">
+                                ${message.message_text}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        %endfor
+    %endif
+%endfor
+
+</%block>
+
+
+
+
+<%block name="footer"/>

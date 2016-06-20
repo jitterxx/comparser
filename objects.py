@@ -491,7 +491,7 @@ class MsgErr(Base):
     in_reply_to = Column(sqlalchemy.String(256))
 
 
-def get_clear_message(msg_id=None, for_day=None):
+def get_clear_message(msg_id=None, for_day=None, msg_id_list=None):
 
     if msg_id:
         session = Session()
@@ -519,6 +519,21 @@ def get_clear_message(msg_id=None, for_day=None):
             print "Get_clear_message(). Ошибка получения сообщений за день: %s. %s" % (for_day, str(e))
             raise e
         else:
+            return result
+        finally:
+            session.close()
+    elif msg_id_list:
+        session = Session()
+        try:
+            resp = session.query(Msg).filter(Msg.message_id.in_(msg_id_list)).all()
+        except Exception as e:
+            print "Get_clear_message(). Ошибка получения сообщений по списку. %s" % str(e)
+            raise e
+        else:
+            result = dict()
+            for one in resp:
+                result[one.message_id] = one
+
             return result
         finally:
             session.close()
@@ -1606,6 +1621,33 @@ def get_all_users(sort=None, disabled=False):
         session.close()
 
 
+def get_all_users_dict(disabled=False):
+    """
+    Получить данные всех пользователей в виде словаря. UUID - ключ.
+
+    :param disabled: включать в результат отключенных или нет
+    :returns: словарь пользователей
+    """
+
+    session = Session()
+    try:
+        if disabled:
+            dis = [0, 1]
+        else:
+            dis = [0]
+        resp = session.query(User).filter(User.disabled.in_(dis)).all()
+    except Exception as e:
+        print "CPO.Get_all_user_dict(). Ошибка: %s" % str(e)
+        return dict()
+    else:
+        resp1 = dict()
+        for one in resp:
+            resp1[one.uuid] = one
+        return resp1
+    finally:
+        session.close()
+
+
 def change_users_status(user_uuid=None):
     """
     Меняет статус пользователя между состояниями.
@@ -1629,21 +1671,6 @@ def change_users_status(user_uuid=None):
 
     finally:
         session.close()
-
-
-def get_message_responsible(msg_id=None):
-    """
-    Возвращает UUID пользователя ответственного за контроль сообщения.
-    Вычисляется исходя из списока емайл адресов сотрудников или доменов, к которым у этого пользователя есть доступ,
-    или списока емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
-
-    :param msg_id:
-    :return:
-    """
-    # TODO: Вычисление ответственного за задачу
-
-    pass
-    return None
 
 
 class Task(Base):
@@ -1711,6 +1738,36 @@ def get_task_by_uuid(task_uuid=None):
             return result
         finally:
             session.close()
+
+
+def get_tasks_grouped(user_uuid=None, grouped="status", sort="time"):
+
+    session = Session()
+    try:
+        if sort == "time":
+            resp = session.query(Task).filter(Task.responsible == user_uuid).\
+                order_by(Task.id.desc()).all()
+        else:
+            resp = session.query(Task).filter(Task.responsible == user_uuid).\
+                order_by(Task.id.desc()).all()
+
+    except Exception as e:
+        print "Objects.get_tasks_grouped(). Ошибка получения Tasks. %s" % str(e)
+        raise e
+    else:
+        result = dict()
+        task_msgid_list = list()
+        if grouped == "status":
+            for one in resp:
+                task_msgid_list.append(one.message_id)
+                if result.get(one.status):
+                    result[one.status].append(one)
+                else:
+                    result[one.status] = list()
+                    result[one.status].append(one)
+        return result, task_msgid_list
+    finally:
+        session.close()
 
 
 def create_task(responsible=None, message_id=None, comment=None, status=None):
@@ -1882,6 +1939,7 @@ def add_task_comment(task_uuid=None, comment=None):
             raise e
 
         else:
+            # TODO: проверка comment на кросс-скрипты. ТОлько допустимые символы.
 
             cur_time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
             comment = "<p><i class='task_comment_time'>%s</i> %s</p>" % (cur_time, str(comment))
