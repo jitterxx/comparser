@@ -67,7 +67,8 @@ else:
             short_answer, answer = predictor.classify_new(data=row, debug=args.debug)
         except Exception as e:
             if args.debug:
-                print "ERROR. Ошибка классфикации для записи. MSGID: %s, ID: %s" % (row.message_id, row.id)
+                print "email_classify_new(). Ошибка классфикации для записи. MSGID: %s, ID: %s" % \
+                      (row.message_id, row.id)
                 print str(e)
         else:
             if args.debug:
@@ -98,7 +99,22 @@ else:
                     session.commit()
                 except Exception as e:
                     if args.debug:
-                        print "Ошибка записи в TRAIN_API. %s" % str(e)
+                        print "email_classify_new(). Ошибка записи в TRAIN_API. %s" % str(e)
+
+                # Добавлем задачу, если категория в WARNING_CAT
+                try:
+                    if short_answer in WARNING_CATEGORY:
+                        # вычисляем ответственного за закрытие задачи
+                        # Стандартно это ответственный за клиента или менеджера
+                        responsible = CPO.get_message_responsible(msg_id=row.message_id)
+                        if not responsible:
+                            responsible = "UNKNOWN-UUID"
+                        task_uuid = CPO.create_task(responsible=responsible, message_id=row.message_id)
+                        comment = "Задача создана автоматически."
+                        CPO.add_task_comment(task_uuid=task_uuid, comment=comment)
+                except Exception as e:
+                    if args.debug:
+                        print "email_classify_new(). Ошибка создания Задачи. %s" % str(e)
 
 finally:
     session.close()

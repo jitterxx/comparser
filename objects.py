@@ -1604,6 +1604,21 @@ def change_users_status(user_uuid=None):
         session.close()
 
 
+def get_message_responsible(msg_id=None):
+    """
+    Возвращает UUID пользователя ответственного за контроль сообщения.
+    Вычисляется исходя из списока емайл адресов сотрудников или доменов, к которым у этого пользователя есть доступ,
+    или списока емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
+
+    :param msg_id:
+    :return:
+    """
+    # TODO: Вычисление ответственного за задачу
+
+    pass
+    return None
+
+
 class Task(Base):
 
     __tablename__ = 'tasks'
@@ -1751,6 +1766,8 @@ def change_task_status(api_uuid=None, status=None, message=None, task_uuid=None)
 
                 else:
                     # Записываем сообщение и новый статус задачи
+                    cur_time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
+                    message = "<p><i class='task_comment_time'>%s</i> %s</p>" % (cur_time, str(message))
                     if task.comment:
                         task.comment = str(task.comment) + str(message)
                     else:
@@ -1838,7 +1855,10 @@ def add_task_comment(task_uuid=None, comment=None):
             raise e
 
         else:
-            # Записываем сообщение и новый статус задачи
+
+            cur_time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
+            comment = "<p><i class='task_comment_time'>%s</i> %s</p>" % (cur_time, str(comment))
+
             # Записываем сообщение и новый статус задачи
             if task.comment:
                 task.comment = str(task.comment) + str(comment)

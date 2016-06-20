@@ -64,25 +64,52 @@ class UserTrain(object):
                 print str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
             else:
+                try:
+                    api_rec = CPO.get_train_record(uuid=uuid)
+                except Exception as e:
+                    print "api.UserTrain(). Ошибка получения записи TrainAPI. %s" % str(e)
+                    api_rec = None
+
                 # Если ответ пользователя не совпадает с WARNING_CATEGORY,
                 # необходимо закрыть таску открытую для этого сообщения
+                session_context = cherrypy.session['session_context']
                 if category not in WARNING_CATEGORY:
                     # Формируем сообщение
-                    session_context = cherrypy.session['session_context']
                     try:
-                        text = "Закрыто пользователем %s %s после проверки." % (session_context["user"].name,
-                                                                                session_context["user"].surname)
+                        text = "Закрыто пользователем %s %s после проверки." % \
+                               (session_context["user"].name, session_context["user"].surname)
                     except Exception as e:
                         print str(e)
                         text = "Закрыто пользователем после проверки."
 
                     # Меняем статус задачи на Закрыто
                     try:
-                        cur_time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
-                        text = "<p><i class='task_comment_time'>%s</i> %s</p>" % (cur_time, str(text))
                         CPO.change_task_status(api_uuid=uuid, status=2, message=text)
                     except Exception as e:
-                        print "api.message(). Ошибка при смене статуса задачи. %s" % str(e)
+                        print "api.UserTrain(). Ошибка при смене статуса задачи. %s" % str(e)
+                else:
+                    # Необходимо проверить, была ли это смена или подтверждение WARNING_CAT. Смотреть TrainAPI.auto_cat
+                    if api_rec.auto_cat not in WARNING_CATEGORY:
+                        # была смена на WARNING_CAT, создаем задачу
+                        try:
+                            # вычисляем ответственного за закрытие задачи
+                            # Стандартно это ответственный за клиента или менеджера
+                            responsible = session_context.get("user").uuid
+                            if not responsible:
+                                responsible = "UNKNOWN-UUID"
+                            task_uuid = CPO.create_task(responsible=responsible, message_id=api_rec.message_id)
+
+                            # Формируем сообщение
+                            try:
+                                text = "Создана автоматически после проверки. Пользователь: %s %s." % \
+                                       (session_context["user"].name, session_context["user"].surname)
+                            except Exception as e:
+                                print "api.UserTrain(). Ошибка формирования комментария. %s" % str(e)
+                                text = "Создана автоматически после проверки. Пользователь неизвестен."
+
+                            CPO.add_task_comment(task_uuid=task_uuid, comment=text)
+                        except Exception as e:
+                            print "api.UserTrain(). Ошибка создания Задачи. %s" % str(e)
 
                 tmpl = lookup.get_template("usertrain_page.html")
                 return tmpl.render(status=status)
@@ -795,9 +822,6 @@ class ControlCenter(object):
             # Запрашиваем данные тредов. Треды выводятся в попапе и подгружаются по запросу через JS
             # Запрашиваем данные по действиям предпринятым для разрешения ситуаций
             try:
-                # TODO: Таски добавляются когда для сообщений определяется категория из WARNING_CATEGORY
-                # TODO: Таска добавляется при ручной категории (после проверки) из из WARNING_CATEGORY
-
                 tasks = CPO.get_tasks(msg_id_list=actions_msg_id)
             except Exception as e:
                 print "ControlCenter.index(). Ошибка. %s" % str(e)
