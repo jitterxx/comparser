@@ -122,8 +122,8 @@ class Blog(object):
 
 class Root(object):
 
-    demo = Demo()
-    blog = Blog()
+    # demo = Demo()
+    # blog = Blog()
 
     @cherrypy.expose
     def index(self, ads=None):
@@ -148,6 +148,7 @@ class Root(object):
 
         return tmpl.render(user_agent=user_agent, ads_code=ads)
 
+    """
     @cherrypy.expose
     def send_contacts(self, customer_email=None, customer_phone=None):
         if not customer_email:
@@ -162,14 +163,15 @@ class Root(object):
             print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
 
         print customer_email, customer_phone,  cherrypy.request.headers
-        text = """
+        text = "
         <br>
         <p class="lead text-left">Мы получили ваши контакты и в ближайшее время с вами свяжемся.</p>
         <br>
         <div class="lead text-left">С уважением,<br> команда Conversation Parser.</div>
-        """
+        "
 
         return ShowNotification().index(text, "/")
+    """
 
     @cherrypy.expose
     def promo(self, qr=None):
@@ -190,9 +192,15 @@ class Root(object):
             }
 
             if str(qr).upper() in promo_codes.keys():
-                name = promo_codes[str(qr).upper()]["name"]
-                phone = promo_codes[str(qr).upper()]["phone"]
-                mail = promo_codes[str(qr).upper()]["email"]
+                try:
+                    name = promo_codes[str(qr).upper()]["name"]
+                    phone = promo_codes[str(qr).upper()]["phone"]
+                    mail = promo_codes[str(qr).upper()]["email"]
+                except Exception as e:
+                    print "Ошибка при получении данных QR кода. %s" % str(e)
+                    name = ""
+                    phone = ""
+                    mail = ""
             else:
                 name = ""
                 phone = ""
@@ -202,8 +210,7 @@ class Root(object):
 
         return tmpl.render(mail=mail, name=name, phone=phone)
 
-
-
+    """
     @cherrypy.expose
     def send_contacts_demo(self, customer_email=None, customer_name=None, pd=None, ads_code=None):
         if not customer_email:
@@ -218,14 +225,15 @@ class Root(object):
             print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
 
         print customer_email, customer_name,  cherrypy.request.headers, pd
-        text = """
+        text = "
         <br>
         <p class="lead text-left">%s, мы записали email и в ближайшее время свяжемся с Вами.</p>
         <br>
         <div class="lead text-left">С уважением,<br> команда Conversation Parser.</div>
-        """ % customer_name
+        " % customer_name
 
         return ShowNotification().index(text, "/")
+    """
 
     @cherrypy.expose
     def send_contacts_promo(self, customer_email=None, customer_name=None, customer_phone=None):
@@ -236,13 +244,16 @@ class Root(object):
         if not customer_phone:
             customer_phone = "не указано"
 
+        if not customer_email and not customer_phone:
+            raise cherrypy.HTTPRedirect("send_contacts_promo")
+
         try:
             WSO.landing_customer_contacts(customer_email=customer_email, customer_name=customer_name,
-                                      customer_session=cherrypy.request.headers, customer_phone=customer_phone)
+                                          customer_session=cherrypy.request.headers, customer_phone=customer_phone)
         except Exception as e:
             print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
 
-        print customer_email, customer_name,  cherrypy.request.headers, customer_phone
+        print customer_email, customer_phone, customer_name, cherrypy.request.headers
 
         tmpl = lookup.get_template("contacts_ok_landing_ver3.html")
 
