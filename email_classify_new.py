@@ -102,6 +102,8 @@ else:
                         print "email_classify_new(). Ошибка записи в TRAIN_API. %s" % str(e)
 
                 # Добавлем задачу, если категория в WARNING_CAT
+                # Добавление происходит после проверки пользователем
+                """
                 try:
                     if short_answer in WARNING_CATEGORY:
                         # вычисляем ответственного за закрытие задачи
@@ -115,6 +117,7 @@ else:
                 except Exception as e:
                     if args.debug:
                         print "email_classify_new(). Ошибка создания Задачи. %s" % str(e)
+                """
 
 finally:
     session.close()

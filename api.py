@@ -62,8 +62,40 @@ class UserTrain(object):
                 status = CPO.set_user_train_data(uuid, category)
             except Exception as e:
                 print str(e)
-                return ShowNotification().index("Произошла внутренняя ошибка.")
+                return ShowNotification().index("Api.UserTrain(). Произошла внутренняя ошибка. "
+                                                "Пожалуйста, сообщите о ней администратору.")
             else:
+                # Если категория после проверки в WARNING_CAT и ответ новый, то создаем задачу
+                if status[0] and category in WARNING_CATEGORY:
+                    session_context = cherrypy.session['session_context']
+
+                    try:
+                        api_rec = CPO.get_train_record(uuid=uuid)
+                    except Exception as e:
+                        print "api.UserTrain(). Ошибка получения записи TrainAPI. %s" % str(e)
+                        api_rec = None
+
+                    # создаем задачу
+                    try:
+                        # ответственный за закрытие задачи - проверяющий
+                        responsible = session_context.get("user").uuid
+                        if not responsible:
+                            responsible = "UNKNOWN-UUID"
+                        task_uuid = CPO.create_task(responsible=responsible, message_id=api_rec.message_id)
+
+                        # Формируем сообщение
+                        try:
+                            text = "Создана автоматически после проверки. Пользователь: %s %s." % \
+                                   (session_context["user"].name, session_context["user"].surname)
+                        except Exception as e:
+                            print "api.UserTrain(). Ошибка формирования комментария. %s" % str(e)
+                            text = "Создана автоматически после проверки. Пользователь неизвестен."
+
+                        CPO.add_task_comment(task_uuid=task_uuid, comment=text)
+                    except Exception as e:
+                        print "api.UserTrain(). Ошибка создания Задачи. %s" % str(e)
+
+                """
                 try:
                     api_rec = CPO.get_train_record(uuid=uuid)
                 except Exception as e:
@@ -110,6 +142,7 @@ class UserTrain(object):
                             CPO.add_task_comment(task_uuid=task_uuid, comment=text)
                         except Exception as e:
                             print "api.UserTrain(). Ошибка создания Задачи. %s" % str(e)
+                """
 
                 tmpl = lookup.get_template("usertrain_page.html")
                 return tmpl.render(status=status)
@@ -905,7 +938,7 @@ class ControlCenter(object):
                 task = CPO.get_task_by_uuid(task_uuid=uuid)
                 message = CPO.get_clear_message(msg_id=task.message_id)
                 api_data = CPO.get_train_record(msg_id=task.message_id)
-                responsible = CPO.get_user_by_login(task.responsible)
+                responsible = CPO.get_user_by_uuid(user_uuid=task.responsible)
                 users = CPO.get_all_users(sort="surname")
             except Exception as e:
                 print "ControlCenter.task(). Ошибка: %s." % str(e)

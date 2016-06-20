@@ -1547,6 +1547,33 @@ def get_user_by_login(login):
         session.close()
 
 
+def get_user_by_uuid(user_uuid=None):
+    """
+    Получить данные пользователя по UUID.
+    Информация о событиях записывается в лог приложения.
+
+    :parameter user_uuid: UUID пользователя
+
+    :returns: объект класса User. None, если объект не найден или найдено несколько.
+    """
+
+    session = Session()
+    try:
+        user = session.query(User).filter(User.uuid == user_uuid).one()
+    except sqlalchemy.orm.exc.NoResultFound:
+        print "Пользователь не найден"
+        return None
+    except sqlalchemy.orm.exc.MultipleResultsFound:
+        # status = [False,"Такой логин существует. Задайте другой."]
+        print "Найдено множество пользователей."
+        return None
+    else:
+        print "Пользователь найден"
+        return user
+    finally:
+        session.close()
+
+
 def get_all_users(sort=None, disabled=False):
     """
     Получить данные всех пользователей.
