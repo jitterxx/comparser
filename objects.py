@@ -42,6 +42,16 @@ def create_tables():
     Base.metadata.create_all(Engine)
 
 
+def get_exception_list():
+    """
+    Формируем список исключений
+
+    :return:
+    """
+
+    return EXCEPTION_EMAIL
+
+
 # Текущая эпоха обучения. Значение должно быть считано из БД
 CURRENT_TRAIN_EPOCH = None
 
@@ -64,6 +74,11 @@ def read_epoch():
     session = Session()
     try:
         resp = session.query(Settings).one()
+    except sqlalchemy.orm.exc.NoResultFound:
+        new_set = Settings()
+        new_set.train_epoch = 0
+        session.add(new_set)
+        session.commit()
     except Exception as e:
         raise e
     else:
@@ -92,14 +107,6 @@ def update_epoch():
 
     finally:
         session.close()
-
-
-try:
-    CURRENT_TRAIN_EPOCH = read_epoch()
-    pass
-except Exception as e:
-    print "Ошибка чтения эпохи. %s" % str(e)
-    sys.exit(os.EX_DATAERR)
 
 
 class MsgRaw(Base):
@@ -1895,6 +1902,80 @@ def delete_watch_rec(user_uuid=None, client_marker=None):
         raise exc
 
 
+def get_watchers_for_email(message=None):
+    """
+    Вернуть список емайлов на которые надо отправить уведомления по этому сообщению.
+    Проверяем поля ОТ, КОМУ, КОПИЯ.
+
+    :param message:
+    :return:
+    """
+
+    marker_dict = get_watch_list()
+
+    emails = list()
+    for one in [str(message.sender), str(message.recipients).split(","), str(message.cc_recipients).split(",")]:
+        emails.append(one)
+        try:
+            domain = one.split("@")[1]
+        except IndexError:
+            emails.append(one)
+        except Exception as e:
+            print "CPO.get_watchers_for_email(). Ошибка получения доменного имени из : %s. %s" % (one, str(e))
+        else:
+            emails.append(domain)
+
+    # удаляем дубликаты
+    emails = set(emails)
+    emails = list(emails)
+
+    # получаем список пользователей
+    try:
+        users = get_all_users_dict()
+    except Exception as e:
+        print "CPO.get_watchers_for_email(). Ошибка получения списка пользователей. %s" % str(e)
+        # Что-то делаем если список не получен
+        return list()
+    else:
+        result = list()
+        for marker in marker_dict.keys():
+            # для каждого маркера, проверяем его наличие
+            if marker in emails:
+                # Получаем емайл пользователей
+                try:
+                    user = users.get(marker_dict.get(marker))
+                except Exception as e:
+                    print "CPO.get_watchers_for_email(). Ошибка получения пользователя по маркеру < %s >. %s"\
+                          % (marker, str(e))
+                else:
+                    if user.email:
+                        result.append(user.email)
+
+        return result
+
+
+def get_watch_domain_list():
+
+    marker_dict = get_watch_list()
+    domains = list()
+
+    for one in marker_dict.keys():
+        try:
+            domain = one.split("@")[1]
+        except IndexError:
+            domains.append(one)
+        except Exception as e:
+            print "CPO.get_watchers_for_email(). Ошибка получения доменного имени из : %s. %s" % (one, str(e))
+            return ""
+        else:
+            domains.append(domain)
+
+    domains = set(domains)
+    domains = list(domains)
+
+    return "|".join(domains)
+
+
 class Task(Base):
 
     __tablename__ = 'tasks'
@@ -2177,8 +2258,15 @@ def add_task_comment(task_uuid=None, comment=None):
             session.close()
 
 
+# Фунции которые настраивают константы и глобальные переменные
+CHECK_DOMAINS = get_watch_domain_list()
 
+EXCEPTION_EMAIL = get_exception_list()
 
-
-
+try:
+    CURRENT_TRAIN_EPOCH = read_epoch()
+    pass
+except Exception as e:
+    print "Ошибка чтения эпохи. %s" % str(e)
+    sys.exit(os.EX_DATAERR)
 

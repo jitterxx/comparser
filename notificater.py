@@ -13,6 +13,7 @@ from email.header import Header
 from smtplib import SMTP_SSL
 import datetime
 import pdfkit
+from sqlalchemy import and_, or_
 
 from mako.lookup import TemplateLookup
 lookup = TemplateLookup(directories=["./templates"], output_encoding="utf-8",
@@ -68,36 +69,50 @@ def notify():
         cat, val = categoryll[0]
         # Если нужно оповещать только при конфликте
         if SEND_ONLY_WARNING and cat in WARNING_CATEGORY:
-            print "Это %s. Отправляем уведомление." % cat
+            print "Notificater(). Это %s. Отправляем уведомление." % cat
 
             try:
-                send_email(categoryll, msg, msg_uuid)
+                #  получаем список для уведомления
+                notify_list = get_watchers_for_email(message=msg)
+                # отправляем уведомления
+                send_email(category=categoryll, orig_msg=msg, msg_uuid=msg_uuid, notify_list=notify_list)
             except Exception as e:
-                print "Ошибка отправки сообщения. Ошибка: ", str(e)
+                print "Notificater(). Ошибка отправки сообщения. Ошибка: ", str(e)
                 raise e
+            else:
+                try:
+                    msg.notified = 1
+                    session.commit()
+                except Exception as e:
+                    print "Ошибка при отметке уведомления как отправленного. Ошибка: ", str(e)
+                    raise e
 
             print "#" * 30
         elif not SEND_ONLY_WARNING:
             # Если нужно оповещать об всех сообщениях
-            print "Это %s. Отправляем уведомление." % cat
+            print "Notificater(). Это %s. Отправляем уведомление." % cat
 
             try:
-                send_email(categoryll, msg, msg_uuid)
+                #  получаем список для уведомления
+                notify_list = get_watchers_for_email(message=msg)
+                # отправляем уведомления
+                send_email(category=categoryll, orig_msg=msg, msg_uuid=msg_uuid, notify_list=notify_list)
             except Exception as e:
-                print "Ошибка отправки сообщения. Ошибка: ", str(e)
+                print "Notificater(). Ошибка отправки сообщения. Ошибка: ", str(e)
                 raise e
+            else:
+                try:
+                    msg.notified = 1
+                    session.commit()
+                except Exception as e:
+                    print "Ошибка при отметке уведомления для сообщения. Ошибка: ", str(e)
+                    raise e
 
             print "#" * 30
         else:
-            print "Уведомление не отправлено."
+            print "Notificater(). Уведомление не отправлено."
             print "#" * 30
 
-        try:
-            msg.notified = 1
-            session.commit()
-        except Exception as e:
-            print "Ошибка при отметке уведомления для сообщения. Ошибка: ", str(e)
-            raise e
 
         # Чистые сообщения используются для переобучения системы, если была совершена ошибка и пользователь об этом
         # сообщил. При отправке результатов не чистим.
@@ -107,7 +122,7 @@ def notify():
     session.close()
 
 
-def send_email(category, orig_msg, msg_uuid):
+def send_email(category=None, orig_msg=None, msg_uuid=None, notify_list=None):
     """
     Отправка оповещений на адрес отправителя с результатами классификации.
 
@@ -118,7 +133,8 @@ def send_email(category, orig_msg, msg_uuid):
     from_addr = smtp_email
 
     # Получаем список адресов для отправки уведомления
-    to_addr = re.split("\\s", to_address)
+    # to_addr = re.split("\\s", to_address)
+    to_addr = notify_list
 
     # Формируем текст сообщения в plain
     orig_text = "\n\n---------------- Исходное сообщение -------------------\n"
