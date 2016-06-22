@@ -529,13 +529,19 @@ class Settings(object):
             # какие категории генерируют уведомления
             cat_warning_list = CPO.WARNING_CATEGORY
 
+            # получаем список уведомлений
+            watch_list = CPO.get_watch_list()
+
         except Exception as e:
             print "ControlCenter.Settings.Administration(). Ошибка: %s." % str(e)
             return ShowNotification().index("Произошла внутренняя ошибка.")
         else:
+
+            print "Watch list: %s" % watch_list
+
             tmpl = self.lookup.get_template("control_center_settings_administration.html")
             return tmpl.render(session_context=cherrypy.session['session_context'], users=users,
-                               categories=categories, user_status=CPO.USER_STATUS)
+                               categories=categories, user_status=CPO.USER_STATUS, watch_list=watch_list)
 
     @cherrypy.expose
     @require(member_of("admin"))
@@ -578,10 +584,59 @@ class Settings(object):
             try:
                 CPO.change_users_status(user_uuid=user_uuid)
             except Exception as e:
-                print "ControlCenter.Settings.Administration(). Ошибка: %s." % str(e)
+                print "ControlCenter.Settings.Administration.change_user_status(). Ошибка: %s." % str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
 
         raise cherrypy.HTTPRedirect("administration")
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def add_watch_rec(self, user_uuid=None, client_marker=None, from_url=None):
+        if user_uuid and client_marker:
+            # если не список, создаем список с одним элементом
+            if not isinstance(user_uuid, list):
+                user_uuid = [user_uuid]
+
+            # создаем записи наблюдения
+            try:
+                status = CPO.create_watch_rec(user_uuid=user_uuid, client_marker=str(client_marker))
+            except Exception as e:
+                print "ControlCenter.Settings.Administration.create_watch_rec()(). Ошибка: %s." % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка. CPO.create_watch_rec(). ")
+            else:
+                if not status[0]:
+                    return ShowNotification().index(status[1])
+                raise cherrypy.HTTPRedirect(from_url or "administration")
+
+        raise cherrypy.HTTPRedirect(from_url or "administration")
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def delete_watch_rec(self, user_uuid=None, client_marker=None, from_url=None):
+        if user_uuid and client_marker:
+            try:
+                status = CPO.delete_watch_rec(user_uuid=str(user_uuid), client_marker=str(client_marker))
+            except Exception as e:
+                print "ControlCenter.Settings.Administration.delete_watch_rec(). Ошибка: %s." % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка. CPO.delete_watch_rec().")
+            else:
+                if not status[0]:
+                    return ShowNotification().index(status[1])
+                raise cherrypy.HTTPRedirect(from_url or "administration")
+
+        raise cherrypy.HTTPRedirect(from_url or "administration")
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def new_watch_rec(self, from_url=None):
+        try:
+            users = CPO.get_all_users(sort="surname")
+        except Exception as e:
+            print "ControlCenter.Settings.Administration.new_watch_rec(). Ошибка: %s." % str(e)
+            return ShowNotification().index("Произошла внутренняя ошибка. API.new_watch_rec()")
+        else:
+            tmpl = self.lookup.get_template("control_center_new_watch_rec.html")
+            return tmpl.render(session_context=cherrypy.session['session_context'], users=users, from_url=from_url)
 
 
 class Dialogs(object):

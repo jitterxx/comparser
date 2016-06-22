@@ -68,3 +68,7 @@ TASK_STATUS = ["Новая", "В работе", "Закрыта"]
 
 TASK_CLOSED_STATUS = 2
 
+CLIENT_CHANNEL_TYPE = ["email"]
+
+
+

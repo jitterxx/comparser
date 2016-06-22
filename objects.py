@@ -1673,6 +1673,134 @@ def change_users_status(user_uuid=None):
         session.close()
 
 
+class WatchMarker(Base):
+
+    __tablename__ = "watch_marker"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    client_marker = sqlalchemy.Column(sqlalchemy.String(256), default="")  # маркер для поиска в полях сообщений
+    user_uuid = sqlalchemy.Column(sqlalchemy.String(256), default="")  # user uuid
+    channel_type = sqlalchemy.Column(Integer, default=0)  # id of channel type for CLIENT_CHANNEL_TYPE. Def: 0=email
+
+
+def get_watch_list(user_uuid=None):
+
+    if user_uuid:
+        # будет возвращен словарь из маркеров для указанного пользователя
+
+        session = Session()
+        try:
+            resp = session.query(WatchMarker).filter(WatchMarker.user_uuid == user_uuid).all()
+        except sqlalchemy.orm.exc.NoResultFound as e:
+            print "CPO.get_watch_list(). Ничего не найдено для пользователя %s. %s" % (user_uuid, str(e))
+            return list()
+        except Exception as e:
+            print "CPO.get_watch_list(). Ошибка при поиске для пользователя %s. %s" % (user_uuid, str(e))
+            raise e
+        else:
+            result = list()
+            for one in resp:
+                result.append(one.client_marker)
+
+            return result
+        finally:
+            session.close()
+    else:
+        # возвращен словарь маркеров и привязаных к ним сотрудников
+        session = Session()
+        try:
+            resp = session.query(WatchMarker).all()
+        except sqlalchemy.orm.exc.NoResultFound as e:
+            print "CPO.get_watch_list(). Список маркеров пуст. %s" % str(e)
+            return dict()
+        except Exception as e:
+            print "CPO.get_watch_list(). Ошибка при поиске. %s" % str(e)
+            raise e
+        else:
+            result = dict()
+            for one in resp:
+                if one.client_marker in result.keys():
+                    result[one.client_marker].append(one.user_uuid)
+                else:
+                    result[one.client_marker] = list()
+                    result[one.client_marker].append(one.user_uuid)
+
+            return result
+        finally:
+            session.close()
+
+
+def create_watch_rec(user_uuid=None, client_marker=None):
+
+    if user_uuid and client_marker:
+        session = Session()
+        try:
+            # Ищем похожую запись
+            resp = session.query(WatchMarker).filter(and_(WatchMarker.user_uuid.in_(user_uuid),
+                                                           WatchMarker.client_marker == client_marker)).all()
+        except Exception as e:
+            print "CPO.create_watch_rec(). Ошибка поиска уже созданной записи наблюдения. %s" % str(e)
+            raise e
+        else:
+            check = list()
+            for one in resp:
+                check.append(one.user_uuid)
+
+            for new_uuid in user_uuid:
+                if new_uuid not in check:
+                    # если не найдено, создаем новую
+                    try:
+                        new_watch = WatchMarker()
+                        new_watch.client_marker = client_marker
+                        new_watch.user_uuid = new_uuid
+
+                        session.add(new_watch)
+                        session.commit()
+                    except Exception as e:
+                        print "CPO.create_watch_rec(). Ошибка создания watch записи. %s" % str(e)
+                        raise e
+
+            return [True, "ok"]
+
+        finally:
+            session.close()
+    else:
+        exc = ValueError("Не указаны необходимые параметры: user_uuid, client_marker")
+        print "CPO.create_watch_rec(). Ошибка выполнения функции. %s" % str(exc)
+        raise exc
+
+
+def delete_watch_rec(user_uuid=None, client_marker=None):
+    if user_uuid and client_marker:
+        session = Session()
+        try:
+            # Ищем похожую запись
+            check = session.query(WatchMarker).filter(and_(WatchMarker.user_uuid == user_uuid,
+                                                           WatchMarker.client_marker == client_marker)).one_or_none()
+        except Exception as e:
+            print "CPO.delete_watch_rec(). Ошибка поиска watch записи. %s" % str(e)
+            raise e
+
+        else:
+            if check:
+                # если найдено удаляем
+                try:
+                    session.delete(check)
+                    session.commit()
+                except Exception as e:
+                    print "CPO.delete_watch_rec(). Ошибка удаления watch записи. %s" % str(e)
+                    raise
+                else:
+                    return [True, "ok"]
+
+        finally:
+            session.close()
+    else:
+        exc = ValueError("Не указаны необходимые параметры: user_uuid, client_marker")
+        print "CPO.delete_watch_rec(). Ошибка выполнения функции. %s" % str(exc)
+        raise exc
+
+
 class Task(Base):
 
     __tablename__ = 'tasks'
