@@ -554,27 +554,66 @@ class Settings(object):
     @require(member_of("admin"))
     def create_user(self, login=None, name=None, surname=None, email=None, password=None, access_groups=None,
                     status=None):
-        print login
-        print name
-        print surname
-        print email
-        print password
-        print access_groups
-        print status
 
+        if login and email and password and access_groups:
+            if not isinstance(access_groups, list):
+                access_groups = [access_groups]
 
+            if not name:
+                name = email
+
+            if not surname:
+                surname = ""
+
+            try:
+                result = CPO.create_user(name=name, surname=surname, login=login, password=password,
+                                         email=email, access_groups=access_groups, status=status)
+            except Exception as e:
+                print "API.ControlCenter.Administration.create_user(). Ошибка при создании пользователя. %s" % str(e)
+            else:
+                raise cherrypy.HTTPRedirect("administration")
+        else:
+            return self.new_user(message="Не указан логин или емайл или пароль или группа доступа.")
 
     @cherrypy.expose
     @require(member_of("users"))
-    def edit_user(self, user_uuid=None):
-        pass
+    def edit_user(self, user_uuid=None, message=None):
+        try:
+            user = CPO.get_user_by_uuid(user_uuid=str(user_uuid))
+        except Exception as e:
+            print "API.ControlCenter.Administration.edit_user(). Ошибка при редактировании пользователя. %s" % str(e)
+        else:
+            tmpl = self.lookup.get_template("control_center_edit_user.html")
+            return tmpl.render(session_context=cherrypy.session['session_context'], message=message,
+                               user_status=CPO.USER_STATUS, access_groups=CPO.ACCESS_GROUPS, user=user)
 
 
     @cherrypy.expose
     @require(member_of("users"))
     def save_user_data(self, user_uuid=None, login=None, name=None, surname=None, email=None, password=None,
-                       access_groups=None):
-        pass
+                       access_groups=None, status=None):
+
+        if login and email and password and access_groups and user_uuid:
+            if not isinstance(access_groups, list):
+                access_groups = [access_groups]
+
+            if not name:
+                name = email
+
+            if not surname:
+                surname = ""
+
+            try:
+                result = CPO.update_user(user_uuid=user_uuid, name=name, surname=surname, login=login, password=password,
+                                         email=email, access_groups=access_groups, status=status)
+            except Exception as e:
+                print "API.ControlCenter.Administration.save_user_data(). Ошибка при редактировании пользователя." \
+                      " %s" % str(e)
+            else:
+                raise cherrypy.HTTPRedirect("administration")
+        else:
+            return self.edit_user(user_uuid=user_uuid,
+                                  message="Не указан логин или емайл или пароль или группа доступа.")
 
 
     @cherrypy.expose

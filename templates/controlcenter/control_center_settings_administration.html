@@ -83,7 +83,10 @@
             </a>
         </div>
         <table class="table tabel-condensed table-hover" border=0 width="50%">
-            %for one in watch_list.keys():
+            %for i in range(0, len(watch_list.keys())):
+            <%
+                one = watch_list.keys()[i]
+            %>
             <tr align="left">
                 <td width="10%">${one}</td>
 
@@ -98,13 +101,13 @@
                     </button>
 
                     %endfor
-                    <a data-toggle="collapse" href="#collapse_1"
-                       aria-expanded="false" aria-controls="collapse_1">
+                    <a data-toggle="collapse" href="#collapse_${i}"
+                       aria-expanded="false" aria-controls="collapse_${i}">
                         <i class="fa fa-plus"></i>
                     </a>
                 </td>
                 <td width="20%">
-                    <div class="collapse" id="collapse_1">
+                    <div class="collapse" id="collapse_${i}">
                         <div class="well">
                             %for user in users:
                             %if user.uuid not in watch_list.get(one):

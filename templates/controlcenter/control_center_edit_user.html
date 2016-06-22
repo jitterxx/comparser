@@ -1,7 +1,7 @@
 <%inherit file="control_center_base.html"/>
 
 <%block name="title">
-  <title>Панель управления - Создание нового пользователя</title>
+  <title>Панель управления - Редактирование пользователя</title>
 </%block>
 
 
@@ -24,36 +24,41 @@
 
 <div class="row">
     <div class="col-sm-12 col-md-12" align="left">
-        <form class="form-horizontal" method="post" action="create_user">
+        <form class="form-horizontal" method="post" action="save_user_data">
+            <input hidden name="user_uuid" value="${user.uuid}">
             <div class="form-group">
                 <label for="inputName" class="col-sm-2 control-label">Имя</label>
                 <div class="col-sm-3">
-                    <input type="text" class="form-control" id="inputName" name="name" placeholder="Имя">
+                    <input type="text" class="form-control" id="inputName" name="name"
+                    value="${user.name}">
                </div>
             </div>
             <div class="form-group">
                 <label for="inputSurname" class="col-sm-2 control-label">Фамилия</label>
                 <div class="col-sm-3">
-                    <input type="text" class="form-control" id="inputSurname" name="surname"  placeholder="Фамилия">
+                    <input type="text" class="form-control" id="inputSurname" name="surname"
+                           value="${user.surname}">
                </div>
             </div>
             <div class="form-group">
-                <label for="inputLogin" class="col-sm-2 control-label">Логин</label>
+                <label for="inputLogin" class="col-sm-2 control-label">Логин*</label>
                 <div class="col-sm-3">
-                    <input type="text" class="form-control" id="inputLogin" name="login" placeholder="Логин" required>
+                    <input type="text" class="form-control" id="inputLogin" name="login" required
+                    value="${user.login}">
                </div>
             </div>
             <div class="form-group">
-                <label for="inputPassword3" class="col-sm-2 control-label">Пароль</label>
+                <label for="inputPassword3" class="col-sm-2 control-label">Пароль*</label>
                 <div class="col-sm-3">
                     <input type="password" class="form-control" id="inputPassword3" name="password"
-                           placeholder="Пароль" required>
+                           value="${user.password}" required>
                </div>
             </div>
             <div class="form-group">
-                <label for="inputEmail3" class="col-sm-2 control-label">Email</label>
+                <label for="inputEmail3" class="col-sm-2 control-label">Email*</label>
                 <div class="col-sm-3">
-                    <input type="email" class="form-control" id="inputEmail3" name="email" placeholder="Email" required>
+                    <input type="email" class="form-control" id="inputEmail3" name="email" placeholder="Email" required
+                    value="${user.email}">
                 </div>
             </div>
             <div class="form-group">
@@ -62,23 +67,31 @@
                     % for one in range(0, len(user_status)):
                     <div class="radio">
                         <label>
-
+                            %if user.disabled == one:
+                            <input type="radio" name="status" value="${one}" checked> ${user_status[one]}
+                            %else:
                             <input type="radio" name="status" value="${one}"> ${user_status[one]}
-
+                            %endif
                         </label>
                     </div>
                     %endfor
                 </div>
             </div>
             <div class="form-group">
-                <label for="access" class="col-sm-2 control-label">Группа доступа</label>
+                <label for="access" class="col-sm-2 control-label">Группа доступа*</label>
                 <div class="col-sm-3" id="access">
+                    <%
+                        groups = user.access_groups.split(",")
+                    %>
                     % for one in access_groups.keys():
                     <div class="checkbox">
                         <label>
-
+                            %if one in groups:
+                            <input type="checkbox" name="access_groups" value="${one}" checked>
+                            ${access_groups[one]}<br>
+                            %else:
                             <input type="checkbox" name="access_groups" value="${one}"> ${access_groups[one]}<br>
-
+                            %endif
                         </label>
                     </div>
                     %endfor
@@ -86,7 +99,7 @@
             </div>
             <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
-                    <button type="submit" class="btn btn-default">Создать</button>
+                    <button type="submit" class="btn btn-default">Сохранить</button>
                 </div>
             </div>
         </form>

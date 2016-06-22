@@ -1531,7 +1531,7 @@ class User(Base):
 """
 Функция получения объекта пользователь по логину
 """
-# TODO: создание, редактирование и настройка пользователей
+
 # TODO: ограничение прав доступа к сообщениям
 
 
@@ -1669,6 +1669,100 @@ def change_users_status(user_uuid=None):
             user.disabled = 1
         session.commit()
 
+    finally:
+        session.close()
+
+
+def create_user(name=None, surname=None, login=None, password=None, email=None, access_groups=None, status=None):
+
+    print login
+    print name
+    print surname
+    print email
+    print password
+    print access_groups
+    print status
+
+    for one in access_groups:
+        if one not in ACCESS_GROUPS.keys():
+            exc = ValueError("Указана не существующая группа доступа < %s >." % one)
+            raise exc
+
+    print "Проверка групп пройдена."
+
+    session = Session()
+    try:
+        new_user = User()
+        new_user.uuid = uuid.uuid4().__str__()
+        new_user.name = str(name)
+        new_user.surname = str(surname)
+        new_user.login = str(login)
+        new_user.password = str(password)
+        new_user.email = str(email)
+        new_user.disabled = int(status)
+        print ",".join(access_groups)
+        new_user.access_groups = ",".join(access_groups)
+
+        session.add(new_user)
+        session.commit()
+
+        print "Пользователь создан."
+
+    except Exception as e:
+        print "CPO.create_user(). Ошибка при создании пользователя. %s" % str(e)
+        raise e
+    else:
+        pass
+    finally:
+        session.close()
+
+
+def update_user(user_uuid=None, name=None, surname=None, login=None, password=None, email=None,
+                access_groups=None, status=None):
+
+    print user_uuid
+    print login
+    print name
+    print surname
+    print email
+    print password
+    print access_groups
+    print status
+
+    for one in access_groups:
+        if one not in ACCESS_GROUPS.keys():
+            exc = ValueError("Указана не существующая группа доступа < %s >." % one)
+            raise exc
+
+    print "Проверка групп пройдена."
+
+    session = Session()
+    try:
+        new_user = session.query(User).filter(User.uuid == user_uuid).one()
+    except Exception as e:
+        print "CPO.update_user(). Ошибка при получении пользователя. %s" % str(e)
+        raise e
+
+    try:
+
+        new_user.name = str(name)
+        new_user.surname = str(surname)
+        new_user.login = str(login)
+        new_user.password = str(password)
+        new_user.email = str(email)
+        new_user.disabled = int(status)
+        print ",".join(access_groups)
+        new_user.access_groups = ",".join(access_groups)
+
+        session.commit()
+
+        print "Пользователь изменен."
+
+    except Exception as e:
+        print "CPO.update_user(). Ошибка при изменении пользователя. %s" % str(e)
+        raise e
+    else:
+        pass
     finally:
         session.close()
 
