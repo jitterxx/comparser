@@ -42,16 +42,9 @@
 </%block>
 
 <%block name="base">
-
-<div class="row">
-    <div class="col-sm-12 col-md-12" align="left">
-        <div align="center">
-            ${session_context["user"].login}<br>
-        </div>
-    </div>
-</div>
-
-
+<%
+    category_color_style = {"conflict": "danger", "normal": "success"}
+%>
 <div class="row">
     <div class="col-sm-12 col-md-12" align="center">
         <nav>
@@ -90,10 +83,18 @@
 
 <div class="row">
     <div class="col-sm-12 col-md-12" align="left">
-        <p>${dialog}</p>
+        <p class="text-muted">${dialog}</p>
         <p>
-            <a data-toggle="collapse" href="#collapse_1" aria-expanded="false" aria-controls="collapse_1">
-            Кол-во непроверенных: ${len(unchecked)}
+            <a data-toggle="collapse" href="#collapse_2" aria-expanded="false" aria-controls="collapse_2"
+            class="btn btn-danger" type="button">
+                Проверенные
+                <span class="badge">${len(checked_with_task)}</span>
+            </a>
+
+            <a data-toggle="collapse" href="#collapse_1" aria-expanded="false" aria-controls="collapse_1"
+            class="btn btn-warning" type="button">
+                Непроверенные
+                <span class="badge">${len(unchecked)}</span>
             </a>
         </p>
         <div class="collapse" id="collapse_1">
@@ -107,11 +108,6 @@
                 %endfor
             </div>
         </div>
-        <p>
-            <a data-toggle="collapse" href="#collapse_2" aria-expanded="false" aria-controls="collapse_2">
-                Кол-во проверенных c открытыми задачами: ${len(checked_with_task)}
-            </a>
-        </p>
         <div class="collapse" id="collapse_2">
             <div class="well well-sm">
                 %for one in checked_with_task.keys():
@@ -123,6 +119,7 @@
                 %endfor
             </div>
         </div>
+        <div style="margin-bottom: 3em;"> </div>
     </div>
 </div>
 
@@ -140,49 +137,52 @@
             <div class="panel panel-warning">
             %endif
                 <div class="panel-heading" align="left">
+                    <a href="/control_center/show_full_thread?msg_id=${one.message_id}" target="_blank"
+                       title="Полная переписка">
+                        <i class="fa fa-list-alt fa-2x"></i>
+                    </a>
+                    %if one.message_id in task_list.keys():
+                        %if task_list[one.message_id].status == 2:
+                            <a href="/control_center/tasks/task?uuid=${task_list[one.message_id].uuid}" title="Проблема решена"
+                             target="_blank">
+                                <i class="fa fa-check-circle-o fa-2x text-success"></i>
+                            </a>
+                        %else:
+                            <a href="/control_center/tasks/task?uuid=${task_list[one.message_id].uuid}" title="Проблема не решена"
+                             target="_blank">
+                                <i class="fa fa-question-circle fa-2x text-danger"></i>
+                            </a>
+                        %endif
+                    %else:
+                    <!--
+                        <a href="/control_center/tasks/create_task?msg_id=${one.message_id}" title="Требуется действие"
+                         target="_blank">
+                            <i class="fa fa-exclamation-circle fa-2x text-danger"></i>
+                        </a>
+                        -->
+                    %endif
+
+                </div>
+                <div class="panel-heading" align="left">
                     <div class="row">
                         <div class="col-md-6" align="left">
                             <span class="attention">Категория: </span> ${category[api_list[one.message_id].auto_cat].category}
                         </div>
 
                         <div class="col-md-6" align="right">
-                            <a href="/control_center/show_full_thread?msg_id=${one.message_id}" target="_blank"
-                               title="Полная переписка">
-                                <i class="fa fa-list-alt fa-2x"></i>
-                            </a>
-                            |
                             %if api_list[one.message_id].user_action:
                             ${category[api_list[one.message_id].user_answer].category}
                             %else:
                             <span>
                                 <a href="${main_link}${api_list[one.message_id].uuid}/${category.keys()[0]}"
-                                 target="_blank">
+                                 target="_blank" class="btn btn-${category_color_style.get(category.keys()[0])}">
                                     ${category.values()[0].category}
                                 </a>
                                 <a href="${main_link}${api_list[one.message_id].uuid}/${category.keys()[1]}"
-                                 target="_blank">
+                                 target="_blank" class="btn btn-${category_color_style.get(category.keys()[1])}">
                                     ${category.values()[1].category}
                                 </a>
                             </span>
-                            %endif
-                            |
-                            %if one.message_id in task_list.keys():
-                                %if task_list[one.message_id].status == 2:
-                                    <a href="/control_center/task?uuid=${task_list[one.message_id].uuid}" title="Проблема решена"
-                                     target="_blank">
-                                        <i class="fa fa-check-circle-o fa-2x text-success"></i>
-                                    </a>
-                                %else:
-                                    <a href="/control_center/task?uuid=${task_list[one.message_id].uuid}" title="Проблема не решена"
-                                     target="_blank">
-                                        <i class="fa fa-question-circle fa-2x text-danger"></i>
-                                    </a>
-                                %endif
-                            %else:
-                                <a href="/control_center/create_task?msg_id=${one.message_id}" title="Требуется действие"
-                                 target="_blank">
-                                    <i class="fa fa-exclamation-circle fa-2x text-danger"></i>
-                                </a>
                             %endif
                         </div>
                     </div>

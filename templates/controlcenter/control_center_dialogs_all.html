@@ -43,15 +43,9 @@
 </%block>
 
 <%block name="base">
-
-<div class="row">
-    <div class="col-sm-12 col-md-12" align="left">
-        <div align="center">
-            ${session_context["user"].login}<br>
-        </div>
-    </div>
-</div>
-
+<%
+    category_color_style = {"conflict": "danger", "normal": "success"}
+%>
 
 <div class="row">
     <div class="col-sm-12 col-md-12" align="center">
@@ -88,13 +82,20 @@
     </div>
 </div>
 
-
 <div class="row">
     <div class="col-sm-12 col-md-12" align="left">
-        <p>${dialog}</p>
+        <p class="text-muted">${dialog}</p>
+        <p>
+            <a class="btn btn-info" type="button">
+                Всего сообщений
+                <span class="badge">${len(message_id_list)}</span>
+            </a>
 
+        </p>
+        <div style="margin-bottom: 3em;"> </div>
     </div>
 </div>
+
 
 %if message_list != []:
     %for id in message_id_list:
@@ -110,47 +111,50 @@
             <div class="panel panel-warning">
             %endif
                 <div class="panel-heading" align="left">
+                    <a href="/control_center/show_full_thread?msg_id=${one.message_id}" target="_blank"
+                       title="Полная переписка">
+                        <i class="fa fa-list-alt fa-2x"></i>
+                    </a>
+                    %if one.message_id in task_list.keys():
+                        %if task_list[one.message_id].status == 2:
+                            <a href="/control_center/tasks/task?uuid=${task_list[one.message_id].uuid}" title="Проблема решена"
+                             target="_blank">
+                                <i class="fa fa-check-circle-o fa-2x text-success"></i>
+                            </a>
+                        %else:
+                            <a href="/control_center/tasks/task?uuid=${task_list[one.message_id].uuid}" title="Проблема не решена"
+                             target="_blank">
+                                <i class="fa fa-question-circle fa-2x text-danger"></i>
+                            </a>
+                        %endif
+                    %else:
+                    <!--
+                        <a href="/control_center/tasks/create_task?msg_id=${one.message_id}" title="Требуется действие"
+                         target="_blank">
+                            <i class="fa fa-exclamation-circle fa-2x text-danger"></i>
+                        </a>
+                        -->
+                    %endif
+
+                </div>
+
+                <div class="panel-heading" align="left">
                     <div class="row">
                         <div class="col-md-6" align="left">
                             <span class="attention">Категория: </span> ${category[api_list[one.message_id].auto_cat].category}
                         </div>
 
                         <div class="col-md-6" align="right">
-                            <a href="/control_center/show_full_thread?msg_id=${one.message_id}" target="_blank"
-                               title="Полная переписка">
-                                <i class="fa fa-list-alt fa-2x"></i>
-                            </a>
-                            |
                             %if api_list[one.message_id].user_action:
                                 ${category[api_list[one.message_id].user_answer].category}
-                                %if api_list[one.message_id].user_answer in warn_cat or api_list[one.message_id].auto_cat in warn_cat:
-                                    %if one.message_id in task_list.keys():
-                                        %if task_list[one.message_id].status == 2:
-                                            <a href="/control_center/task?uuid=${task_list[one.message_id].uuid}" title="Проблема решена"
-                                             target="_blank">
-                                                <i class="fa fa-check-circle-o fa-2x text-success"></i>
-                                            </a>
-                                        %else:
-                                            <a href="/control_center/task?uuid=${task_list[one.message_id].uuid}" title="Проблема не решена"
-                                             target="_blank">
-                                                <i class="fa fa-question-circle fa-2x text-danger"></i>
-                                            </a>
-                                        %endif
-                                    %else:
-                                        <a href="/control_center/create_task?msg_id=${one.message_id}" title="Требуется действие"
-                                         target="_blank">
-                                            <i class="fa fa-exclamation-circle fa-2x text-danger"></i>
-                                        </a>
-                                    %endif
-                                %endif
                             %else:
                             <span>
                                 <a href="${main_link}${api_list[one.message_id].uuid}/${category.keys()[0]}"
-                                 target="_blank">
+                                 target="_blank" class="btn btn-${category_color_style.get(category.keys()[0])}">
                                     ${category.values()[0].category}
                                 </a>
                                 <a href="${main_link}${api_list[one.message_id].uuid}/${category.keys()[1]}"
-                                 target="_blank">
+                                 target="_blank" class="btn btn-${category_color_style.get(category.keys()[1])}">
                                     ${category.values()[1].category}
                                 </a>
                             </span>

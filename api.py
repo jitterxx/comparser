@@ -725,11 +725,11 @@ class Dialogs(object):
 
         else:
             pass
-            print "API list: %s" % api_list
-            print "Msg list: %s" % message_list
-            print "MSG_ID list: %s" % message_id_list
-            print "Unchecked list: %s" % unchecked
-            print "Сhecked list: %s" % checked
+            # print "API list: %s" % api_list
+            # print "Msg list: %s" % message_list
+            # print "MSG_ID list: %s" % message_id_list
+            # print "Unchecked list: %s" % unchecked
+            # print "Сhecked list: %s" % checked
 
         try:
             # Получаем задачи для всех и задачи со статусом "не закрыто" для проверенных
@@ -739,8 +739,8 @@ class Dialogs(object):
             print "ControlCenter.index(). Ошибка get_tasks(). %s" % str(e)
             task_list = task_list2 = dict()
         else:
-            print "Task list: %s" % task_list
-            print "Not closed task list: %s" % task_list2
+            # print "Task list: %s" % task_list
+            # print "Not closed task list: %s" % task_list2
             pass
 
         try:
@@ -751,12 +751,11 @@ class Dialogs(object):
             print "ControlCenter.index(). Ошибка get_dialogs_warn(). %s" % str(e)
             checked_warn = unchecked_warn = list()
         else:
-            print "Checked WARNING_CAT msg: %s" % checked_warn
-            print "UnChecked WARNING_CAT msg: %s" % unchecked_warn
+            # print "Checked WARNING_CAT msg: %s" % checked_warn
+            # print "UnChecked WARNING_CAT msg: %s" % unchecked_warn
             pass
 
-        text = "Выводим все диалоги за указанный день. Если день не указан, то за текущий."\
-               "Считаем число из WARNING_CAT общее = проверенные + непроверенные"
+        text = "Все сообщения за этот день."
 
         tmpl = self.lookup.get_template("control_center_dialogs_all.html")
         return tmpl.render(session_context=cherrypy.session['session_context'], dialog=text,
@@ -826,11 +825,11 @@ class Dialogs(object):
 
         else:
             pass
-            print "API list: %s" % api_list
-            print "Msg list: %s" % message_list
-            print "MSG_ID list: %s" % message_id_list
-            print "Unchecked list: %s" % unchecked
-            print "Сhecked list: %s" % checked
+            # print "API list: %s" % api_list
+            # print "Msg list: %s" % message_list
+            # print "MSG_ID list: %s" % message_id_list
+            # print "Unchecked list: %s" % unchecked
+            # print "Сhecked list: %s" % checked
 
         try:
             task_list = CPO.get_tasks(msg_id_list=message_id_list)
@@ -840,18 +839,18 @@ class Dialogs(object):
             task_list = dict()
             task_list2 = dict()
         else:
-            print "Task list: %s" % task_list
-            print "Not closed task list: %s" % task_list2
-            print "Cats: %s" % CPO.GetCategory()
+            # print "Task list: %s" % task_list
+            # print "Not closed task list: %s" % task_list2
+            # print "Cats: %s" % CPO.GetCategory()
             pass
-
-        text = "Выводим диалоги (проверенные и не проверенные) с категорией из WARNING_CAT за указанные день."
+        cat_dict = CPO.GetCategory()
+        text = "Проверенные и не проверенные сообщения на которые надо обратить внимание."
 
         tmpl = self.lookup.get_template("control_center_dialogs_default.html")
         return tmpl.render(session_context=cherrypy.session['session_context'], dialog=text,
                            active_cat=None,
                            today=today, cur_day=cur_day, delta=delta_1, main_link=main_link,
-                           category=CPO.GetCategory(), task_status=CPO.TASK_STATUS,
+                           category=cat_dict, task_status=CPO.TASK_STATUS,
                            task_list=task_list, message_list=message_list, unchecked=unchecked,
                            api_list=api_list, checked_with_task=task_list2, message_id_list=message_id_list)
 
@@ -1008,8 +1007,6 @@ class ControlCenter(object):
     # TODO: Календарь при выборе дня показа событий
     # TODO: Форма вывода списка задач: по дням, на мне, на ком-то другом, все задачи и тд
 
-
-
     auth = AuthController()
     settings = Settings()
     dialogs = Dialogs()
@@ -1018,9 +1015,12 @@ class ControlCenter(object):
     @cherrypy.expose
     @require(member_of("users"))
     def index(self, day=None):
-        """
-        Основная страница центра управления.
-        """
+        raise cherrypy.HTTPRedirect("dialogs/warning")
+
+    """
+    @cherrypy.expose
+    @require(member_of("users"))
+    def index(self, day=None):
 
         tmpl = self.lookup.get_template("control_center_main.html")
         context = cherrypy.session['session_context']
@@ -1094,8 +1094,7 @@ class ControlCenter(object):
                            delta=delta_1, actions=actions, main_link=main_link,
                            category=CPO.GetCategory(), actions_train_api=actions_train_api,
                            tasks=tasks, task_status=CPO.TASK_STATUS)
-
-
+        """
 
     @cherrypy.expose
     @require(member_of("users"))
@@ -1139,26 +1138,8 @@ class Root(object):
 
     @cherrypy.expose
     def index(self, ads=None):
-        """
-        Основная страница лендинга.
 
-        :param ads: код объявления по которому произошел переход.
-        :return:
-        """
-
-        tmpl = lookup.get_template("index.html")
-
-        if not ads:
-            ads = "organic"
-        print "ads :", ads
-
-        try:
-            user_agent = parse(cherrypy.request.headers['User-Agent'])
-        except Exception as e:
-            print "Ошибка определения типа клиента. %s" % str(e)
-            user_agent = ""
-
-        return tmpl.render(user_agent=user_agent, ads_code=ads)
+       raise cherrypy.HTTPRedirect("control_center/dialogs/warning")
 
 
 cherrypy.config.update("server.config")
