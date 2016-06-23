@@ -180,7 +180,7 @@ def exception(entry,data):
     # Не обрабатываем сообщения, если адрес отправителя это адрес аккаунта используещегося системой.
     # Т.е. письмо или отправлено само себе или переслано по правилам пересылки от кого-то.
     str = data['sender']
-    email = re.compile(from_email, re.I|re.U)
+    email = re.compile(smtp_email, re.I|re.U)
     email_re = email.search(str)
     if email_re:
         data['isexception'] = 1
@@ -209,7 +209,7 @@ if not args.limit: limit = 100
 else: limit = args.limit
 
 #Открываем грязную базу
-dirty_db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database="Raw_data")
+dirty_db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database=db_name)
 dirty_con = dirty_db.cursor(buffered=True)
 
 #Открываем чистую базу и базу ошибок

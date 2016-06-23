@@ -137,7 +137,7 @@ args = parser.parse_args()
 debug = args.debug
 
 inbox = mailbox.Maildir(maildir_path, factory=None)
-db = MySQLdb.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, db="Raw_data",use_unicode=True,
+db = MySQLdb.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, db=db_name, use_unicode=True,
                      charset="utf8")
 db.set_character_set('utf8')
 cur = db.cursor() 
