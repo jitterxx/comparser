@@ -1,0 +1,118 @@
+<%inherit file="control_center_base.html"/>
+
+<%block name="title">
+    <title>Панель управления</title>
+    <script src="/static/js/Chart.bundle.js"></script>
+</%block>
+
+<%block name="navigation">
+<div id="navbar" class="navbar-collapse collapse">
+    <ul class="nav navbar-nav navbar-right navbar-style">
+        <li><a href="/control_center/dialogs/warning">Обратить внимание</a></li>
+        <li><a href="/control_center/dialogs/all">Смотреть Все</a></li>
+        <li><a href="/control_center/tasks">Задачи</a></li>
+        <li class="dropdown">
+            <a href="/control_center/staistics" class="dropdown-toggle" data-toggle="dropdown"
+               role="button" aria-haspopup="true"
+             aria-expanded="false">
+                Статистика
+                <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <!--
+                <li><a href="/control_center/statistics/clients">Клиенты</a></li>
+                <li><a href="/control_center/statistics/employee">Сотрудники</a></li>
+                -->
+                <li class="active"><a href="/control_center/statistics/system" >Общая</a></li>
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+             aria-expanded="false">
+                ${session_context["user"].name}
+                ${session_context["user"].surname}
+                <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="/control_center/settings">Настройки</a></li>
+                <li><a href="/control_center/profile">Профиль</a></li>
+                <li><a href="/control_center/help?menu=" >Помощь</a></li>
+                <li><a href="/control_center/auth/logout">Выход</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+</%block>
+
+
+<%block name="base">
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+        <%
+            gdata = list()
+            labels = list()
+        %>
+        %for date, cat, stat_data in data:
+        <p>
+            ${date} - ${cat} - ${stat_data.msg_all}
+        </p>
+        <%
+            gdata.append(float(stat_data.msg_all))
+            labels.append(date.__str__())
+        %>
+        %endfor
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+
+        <canvas id="myChart" width="800" height="600"></canvas>
+
+    </div>
+</div>
+
+<script>
+    var data = {
+        labels: ${labels},
+        datasets: [
+            {
+            label: "Общее количество сообщений",
+            data: ${gdata},
+            fill: false,
+            lineTension: 0.1,
+            backgroundColor: "rgba(75,192,192,0.4)",
+            borderColor: "rgba(75,192,192,1)",
+            borderCapStyle: 'butt',
+            borderDash: [],
+            borderDashOffset: 0.0,
+            borderJoinStyle: 'miter',
+            pointBorderColor: "rgba(75,192,192,1)",
+            pointBackgroundColor: "#fff",
+            pointBorderWidth: 1,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: "rgba(75,192,192,1)",
+            pointHoverBorderColor: "rgba(220,220,220,1)",
+            pointHoverBorderWidth: 2,
+            pointRadius: 1,
+            pointHitRadius: 10
+            }
+        ]
+    };
+    var ctx = document.getElementById("myChart");
+    var myChart = new Chart(ctx,
+    {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: false
+            }
+    });
+
+</script>
+
+
+</%block>
+
+
+
+
+<%block name="footer"/>
