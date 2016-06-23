@@ -1913,21 +1913,34 @@ def get_watchers_for_email(message=None):
 
     marker_dict = get_watch_list()
 
+    # print "\n","*"*30,"\n"
+    # print "Marker dict: %s" % marker_dict
+    # print "MSG sender field: %s" % message.sender, type(message.sender)
+    # print "MSG recipients field: %s" % message.recipients, type(message.recipients)
+    # print "MSG cc_recipients field: %s" % message.cc_recipients, type(message.cc_recipients)
+
+    fields = str(message.sender).split(",") + str(message.recipients).split(",") + str(message.cc_recipients).split(",")
+
+    # print "Fields list: %s" % fields
+
     emails = list()
-    for one in [str(message.sender), str(message.recipients).split(","), str(message.cc_recipients).split(",")]:
-        emails.append(one)
-        try:
-            domain = one.split("@")[1]
-        except IndexError:
+    for one in fields:
+        if one != "empty":
             emails.append(one)
-        except Exception as e:
-            print "CPO.get_watchers_for_email(). Ошибка получения доменного имени из : %s. %s" % (one, str(e))
-        else:
-            emails.append(domain)
+            try:
+                domain = one.split("@")[1]
+            except IndexError:
+                emails.append(one)
+            except Exception as e:
+                print "CPO.get_watchers_for_email(). Ошибка получения доменного имени из : %s. %s" % (one, str(e))
+            else:
+                emails.append(domain)
 
     # удаляем дубликаты
     emails = set(emails)
     emails = list(emails)
+
+    # print "Emails SET: %s" % emails
 
     # получаем список пользователей
     try:
@@ -1937,19 +1950,31 @@ def get_watchers_for_email(message=None):
         # Что-то делаем если список не получен
         return list()
     else:
+        # print "Users list: %s" % users
+
         result = list()
+        user_list = list()
         for marker in marker_dict.keys():
+
+            # print "Marker: %s" % marker
+
             # для каждого маркера, проверяем его наличие
-            if marker in emails:
-                # Получаем емайл пользователей
-                try:
-                    user = users.get(marker_dict.get(marker))
-                except Exception as e:
-                    print "CPO.get_watchers_for_email(). Ошибка получения пользователя по маркеру < %s >. %s"\
-                          % (marker, str(e))
-                else:
-                    if user.email:
-                        result.append(user.email)
+            if marker in emails and marker_dict.get(marker):
+                user_list += marker_dict.get(marker)
+
+        for one in user_list:
+            # print "Email for user: %s" % one
+
+            # Получаем емайл пользователей
+            try:
+                user = users.get(one)
+            except Exception as e:
+                print "CPO.get_watchers_for_email(). Ошибка получения пользователя по UUID < %s >. %s"\
+                      % (one, str(e))
+            else:
+                if user.email and user.email not in result:
+                    print "Email: %s" % user.email
+                    result.append(user.email)
 
         return result
 
@@ -2258,15 +2283,24 @@ def add_task_comment(task_uuid=None, comment=None):
             session.close()
 
 
-# Фунции которые настраивают константы и глобальные переменные
-CHECK_DOMAINS = get_watch_domain_list()
+def initial_configuration():
+    # Фунции которые настраивают константы и глобальные переменные
+    CHECK_DOMAINS = get_watch_domain_list()
 
-EXCEPTION_EMAIL = get_exception_list()
+    EXCEPTION_EMAIL = get_exception_list()
 
-try:
-    CURRENT_TRAIN_EPOCH = read_epoch()
-    pass
-except Exception as e:
-    print "Ошибка чтения эпохи. %s" % str(e)
-    sys.exit(os.EX_DATAERR)
+    try:
+        CURRENT_TRAIN_EPOCH = read_epoch()
+        pass
+    except Exception as e:
+        print "Ошибка чтения эпохи. %s" % str(e)
+        sys.exit(os.EX_DATAERR)
+
+    print "*" * 30, "\n"
+    print "CONFIGURATION INIT"
+    print "CHECK_DOMAINS : %s" % CHECK_DOMAINS
+    print "EXCEPTION_EMAIL : %s" % EXCEPTION_EMAIL
+    print "CURRENT_TRAIN_EPOCH : %s" % CURRENT_TRAIN_EPOCH
+    print "*" * 30, "\n"
+
 

@@ -74,6 +74,8 @@ def notify():
             try:
                 #  получаем список для уведомления
                 notify_list = get_watchers_for_email(message=msg)
+                print "Notificater(). Адресаты уведомления: ", notify_list
+
                 # отправляем уведомления
                 send_email(category=categoryll, orig_msg=msg, msg_uuid=msg_uuid, notify_list=notify_list)
             except Exception as e:
@@ -112,7 +114,6 @@ def notify():
         else:
             print "Notificater(). Уведомление не отправлено."
             print "#" * 30
-
 
         # Чистые сообщения используются для переобучения системы, если была совершена ошибка и пользователь об этом
         # сообщил. При отправке результатов не чистим.

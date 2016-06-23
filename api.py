@@ -1145,4 +1145,5 @@ class Root(object):
 cherrypy.config.update("server.config")
 
 if __name__ == '__main__':
+    CPO.initial_configuration()
     cherrypy.quickstart(Root(), '/', "app.config")
