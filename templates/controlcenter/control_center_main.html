@@ -7,7 +7,21 @@
 <%block name="navigation">
 <div id="navbar" class="navbar-collapse collapse">
     <ul class="nav navbar-nav navbar-right navbar-style">
-        <li class="active"><a href="actions">События</a></li>
+        <li><a href="/control_center/dialogs/warning">Обратить внимание</a></li>
+        <li><a href="/control_center/dialogs/all">Смотреть Все</a></li>
+        <li><a href="/control_center/tasks">Задачи</a></li>
+        <li class="dropdown">
+            <a href="/control_center/staistics" class="dropdown-toggle" data-toggle="dropdown"
+               role="button" aria-haspopup="true"
+             aria-expanded="false">
+                Статистика
+                <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="/control_center/statistics/clients">Клиенты</a></li>
+                <li><a href="/control_center/statistics/employee">Сотрудники</a></li>
+                <li><a href="/control_center/statistics/system" >Общая</a></li>
+            </ul>
+        </li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
              aria-expanded="false">
@@ -15,10 +29,10 @@
                 ${session_context["user"].surname}
                 <span class="caret"></span></a>
             <ul class="dropdown-menu">
-                <li><a href="settings">Настройки</a></li>
-                <li><a href="profile">Профиль</a></li>
-                <li><a href="/help?menu=" >Помощь</a></li>
-                <li><a href="auth/logout">Выход</a></li>
+                <li><a href="/control_center/settings">Настройки</a></li>
+                <li><a href="/control_center/profile">Профиль</a></li>
+                <li><a href="/control_center/help?menu=" >Помощь</a></li>
+                <li><a href="/control_center/auth/logout">Выход</a></li>
             </ul>
         </li>
     </ul>
