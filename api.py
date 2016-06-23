@@ -701,13 +701,16 @@ class Dialogs(object):
         else:
             cur_day = today
 
+        session_context = cherrypy.session['session_context']
+
         # Выводим все диалоги за указанный день. Если день не указан, то за текущий
         # Считаем число из WARNING_CAT общее = проверенные + непроверенные
 
         # список емайл адресов сотрудников или доменов, к которым у этого пользователя есть доступ
         empl_access_list = list()
         # список емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
-        client_access_list = list()
+        client_access_list = CPO.get_watch_list(user_uuid=session_context.get("user").uuid)
+        print "User UUID: %s" % session_context.get("user").uuid
 
         try:
             api_list, message_list, message_id_list, unchecked, checked = \
@@ -758,7 +761,7 @@ class Dialogs(object):
         text = "Все сообщения за этот день."
 
         tmpl = self.lookup.get_template("control_center_dialogs_all.html")
-        return tmpl.render(session_context=cherrypy.session['session_context'], dialog=text,
+        return tmpl.render(session_context=session_context, dialog=text,
                            active_cat="all", warn_cat=CPO.WARNING_CATEGORY,
                            today=today, cur_day=cur_day, delta=delta_1, main_link=main_link,
                            category=CPO.GetCategory(), task_status=CPO.TASK_STATUS,
@@ -797,6 +800,7 @@ class Dialogs(object):
             cur_day = today
 
         print "Dialog default page"
+        session_context = cherrypy.session['session_context']
         # Выводим диалоги (проверенные и не проверенные) с категорией из WARNING_CAT за указанные день.
         # Если день не указан, то выводим за текущий
         # - считаем число НЕ проверенных
@@ -808,7 +812,8 @@ class Dialogs(object):
         # список емайл адресов сотрудников или доменов, к которым у этого пользователя есть доступ
         empl_access_list = list()
         # список емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
-        client_access_list = list()
+        client_access_list = CPO.get_watch_list(user_uuid=session_context.get("user").uuid)
+        print "User UUID: %s" % session_context.get("user").uuid
 
         try:
             api_list, message_list, message_id_list, unchecked, checked = \
@@ -847,8 +852,7 @@ class Dialogs(object):
         text = "Проверенные и не проверенные сообщения на которые надо обратить внимание."
 
         tmpl = self.lookup.get_template("control_center_dialogs_default.html")
-        return tmpl.render(session_context=cherrypy.session['session_context'], dialog=text,
-                           active_cat=None,
+        return tmpl.render(session_context=session_context, dialog=text, active_cat=None,
                            today=today, cur_day=cur_day, delta=delta_1, main_link=main_link,
                            category=cat_dict, task_status=CPO.TASK_STATUS,
                            task_list=task_list, message_list=message_list, unchecked=unchecked,

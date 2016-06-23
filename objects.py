@@ -758,33 +758,116 @@ def get_dialogs(for_day=None, cat=None, client_access_list=None, empl_access_lis
                                          "%Y-%m-%d %H:%M:%S")
 
         session = Session()
+        # Получаем список сообщений за указанный промежуток с учетом списков доступа
+        try:
+            """
+            resp = session.query(Msg).\
+                filter(and_(Msg.create_date >= start, Msg.create_date <= end), Msg.isclassified == 1).\
+                order_by(Msg.create_date.desc()).all()
+            """
+
+            resp = session.query(Msg).\
+                filter(and_(Msg.create_date >= start, Msg.create_date <= end), Msg.isclassified == 1,
+                       or_(*[Msg.category.like(c + "%") for c in cat])).\
+                order_by(Msg.create_date.desc()).all()
+
+        except Exception as e:
+            print "Get_dialogs(). Ошибка получения сообщений за день: %s. %s" % (for_day, str(e))
+            session.close()
+            raise e
+        else:
+            message_id_list = list()
+            message_list = dict()
+            for message in resp:
+                try:
+                    fields = str(message.sender).split(",") + \
+                             str(message.recipients).split(",") + \
+                             str(message.cc_recipients).split(",")
+                except Exception as e:
+                    print "CPO.Get_dialogs(). Ошибка получения полей ОТ,КОМУ, КОПИЯ из сообщения: %s. %s" % \
+                          (message, str(e))
+                    fields = list()
+
+                # print "ALL fields: %s" % fields
+                # формируем список емайлов и доменов из письма
+                emails = list()
+                for one in fields:
+                    if one != "empty":
+                        emails.append(one)
+                        try:
+                            domain = one.split("@")[1]
+                        except IndexError:
+                            emails.append(one)
+                        except Exception as e:
+                            print "CPO.Get_dialogs(). Ошибка получения доменного имени из : %s. %s" % (one, str(e))
+                        else:
+                            emails.append(domain)
+
+                # удаляем дубликаты
+                emails = set(emails)
+                emails = list(emails)
+
+                # print "Emails : %s" % emails
+                # print "Client access list: %s" % client_access_list
+
+                # список доступных емайлов и доменов уже получен в client_access_list
+                # ищем пересечение, если оно есть, добавляем сообщение в список message_id_list и message_list
+                client_access_list = set(client_access_list)
+                result = client_access_list.intersection(emails)
+
+                # print "INTERSECTION : %s" % result
+
+                if result:
+                    message_id_list.append(message.message_id)
+                    message_list[message.message_id] = message
+
         # Получаем список индентификаторов сообщений (нужен для получения самих сообщений)
         try:
             resp = session.query(TrainAPIRecords).\
                 filter(and_(TrainAPIRecords.date >= start,
-                            TrainAPIRecords.date <= end),
+                            TrainAPIRecords.date <= end,
+                            TrainAPIRecords.message_id.in_(message_id_list)),
                        or_(and_(TrainAPIRecords.user_action == 1, TrainAPIRecords.user_answer.in_(cat)),
                            and_(TrainAPIRecords.user_action == 0, TrainAPIRecords.auto_cat.in_(cat)))).\
                 order_by(TrainAPIRecords.date.desc()).all()
         except Exception as e:
             print "Get_dialogs(). Ошибка получения ID сообщений за день: %s. %s" % (for_day, str(e))
-            raise e
             session.close()
+            raise e
         else:
-            message_id_list = list()
+            # message_id_list = list()
             api_list = dict()
+            checked = list()
+            unchecked = list()
             for one in resp:
-                message_id_list.append(one.message_id)
+                # message_id_list.append(one.message_id)
                 api_list[one.message_id] = one
 
+                if one.user_action == 0:
+                    # unchecked
+                    unchecked.append(one.message_id)
+                else:
+                    # checked
+                    checked.append(one.message_id)
+
+            # """
+            print "API list len: %s" % len(api_list.keys())
+            print "MSG ID list len: %s" % len(message_id_list)
+
+            message_id_list = list(set(api_list.keys()).intersection(set(message_id_list)))
+
+            print "MSG ID list len (intersection): %s" % len(message_id_list)
+            # """
+
         # Получаем сами сообщения
+        """
         try:
             resp = session.query(Msg).\
                 filter(Msg.message_id.in_(message_id_list)).order_by(Msg.create_date.desc()).all()
         except Exception as e:
             print "Get_dialogs(). Ошибка получения сообщений за день: %s. %s" % (for_day, str(e))
-            raise e
             session.close()
+            raise e
         else:
             message_list = dict()
             for one in resp:
@@ -799,8 +882,8 @@ def get_dialogs(for_day=None, cat=None, client_access_list=None, empl_access_lis
                 order_by(TrainAPIRecords.date.desc()).all()
         except Exception as e:
             print "Get_dialogs(). Ошибка получения не проверенных ID сообщений за день: %s. %s" % (for_day, str(e))
-            raise e
             session.close()
+            raise e
         else:
             unchecked = [r for r, in resp]
 
@@ -812,14 +895,14 @@ def get_dialogs(for_day=None, cat=None, client_access_list=None, empl_access_lis
                 order_by(TrainAPIRecords.date.desc()).all()
         except Exception as e:
             print "Get_dialogs(). Ошибка получения проверенных ID сообщений за день: %s. %s" % (for_day, str(e))
-            raise e
             session.close()
+            raise e
         else:
             checked = [r for r, in resp]
+        """
 
-        return api_list, message_list, message_id_list, unchecked, checked
         session.close()
-
+        return api_list, message_list, message_id_list, unchecked, checked
     else:
         return None
 
@@ -1468,7 +1551,7 @@ def control_center_full_thread_html_document(msg_id=None):
     try:
         messages = get_thread_messages(message_id=msg_id)
     except Exception as e:
-        print "ControlCenter.show_full_thread(). Ошибка: ", str(e)
+        print "CPO.control_center_full_thread_html_document(). Ошибка: ", str(e)
         raise e
     else:
         if messages:

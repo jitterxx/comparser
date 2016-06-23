@@ -268,6 +268,8 @@ else: limit = args.limit
 
 session = CPO.Session()
 
+# TODO: При парсинге необходимо использовать оригинальное время создания сообщения приведенное к локальной зоне сервера
+
 try:
     raw_data = session.query(CPO.MsgRaw).filter(CPO.MsgRaw.iscleared == 0).limit(int(limit))
 except Exception as e:
