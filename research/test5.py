@@ -13,14 +13,10 @@ import sqlalchemy
 import uuid
 
 
-date = datetime.datetime.strptime(str("04-04-2016"), "%d-%m-%Y")
+sdate = datetime.datetime.strptime(str("03-03-2015"), "%d-%m-%Y")
 
-CPO.create_tables()
+edate = datetime.datetime.strptime(str("07-07-2015"), "%d-%m-%Y")
 
-CPO.CURRENT_TRAIN_EPOCH = 2
-
-print CPO.CURRENT_TRAIN_EPOCH
-
-CPO.pred_stat_compute(for_day=date)
+print CPO.pred_stat_get_data(start_date=sdate, end_date=edate)
 
 

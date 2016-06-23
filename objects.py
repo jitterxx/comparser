@@ -2385,6 +2385,9 @@ class PredictionStatistics(Base):
     msg_in_cat = Column(sqlalchemy.Integer, default=0)
     msg_in_cat_check = Column(sqlalchemy.Integer, default=0)
     msg_in_cat_wrong = Column(sqlalchemy.Integer, default=0)
+    error_in_cat = Column(sqlalchemy.Float, default=0.0)
+    accuracy_in_cat = Column(sqlalchemy.Float, default=0.0)
+    full_accuracy = Column(sqlalchemy.Float, default=0.0)
     train_epoch = Column(sqlalchemy.Integer, default=0)
 
 
@@ -2420,12 +2423,16 @@ def pred_stat_compute(for_day=None):
     msg_cat = dict()
     msg_cat_check = dict()
     msg_in_cat_wrong = dict()
+    error_in_cat = dict()
+    accuracy_in_cat = dict()
 
     # Количество сообщений, определенных системой, во всех категориях
     for c in cat:
         msg_cat[c] = 0
         msg_cat_check[c] = 0
         msg_in_cat_wrong[c] = 0
+        error_in_cat[c] = 0.0
+        accuracy_in_cat[c] = 0.0
 
     try:
         resp = session.query(TrainAPIRecords.auto_cat, func.count(TrainAPIRecords.auto_cat)).\
@@ -2476,13 +2483,39 @@ def pred_stat_compute(for_day=None):
             msg_in_cat_wrong[n] = c
         print "Количество сообщений во всех категориях, где авто-категория не совпадает с проверочной: %s" % resp
 
-    print msg_cat
-    print msg_cat_check
-    print msg_in_cat_wrong
-
-
     try:
+        try:
+            full_accuracy = 1.0 - float(sum([t for t in msg_in_cat_wrong.values()]))/sum([t for t in msg_cat_check.values()])
+        except ZeroDivisionError as e:
+            print "Full accuracy. Деление на 0."
+            full_accuracy = 0.0
+        else:
+            print "Общая точность системы: ", full_accuracy
+
+        # Удаляем старую статистику за этот день
+        try:
+            resp = session.query(PredictionStatistics).filter(PredictionStatistics.date == for_day).delete()
+            session.commit()
+        except Exception as e:
+            print str(e)
+        else:
+            print "Старые данные удалены. for_day = %s" % for_day
+            raw_input()
+
         for c in cat:
+
+            try:
+                error_in_cat[c] = float(msg_in_cat_wrong[c])/msg_cat_check[c]
+            except ZeroDivisionError as e:
+                print "Erron_in_cat. Деление на 0."
+                pass
+
+            try:
+                accuracy_in_cat[c] = 1.0 - error_in_cat[c]
+            except ZeroDivisionError as e:
+                print "accuracy_in_cat. Деление на 0."
+                pass
+
             new_stat = PredictionStatistics()
             new_stat.date = for_day
             new_stat.msg_all = msg_all
@@ -2490,14 +2523,57 @@ def pred_stat_compute(for_day=None):
             new_stat.msg_in_cat = msg_cat[c]
             new_stat.msg_in_cat_check = msg_cat_check[c]
             new_stat.msg_in_cat_wrong = msg_in_cat_wrong[c]
+            new_stat.error_in_cat = error_in_cat[c]
+            new_stat.accuracy_in_cat = accuracy_in_cat[c]
+            new_stat.full_accuracy = full_accuracy
             new_stat.train_epoch = CURRENT_TRAIN_EPOCH
+
+            print "Процент ошибок определения системой категории %s: " % c, error_in_cat[c]
+            print "Точность системы в категории %s: " % c, accuracy_in_cat[c]
+            print "\n"
 
             session.add(new_stat)
             session.commit()
+
     except Exception as e:
+        print str(e)
         pass
 
     session.close()
+
+
+def pred_stat_get_data(start_date=None, end_date=None):
+    """
+        Возвращает рассчитанные по дням статистические данные за период.
+
+    :param start_date:
+    :param end_date:
+    :return:
+    """
+
+    if not start_date and not end_date:
+        exc = ValueError("Не указаны параметры.")
+        raise exc
+    else:
+        # правильные даты
+        start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
+                                                (start_date.year, start_date.month, start_date.day),
+                                                "%Y-%m-%d %H:%M:%S")
+        end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end_date.year, end_date.month, end_date.day),
+                                              "%Y-%m-%d %H:%M:%S")
+        print start_date, end_date
+    session = Session()
+    try:
+        resp = session.query(PredictionStatistics.date, PredictionStatistics.category, PredictionStatistics).\
+            filter(and_(PredictionStatistics.date >= start_date,
+                        PredictionStatistics.date <= end_date)).\
+            order_by(PredictionStatistics.date).all()
+    except Exception as e:
+        print str(e)
+        session.close()
+        raise e
+    else:
+        return resp
 
 
 class ViolationStatistics(Base):

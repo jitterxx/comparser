@@ -708,8 +708,10 @@ class Dialogs(object):
 
         # список емайл адресов сотрудников или доменов, к которым у этого пользователя есть доступ
         empl_access_list = list()
+        is_admin = member_of("admin")()
+
         # список емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
-        client_access_list = CPO.get_watch_list(user_uuid=session_context.get("user").uuid)
+        client_access_list = CPO.get_watch_list(user_uuid=session_context.get("user").uuid, is_admin=is_admin)
         print "User UUID: %s" % session_context.get("user").uuid
 
         try:
@@ -740,7 +742,8 @@ class Dialogs(object):
             task_list2 = CPO.get_tasks(msg_id_list=checked, task_status="not closed")
         except Exception as e:
             print "ControlCenter.index(). Ошибка get_tasks(). %s" % str(e)
-            task_list = task_list2 = dict()
+            task_list = dict()
+            task_list2 = dict()
         else:
             # print "Task list: %s" % task_list
             # print "Not closed task list: %s" % task_list2
@@ -992,6 +995,24 @@ class Tasks(object):
         raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % task_uuid)
 
 
+class Statistics(object):
+
+    lookup = TemplateLookup(directories=["./templates/controlcenter"], output_encoding="utf-8",
+                            input_encoding="utf-8", encoding_errors="replace")
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def system(self):
+        tmpl = self.lookup.get_template("control_center_stat_system.html")
+        context = cherrypy.session['session_context']
+
+        now = datetime.datetime.now()
+        sdate = datetime.datetime.strptime("01-01-%s" % now.year, "%d-%m-%Y")
+        data = CPO.pred_stat_get_data(start_date=sdate, end_date=now)
+
+        return tmpl.render(session_context=context, data=data)
+
+
 class ControlCenter(object):
 
     """
@@ -1017,6 +1038,7 @@ class ControlCenter(object):
     settings = Settings()
     dialogs = Dialogs()
     tasks = Tasks()
+    statistics = Statistics()
 
     @cherrypy.expose
     @require(member_of("users"))
