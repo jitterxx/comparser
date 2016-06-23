@@ -28,6 +28,9 @@ smtp_pass = "Qazcde123"
 # to_address = "sergey@reshim.com sergey_fomin@list.ru"
 # to_address = "sergey@reshim.com"
 
+# Список адресов для уведомлений, в случае сбоя при формировании списка из базы наблюдателей
+FAIL_NOTIFY_LIST = ["sergey@reshim.com"]
+
 # Отправлять уведомления только  для категорий указанных в WARNING_CATEGORY
 SEND_ONLY_WARNING = True
 

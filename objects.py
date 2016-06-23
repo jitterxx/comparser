@@ -1947,8 +1947,8 @@ def get_watchers_for_email(message=None):
         users = get_all_users_dict()
     except Exception as e:
         print "CPO.get_watchers_for_email(). Ошибка получения списка пользователей. %s" % str(e)
-        # Что-то делаем если список не получен
-        return list()
+        # Что-то делаем если список не получен, возвращаем спец список для таких случаев
+        return FAIL_NOTIFY_LIST
     else:
         # print "Users list: %s" % users
 
@@ -1975,6 +1975,10 @@ def get_watchers_for_email(message=None):
                 if user.email and user.email not in result:
                     print "Email: %s" % user.email
                     result.append(user.email)
+
+        if not result:
+            # Возвращаем спец список для таких случаев
+            return FAIL_NOTIFY_LIST
 
         return result
 
