@@ -14,12 +14,14 @@ import cherrypy
 from bs4 import BeautifulSoup
 from mako.lookup import TemplateLookup
 from user_agents import parse
+from auth import AuthController, require, member_of, name_is, all_of, any_of
 
 
 __author__ = 'sergey'
 
 lookup = TemplateLookup(directories=["./templates"], output_encoding="utf-8",
                         input_encoding="utf-8", encoding_errors="replace")
+
 
 class ShowNotification(object):
 
@@ -89,87 +91,69 @@ class API(object):
         return ShowNotification().index("Неверный адрес api.")
 
 
-class Demo(object):
+class ControlCenter(object):
+
+    """
+        Центр управления для сотрудников. Вся информация и функции для работы с системой.
+        Уведомления, статистика, результаты.
+    """
+    lookup = TemplateLookup(directories=["./templates/controlcenter"], output_encoding="utf-8",
+                            input_encoding="utf-8", encoding_errors="replace")
+
+    auth = AuthController()
 
     @cherrypy.expose
+    @require(member_of("users"))
     def index(self):
-        tmpl = lookup.get_template("demo.html")
-        return tmpl.render(action="show")
+        """
+        Основная страница центра управления.
+        """
 
-    @cherrypy.expose
-    def analyze(self, description=None):
-        print "Desc: %s" % description
-        result = ["", 0]
+        tmpl = lookup.get_template("error.html")
 
-        try:
-            result, train_uuid = demo_classify(description)
-        except Exception as e:
-            print "Ошибка. %s" % str(e)
-            return ShowNotification().index("Что-то сломалось, будем чинить.")
-
-        raise cherrypy.HTTPRedirect("/demo/train?msg_uuid=%s" % train_uuid)
-
-    @cherrypy.expose
-    def train(self, msg_uuid=None):
-        tmpl = lookup.get_template("demo.html")
-        try:
-            result = get_message_for_train(msg_uuid)
-            print result
-        except Exception as e:
-            print "Ошибка. %s" % str(e)
-            return ShowNotification().index("Что-то сломалось, будем чинить.")
-
-        if not result[0]:
-            print "Ошибка. %s" % str(result[1])
-            return ShowNotification().index(result[1])
-
-        return tmpl.render(action="show_classify", description=result[1], result=result[2], train_uuid=msg_uuid,
-                           main_link=main_link)
+        return tmpl.render(error="Главная страница центра управления")
 
 
-class MainSite(object):
-
-    @cherrypy.expose
-    def index(self):
-        tmpl = lookup.get_template("index.html")
-
-        return tmpl.render()
+class Authentication(object):
+    """
+        Авторизация пользователей.
+    """
+    pass
 
 
 class Root(object):
+    """
+        Основой сервис для запуска API и центров управления
+    """
 
     api = API()
+    control_center = ControlCenter()
 
-    #demo = Demo()
-    #connect = MainSite()
 
     @cherrypy.expose
-    def index(self):
-        cherrypy.HTTPRedirect("/api")
+    def index(self, ads=None):
+        """
+        Основная страница лендинга.
 
-    """
-    @cherrypy.expose
-    def send_contacts(self, customer_email=None, customer_phone=None):
-        if not customer_email:
-            customer_email = "не указан"
-        if not customer_phone or customer_phone == "+7":
-            customer_phone = "не указан"
+        :param ads: код объявления по которому произошел переход.
+        :return:
+        """
+
+        tmpl = lookup.get_template("index.html")
+
+        if not ads:
+            ads = "organic"
+        print "ads :", ads
 
         try:
-            landing_customer_contacts(customer_email, customer_phone, cherrypy.request.headers)
+            user_agent = parse(cherrypy.request.headers['User-Agent'])
         except Exception as e:
-            print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
+            print "Ошибка определения типа клиента. %s" % str(e)
+            user_agent = ""
 
-        print customer_email, customer_phone,  cherrypy.request.headers
-        """
-        #text = """
-        #<br>
-        #<p class="lead text-left">Мы получили ваши контакты и в ближайшее время с вами свяжемся.</p>
-        #<br>
-        #<div class="lead text-left">С уважением,<br> команда Conversation Parser.</div>
-        #"""
+        return tmpl.render(user_agent=user_agent, ads_code=ads)
 
-        #return ShowNotification().index(text, "/")
+
 
 cherrypy.config.update("server.config")
 
