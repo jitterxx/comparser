@@ -811,9 +811,11 @@ class Dialogs(object):
 
         # список емайл адресов сотрудников или доменов, к которым у этого пользователя есть доступ
         empl_access_list = list()
+
+        is_admin = member_of("admin")()
         # список емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
-        client_access_list = CPO.get_watch_list(user_uuid=session_context.get("user").uuid)
-        print "User UUID: %s" % session_context.get("user").uuid
+        client_access_list = CPO.get_watch_list(user_uuid=session_context.get("user").uuid, is_admin=is_admin)
+        # print "User UUID: %s" % session_context.get("user").uuid
 
         try:
             api_list, message_list, message_id_list, unchecked, checked = \

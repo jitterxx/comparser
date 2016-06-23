@@ -1867,14 +1867,17 @@ class WatchMarker(Base):
     channel_type = sqlalchemy.Column(Integer, default=0)  # id of channel type for CLIENT_CHANNEL_TYPE. Def: 0=email
 
 
-def get_watch_list(user_uuid=None):
+def get_watch_list(user_uuid=None, is_admin=False):
 
     if user_uuid:
         # будет возвращен словарь из маркеров для указанного пользователя
 
         session = Session()
         try:
-            resp = session.query(WatchMarker).filter(WatchMarker.user_uuid == user_uuid).all()
+            if is_admin:
+                resp = session.query(WatchMarker).all()
+            else:
+                resp = session.query(WatchMarker).filter(WatchMarker.user_uuid == user_uuid).all()
         except sqlalchemy.orm.exc.NoResultFound as e:
             print "CPO.get_watch_list(). Ничего не найдено для пользователя %s. %s" % (user_uuid, str(e))
             return list()
@@ -1885,6 +1888,9 @@ def get_watch_list(user_uuid=None):
             result = list()
             for one in resp:
                 result.append(one.client_marker)
+
+            # Убираем дубли
+            result = list(set(result))
 
             return result
         finally:
