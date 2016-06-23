@@ -1967,7 +1967,7 @@ def get_watchers_for_email(message=None):
 
             # Получаем емайл пользователей
             try:
-                user = users.get(one)
+                user = users[one]
             except Exception as e:
                 print "CPO.get_watchers_for_email(). Ошибка получения пользователя по UUID < %s >. %s"\
                       % (one, str(e))
