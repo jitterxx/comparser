@@ -30,20 +30,21 @@ def check_credentials(username, password):
     #    return None
     #else:
     #    return u"Incorrect username or password."
-    
+
     user = objects.get_user_by_login(username)
-    user.read()
+    if user:
+        user.read()
 
     if user is None:
-        return u"Username %s is unknown to me." % username
+        return u"Пользователя %s не существует" % username
 
     if user.disabled:
         # objects.add_to_log("Пользователь %s отключен." % username, "w")
-        return u"User disabled."
+        return u"Пользователь %s отключен" % username
 
     if str(user.password) != str(password):
         # objects.add_to_log("Указан неверный пароль для пользователя %s." % username, "w")
-        return u"Incorrect password"
+        return u"Неверный пароль"
     else:
         return None
 
@@ -155,7 +156,7 @@ class AuthController(object):
     def on_logout(self, username):
         """Called on logout"""
     
-    def get_loginform(self, username, msg="Enter login information", from_page="/control_center"):
+    def get_loginform(self, username, msg="Введите имя пользователя и пароль", from_page="/control_center"):
         tmpl = lookup.get_template("auth.html")        
         
         return tmpl.render(username = username, msg=msg, from_page = from_page)
@@ -169,7 +170,7 @@ class AuthController(object):
         error_msg = check_credentials(username, password)
         if error_msg:
             print error_msg
-            return self.get_loginform(username, error_msg, from_page)
+            return self.get_loginform(username, str(error_msg), from_page)
         else:
             cherrypy.session.regenerate()
             cherrypy.session[SESSION_KEY] = cherrypy.request.login = username

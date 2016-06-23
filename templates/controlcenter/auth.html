@@ -19,12 +19,14 @@
 <div class="container">
     <div class="row">
       <div class="col-md-4 col-md-offset-4" align="center">
-          <div style="margin-top: 3em; margin-bottom: 5em;">
+          <div style="margin-top: 3em; margin-bottom: 0em;">
               <h1>Панель управления</h1>
           </div>
-
           <div style="margin-top: 3em; margin-bottom: 5em;">
               <form class="form" action="/control-center/auth/login" method="post">
+                  <lable>
+                      <p class="text-muted">${msg}</p>
+                  </lable>
                   <input hidden type="text" value="${from_page}" name="from_page">
                   <div class="form-group">
                   <input type="text" class="form-control input-lg" placeholder="Имя пользователя"
