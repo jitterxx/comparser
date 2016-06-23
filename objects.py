@@ -1622,9 +1622,6 @@ class User(Base):
 Функция получения объекта пользователь по логину
 """
 
-# TODO: ограничение прав доступа к сообщениям
-
-
 def get_user_by_login(login):
     """
     Получить данные пользователя по логину.
@@ -2374,6 +2371,144 @@ def add_task_comment(task_uuid=None, comment=None):
             session.commit()
         finally:
             session.close()
+
+
+class PredictionStatistics(Base):
+
+    __tablename__ = 'prediction_statistics'
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    week_number = Column(sqlalchemy.Integer, default=0)
+    date = Column(sqlalchemy.DATETIME())
+    category = Column(sqlalchemy.String(256), default="")
+    msg_all = Column(sqlalchemy.Integer, default=0)
+    msg_in_cat = Column(sqlalchemy.Integer, default=0)
+    msg_in_cat_check = Column(sqlalchemy.Integer, default=0)
+    msg_in_cat_wrong = Column(sqlalchemy.Integer, default=0)
+    train_epoch = Column(sqlalchemy.Integer, default=0)
+
+
+def pred_stat_compute(for_day=None):
+
+    if not for_day:
+        exc = ValueError("Не указаны параметры.")
+        raise exc
+    else:
+        # правильные даты
+        start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
+                                                (for_day.year, for_day.month, for_day.day),
+                                                "%Y-%m-%d %H:%M:%S")
+        end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
+                                              "%Y-%m-%d %H:%M:%S")
+
+    # Общее количество классифицированных сообщений
+    session = Session()
+    from sqlalchemy import func
+    try:
+        resp = session.query(Msg).filter(and_(Msg.create_date >= start_date,
+                                              Msg.create_date <= end_date,
+                                              Msg.isclassified == 1)).count()
+    except Exception as e:
+        print str(e)
+        session.close()
+        raise e
+    else:
+        msg_all = int(resp)
+        print "общее количество классифицированных сообщений: %s" % resp
+
+    cat = GetCategory().keys()
+    msg_cat = dict()
+    msg_cat_check = dict()
+    msg_in_cat_wrong = dict()
+
+    # Количество сообщений, определенных системой, во всех категориях
+    for c in cat:
+        msg_cat[c] = 0
+        msg_cat_check[c] = 0
+        msg_in_cat_wrong[c] = 0
+
+    try:
+        resp = session.query(TrainAPIRecords.auto_cat, func.count(TrainAPIRecords.auto_cat)).\
+            filter(and_(TrainAPIRecords.date >= start_date, TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.train_epoch == CURRENT_TRAIN_EPOCH)).\
+            group_by(TrainAPIRecords.auto_cat).all()
+    except Exception as e:
+        print str(e)
+        session.close()
+        raise e
+    else:
+
+        for n,c in resp:
+            msg_cat[n] = c
+
+        print "Количество сообщений, определенных системой, во всех категориях: %s" % resp
+
+    # Количество сообщений, проверенных пользователями, во всех категориях
+    try:
+        resp = session.query(TrainAPIRecords.auto_cat, func.count(TrainAPIRecords.auto_cat)).\
+            filter(and_(TrainAPIRecords.date >= start_date, TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.train_epoch == CURRENT_TRAIN_EPOCH,
+                        TrainAPIRecords.user_action == 1)).\
+            group_by(TrainAPIRecords.auto_cat).all()
+    except Exception as e:
+        print str(e)
+        session.close()
+        raise e
+    else:
+        for n,c in resp:
+            msg_cat_check[n] = c
+        print "Количество сообщений, проверенных пользователями, во всех категориях: %s" % resp
+
+    # Количество сообщений во всех категориях, где авто-категория не совпадает с проверочной
+    try:
+        resp = session.query(TrainAPIRecords.auto_cat, func.count(TrainAPIRecords.auto_cat)).\
+            filter(and_(TrainAPIRecords.date >= start_date, TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.train_epoch == CURRENT_TRAIN_EPOCH,
+                        TrainAPIRecords.user_action == 1,
+                        TrainAPIRecords.user_answer == TrainAPIRecords.auto_cat)).\
+            group_by(TrainAPIRecords.auto_cat).all()
+    except Exception as e:
+        print str(e)
+        session.close()
+        raise e
+    else:
+        for n,c in resp:
+            msg_in_cat_wrong[n] = c
+        print "Количество сообщений во всех категориях, где авто-категория не совпадает с проверочной: %s" % resp
+
+    print msg_cat
+    print msg_cat_check
+    print msg_in_cat_wrong
+
+
+    try:
+        for c in cat:
+            new_stat = PredictionStatistics()
+            new_stat.date = for_day
+            new_stat.msg_all = msg_all
+            new_stat.category = str(c)
+            new_stat.msg_in_cat = msg_cat[c]
+            new_stat.msg_in_cat_check = msg_cat_check[c]
+            new_stat.msg_in_cat_wrong = msg_in_cat_wrong[c]
+            new_stat.train_epoch = CURRENT_TRAIN_EPOCH
+
+            session.add(new_stat)
+            session.commit()
+    except Exception as e:
+        pass
+
+    session.close()
+
+
+class ViolationStatistics(Base):
+
+    __tablename__ = 'violation_statistics'
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    week_number = Column(sqlalchemy.Integer, default=0)
+    start_date = Column(sqlalchemy.DATETIME())
+    end_date = Column(sqlalchemy.DATETIME())
+    violation_type = Column(sqlalchemy.Integer, default=0)
 
 
 def initial_configuration():

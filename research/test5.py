@@ -12,36 +12,15 @@ import sqlalchemy
 
 import uuid
 
-session = CPO.Session()
 
-resp = session.query(CPO.TrainData).all()
-train = list()
-answer = list()
+date = datetime.datetime.strptime(str("04-04-2016"), "%d-%m-%Y")
 
-for one in resp:
-    train.append(one)
-    answer.append(one.category)
+CPO.create_tables()
 
-resp = session.query(CPO.Msg).filter(CPO.Msg.isclassified == 0).all()
-test = list()
-test_answer = list()
+CPO.CURRENT_TRAIN_EPOCH = 2
 
-print len(resp)
-for one in resp:
-    test.append(one)
+print CPO.CURRENT_TRAIN_EPOCH
+
+CPO.pred_stat_compute(for_day=date)
 
 
-
-nclf = clf.ClassifierNew()
-nclf.init_and_fit_new(debug=True)
-for one in test:
-    print one.message_text
-    print ""
-    pred = nclf.classify_new(data=one, debug=True)
-    print pred
-    print "*" * 30
-    raw_input()
-
-
-
-session.close()
