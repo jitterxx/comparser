@@ -1002,15 +1002,24 @@ class Statistics(object):
 
     @cherrypy.expose
     @require(member_of("admin"))
-    def system(self):
+    def system(self, start_date=None, end_date=None):
         tmpl = self.lookup.get_template("control_center_stat_system.html")
         context = cherrypy.session['session_context']
 
-        now = datetime.datetime.now()
-        sdate = datetime.datetime.strptime("01-01-%s" % now.year, "%d-%m-%Y")
-        data = CPO.pred_stat_get_data2(start_date=sdate, end_date=now)
+        if start_date and end_date:
+            start_date = datetime.datetime.strptime(start_date, "%d-%m-%Y")
+            end_date = datetime.datetime.strptime(end_date, "%d-%m-%Y")
+        else:
+            end_date = datetime.datetime.now()
+            start_date = datetime.datetime.strptime("01-01-%s" % end_date.year, "%d-%m-%Y")
 
-        return tmpl.render(session_context=context, data=data)
+        dbd_data = CPO.pred_stat_get_data(start_date=start_date, end_date=end_date)
+        agr_data = CPO.pred_stat_get_data_agr(start_date=start_date, end_date=end_date)
+
+        print dbd_data
+
+        return tmpl.render(session_context=context, dbd=dbd_data, agr=agr_data, cat=CPO.GetCategory(),
+                           now=datetime.datetime.now(), delta1=datetime.timedelta)
 
 
 class ControlCenter(object):

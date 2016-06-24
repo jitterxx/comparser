@@ -2601,24 +2601,28 @@ def pred_stat_get_data_agr(start_date=None, end_date=None):
         print start_date, end_date
 
     session = Session()
-    result = {
-        "start": start_date,
-        "end_date": end_date,
-        "cat": str(),
-        "msg_all": 0,
-        "msg_in_cat": 0,
-        "msg_in_cat_check": 0,
-        "msg_in_cat_wrong": 0,
-        "error_in_cat": 0,
-        "accuracy_in_cat": 0.0,
-        "full_accuracy": 0.0
-    }
+    full_result = dict()
 
     for cat in GetCategory().keys():
+
+        result = dict(start_date=start_date,
+                      end_date=end_date,
+                      cat=str(),
+                      msg_all=0,
+                      msg_in_cat=0,
+                      msg_in_cat_check=0,
+                      msg_in_cat_wrong=0,
+                      error_in_cat=0,
+                      accuracy_in_cat=0.0,
+                      full_accuracy=0.0)
+
         result["cat"] = cat
-        # считаем msg_all
+        # считаем msg_all, msg_in_cat, msg_in_cat_check, msg_in_cat_wrong, error_in_cat
         try:
-            resp = session.query(func.sum(PredictionStatistics.msg_all)).\
+            resp = session.query(func.sum(PredictionStatistics.msg_all),
+                                 func.sum(PredictionStatistics.msg_in_cat),
+                                 func.sum(PredictionStatistics.msg_in_cat_check),
+                                 func.sum(PredictionStatistics.msg_in_cat_wrong)).\
                 filter(and_(PredictionStatistics.date >= start_date,
                             PredictionStatistics.date <= end_date,
                             PredictionStatistics.category == cat)).all()
@@ -2626,59 +2630,30 @@ def pred_stat_get_data_agr(start_date=None, end_date=None):
             print str(e)
             raise e
         else:
+            if resp[0][0]:
+                result["msg_all"] = int(resp[0][0])
+                result["msg_in_cat"] = int(resp[0][1])
+                result["msg_in_cat_check"] = int(resp[0][2])
+                result["msg_in_cat_wrong"] = int(resp[0][3])
 
-            result["msg_all"] = int(resp[0][0])
+                # считаем accuracy_in_cat
+                result["error_in_cat"] = float(result["msg_in_cat_wrong"]) / result["msg_in_cat_check"]
+                result["accuracy_in_cat"] = 1.0 - result["error_in_cat"]
+            full_result[cat] = result
 
-    return result
+    # считаем full_accuracy
+    full_error = 0
+    full_check = 0
+    for cat in full_result.keys():
+        full_error += full_result[cat]["msg_in_cat_wrong"]
+        full_check += full_result[cat]["msg_in_cat_check"]
 
-    try:
-        for x in range(0, (end_date - start_date).days + 1):
-            try:
-                day = start_date + datetime.timedelta(days=x)
-                week = day.strftime("%U")
-                resp = session.query(PredictionStatistics.category, PredictionStatistics).\
-                    filter(PredictionStatistics.date == day).all()
+        try:
+            full_result[cat]["full_accuracy"] = 1.0 - float(full_error) / full_check
+        except ZeroDivisionError:
+            full_result[cat]["full_accuracy"] = 0.0
 
-            except Exception as e:
-                print str(e)
-                resp = tuple()
-            else:
-
-                if week not in result_weekly.keys():
-                    result_weekly[week] = {
-                        "days": list(),
-                        "stat_data": {
-                            "msg_all": 0
-                        }
-                    }
-
-                data = dict()
-                for cat, obj in resp:
-                    data[cat] = obj
-
-                    if cat not in result_weekly[week]["stat_data"].keys():
-                        result_weekly[week]["stat_data"][cat] = {"msg_in_cat": 0,
-                                                                 "msg_in_cat_wrong": 0,
-                                                                 "msg_in_cat_check": 0,
-                                                                 "error_in_cat": 0.0,
-                                                                 "accuracy_in_cat": 0.0,
-                                                                 }
-                    result_weekly[week]["stat_data"][cat]["msg_in_cat"] += obj.msg_in_cat
-                    result_weekly[week]["stat_data"][cat]["msg_in_cat_check"] += obj.msg_in_cat_check
-                    result_weekly[week]["stat_data"][cat]["msg_in_cat_wrong"] += obj.msg_in_cat_wrong
-                    result_weekly[week]["stat_data"][cat]["error_in_cat"] += obj.error_in_cat
-
-                result_weekly[week]["stat_data"]["msg_all"] += resp[0][1].msg_all
-                result_weekly[week]["stat_data"]["full_accuracy"] = 0.0
-                result_weekly[week]["days"].append(day)
-
-                result.append((day, data))
-
-        return result, result_weekly
-    except Exception as e:
-        raise e
-    finally:
-        session.close()
+    return full_result
 
 
 class ViolationStatistics(Base):

@@ -44,24 +44,95 @@
 
 
 <%block name="base">
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+        <%
+            end_date2 = (now - delta1(days=(1 + now.weekday()))).strftime('%d-%m-%Y')
+            end_date4 = (now - delta1(days=(now.day))).strftime('%d-%m-%Y')
+
+            start_date1 = (now - delta1(days=now.weekday())).strftime('%d-%m-%Y')
+            start_date2 = (now - delta1(days=(7 + now.weekday()))).strftime('%d-%m-%Y')
+            start_date3 = "01-%s-%s" % (now.month, now.year)
+            if (now.month - 1) == 0:
+                start_date4 = "01-01-%s" % (now.year - 1)
+            else:
+                start_date4 = "01-%s-%s" % (now.month - 1, now.year)
+        %>
+        <a class="btn btn-info" href="system?start_date=${start_date1}&end_date=${now.strftime('%d-%m-%Y')}">
+            Текущая неделя
+        </a>
+        <a class="btn btn-info" href="system?start_date=${start_date2}&end_date=${end_date2}">
+            Предыдущая неделя
+        </a>
+        <a class="btn btn-info" href="system?start_date=${start_date3}&end_date=${now.strftime('%d-%m-%Y')}">
+            Текущий месяц
+        </a>
+        <a class="btn btn-info" href="system?start_date=${start_date4}&end_date=${end_date4}">
+            Предыдущий месяц
+        </a>
+        <div style="margin-bottom: 3em;"></div>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-sm-12 col-md-12" align="left">
         <%
-            gdata = list()
-            labels = list()
+            full = agr[agr.keys()[0]]
         %>
-        %for date, stat_data in data:
-            %if stat_data:
         <p>
-            ${date.strftime("%d-%m-%Y week (%U)")}
-            %for one in stat_data.keys():
-            <p>
-                ${one} - ${stat_data[one].msg_all}
-            </p>
-            %endfor
+            В период с
+            <span class="attention"> ${full["start_date"].strftime("%d-%m-%Y")} </span> по
+            <span class="attention"> ${full["end_date"].strftime("%d-%m-%Y")} </span>
         </p>
-            %endif
+        <p>
+            Обработано сообщений : <span class="attention">${full["msg_all"]}</span>
+        </p>
+        <p>
+            Общая точность : <span class="attention">${'{:2.1f}'.format(full["full_accuracy"]*100)} % </span>
+        </p>
+        %for one in cat.keys():
+            <h3>
+                ${cat[one].category}
+            </h3>
+            <p>
+                Всего <span class="attention">${agr[one]["msg_in_cat"]}</span> сообщений в категории,
+                проверено  <span class="attention">${agr[one]["msg_in_cat_check"]}</span>
+            </p>
+            <p>
+                Пользователями при проверке исправлено
+                <span class="attention">${agr[one]["msg_in_cat_wrong"]}</span> ошибок.
+            </p>
+            <p>
+                Точность классификации в этой категории :
+                <span class="attention">${'{:2.1f}'.format(agr[one]["accuracy_in_cat"]*100)} %</span>
+            </p>
+            <a data-toggle="collapse" href="#collapse_${one}" aria-expanded="false" aria-controls="collapse_${one}">
+                Статистика по дням
+            </a>
+            <div class="collapse" id="collapse_${one}">
+                <table class="table table-condensed table-hover">
+                    <thead>
+                    <tr>
+                        <th>День</th>
+                        <th>Кол-во сообщений</th>
+                        <th>Проверено</th>
+                        <th>Исправлено</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    %for day, c, data in dbd:
+                    %if c == one:
+                    <tr>
+                        <td>${day.strftime("%d-%m-%Y")}</td>
+                        <td>${data.msg_in_cat}</td>
+                        <td>${data.msg_in_cat_check}</td>
+                        <td>${data.msg_in_cat_wrong}</td>
+                    </tr>
+                    %endif
+                    %endfor
+                    </tbody>
+                </table>
+            </div>
         %endfor
     </div>
 </div>
@@ -73,44 +144,7 @@
     </div>
 </div>
 
-<script>
-    var data = {
-        labels: ${labels},
-        datasets: [
-            {
-            label: "Общее количество сообщений",
-            data: ${gdata},
-            fill: false,
-            lineTension: 0.1,
-            backgroundColor: "rgba(75,192,192,0.4)",
-            borderColor: "rgba(75,192,192,1)",
-            borderCapStyle: 'butt',
-            borderDash: [],
-            borderDashOffset: 0.0,
-            borderJoinStyle: 'miter',
-            pointBorderColor: "rgba(75,192,192,1)",
-            pointBackgroundColor: "#fff",
-            pointBorderWidth: 1,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: "rgba(75,192,192,1)",
-            pointHoverBorderColor: "rgba(220,220,220,1)",
-            pointHoverBorderWidth: 2,
-            pointRadius: 1,
-            pointHitRadius: 10
-            }
-        ]
-    };
-    var ctx = document.getElementById("myChart");
-    var myChart = new Chart(ctx,
-    {
-        type: 'line',
-        data: data,
-        options: {
-            responsive: false
-            }
-    });
 
-</script>
 
 
 </%block>
