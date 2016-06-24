@@ -4,19 +4,25 @@
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
-import mod_classifier_new as clf
+sys.path.extend(['/Users/sergey/PycharmProjects/comparser/'])
+
 import datetime
 from configuration import *
 import objects as CPO
-import sqlalchemy
+
 
 import uuid
 
+# CPO.pred_stat_compute(for_day=datetime.datetime.strptime(str("01-06-2016"), "%d-%m-%Y"))
 
-sdate = datetime.datetime.strptime(str("03-03-2015"), "%d-%m-%Y")
+sdate = datetime.datetime.strptime(str("31-05-2016"), "%d-%m-%Y")
 
-edate = datetime.datetime.strptime(str("07-07-2015"), "%d-%m-%Y")
+edate = datetime.datetime.strptime(str("04-06-2016"), "%d-%m-%Y")
 
-print CPO.pred_stat_get_data(start_date=sdate, end_date=edate)
+stat = CPO.pred_stat_get_data_agr(start_date=sdate, end_date=edate)
+
+print stat
+
+
 
 

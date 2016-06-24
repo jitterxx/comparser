@@ -6,9 +6,8 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 import sqlalchemy
-from sqlalchemy import Table, Column, Integer, ForeignKey
+from sqlalchemy import Table, Column, Integer, ForeignKey, and_, or_, func
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import and_, or_
 from configuration import *
 import datetime
 import email
@@ -2406,7 +2405,7 @@ def pred_stat_compute(for_day=None):
 
     # Общее количество классифицированных сообщений
     session = Session()
-    from sqlalchemy import func
+
     try:
         resp = session.query(Msg).filter(and_(Msg.create_date >= start_date,
                                               Msg.create_date <= end_date,
@@ -2568,12 +2567,118 @@ def pred_stat_get_data(start_date=None, end_date=None):
             filter(and_(PredictionStatistics.date >= start_date,
                         PredictionStatistics.date <= end_date)).\
             order_by(PredictionStatistics.date).all()
+
     except Exception as e:
         print str(e)
         session.close()
         raise e
     else:
+
         return resp
+
+
+def pred_stat_get_data_agr(start_date=None, end_date=None):
+    """
+        Возвращает рассчитанные по дням статистические данные за период.
+        Возвращаются суммы за период для: msg_all, msg_in_cat, msg_in_cat_check, msg_in_cat_wrong, error_in_cat
+        Рассчитываются данные для: accuracy_in_cat, full_accuracy
+
+    :param start_date:
+    :param end_date:
+    :return:
+    """
+
+    if not start_date and not end_date:
+        exc = ValueError("Не указаны параметры.")
+        raise exc
+    else:
+        # правильные даты
+        start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
+                                                (start_date.year, start_date.month, start_date.day),
+                                                "%Y-%m-%d %H:%M:%S")
+        end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end_date.year, end_date.month, end_date.day),
+                                              "%Y-%m-%d %H:%M:%S")
+        print start_date, end_date
+
+    session = Session()
+    result = {
+        "start": start_date,
+        "end_date": end_date,
+        "cat": str(),
+        "msg_all": 0,
+        "msg_in_cat": 0,
+        "msg_in_cat_check": 0,
+        "msg_in_cat_wrong": 0,
+        "error_in_cat": 0,
+        "accuracy_in_cat": 0.0,
+        "full_accuracy": 0.0
+    }
+
+    for cat in GetCategory().keys():
+        result["cat"] = cat
+        # считаем msg_all
+        try:
+            resp = session.query(func.sum(PredictionStatistics.msg_all)).\
+                filter(and_(PredictionStatistics.date >= start_date,
+                            PredictionStatistics.date <= end_date,
+                            PredictionStatistics.category == cat)).all()
+        except Exception as e:
+            print str(e)
+            raise e
+        else:
+
+            result["msg_all"] = int(resp[0][0])
+
+    return result
+
+    try:
+        for x in range(0, (end_date - start_date).days + 1):
+            try:
+                day = start_date + datetime.timedelta(days=x)
+                week = day.strftime("%U")
+                resp = session.query(PredictionStatistics.category, PredictionStatistics).\
+                    filter(PredictionStatistics.date == day).all()
+
+            except Exception as e:
+                print str(e)
+                resp = tuple()
+            else:
+
+                if week not in result_weekly.keys():
+                    result_weekly[week] = {
+                        "days": list(),
+                        "stat_data": {
+                            "msg_all": 0
+                        }
+                    }
+
+                data = dict()
+                for cat, obj in resp:
+                    data[cat] = obj
+
+                    if cat not in result_weekly[week]["stat_data"].keys():
+                        result_weekly[week]["stat_data"][cat] = {"msg_in_cat": 0,
+                                                                 "msg_in_cat_wrong": 0,
+                                                                 "msg_in_cat_check": 0,
+                                                                 "error_in_cat": 0.0,
+                                                                 "accuracy_in_cat": 0.0,
+                                                                 }
+                    result_weekly[week]["stat_data"][cat]["msg_in_cat"] += obj.msg_in_cat
+                    result_weekly[week]["stat_data"][cat]["msg_in_cat_check"] += obj.msg_in_cat_check
+                    result_weekly[week]["stat_data"][cat]["msg_in_cat_wrong"] += obj.msg_in_cat_wrong
+                    result_weekly[week]["stat_data"][cat]["error_in_cat"] += obj.error_in_cat
+
+                result_weekly[week]["stat_data"]["msg_all"] += resp[0][1].msg_all
+                result_weekly[week]["stat_data"]["full_accuracy"] = 0.0
+                result_weekly[week]["days"].append(day)
+
+                result.append((day, data))
+
+        return result, result_weekly
+    except Exception as e:
+        raise e
+    finally:
+        session.close()
 
 
 class ViolationStatistics(Base):

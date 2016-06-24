@@ -1008,7 +1008,7 @@ class Statistics(object):
 
         now = datetime.datetime.now()
         sdate = datetime.datetime.strptime("01-01-%s" % now.year, "%d-%m-%Y")
-        data = CPO.pred_stat_get_data(start_date=sdate, end_date=now)
+        data = CPO.pred_stat_get_data2(start_date=sdate, end_date=now)
 
         return tmpl.render(session_context=context, data=data)
 

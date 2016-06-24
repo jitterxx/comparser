@@ -1,7 +1,7 @@
 <%inherit file="control_center_base.html"/>
 
 <%block name="title">
-    <title>Панель управления</title>
+    <title>Панель управления - Статистика</title>
     <script src="/static/js/Chart.bundle.js"></script>
 </%block>
 
@@ -11,7 +11,7 @@
         <li><a href="/control_center/dialogs/warning">Обратить внимание</a></li>
         <li><a href="/control_center/dialogs/all">Смотреть Все</a></li>
         <li><a href="/control_center/tasks">Задачи</a></li>
-        <li class="dropdown">
+        <li class="dropdown active">
             <a href="/control_center/staistics" class="dropdown-toggle" data-toggle="dropdown"
                role="button" aria-haspopup="true"
              aria-expanded="false">
@@ -51,14 +51,17 @@
             gdata = list()
             labels = list()
         %>
-        %for date, cat, stat_data in data:
+        %for date, stat_data in data:
+            %if stat_data:
         <p>
-            ${date} - ${cat} - ${stat_data.msg_all}
+            ${date.strftime("%d-%m-%Y week (%U)")}
+            %for one in stat_data.keys():
+            <p>
+                ${one} - ${stat_data[one].msg_all}
+            </p>
+            %endfor
         </p>
-        <%
-            gdata.append(float(stat_data.msg_all))
-            labels.append(date.__str__())
-        %>
+            %endif
         %endfor
     </div>
 </div>
