@@ -78,6 +78,11 @@
                 <div class="panel panel-${status_color_style[i]}">
                     <div class="panel-heading">
                         <p>
+                            <a href="task?uuid=${task.uuid}">
+                                <i class="fa fa-exchange"></i>
+                            </a>
+                        </p>
+                        <p>
                             <span class="attention">Статус: </span> ${task_status[task.status]}
                             <span style="margin-left: 0.5em;"></span>
                             <a data-toggle="collapse" href="#collapse_1_${task.uuid}"
@@ -115,13 +120,14 @@
                                 %endfor
                             </div>
                         </div>
-                        <%
-                            message = msg_list.get(task.message_id)
-                        %>
+
                     </div>
                     <div class="panel-body">
                         <div class="panel panel-default">
                             <div class="panel-heading">
+                                <%
+                                    message = msg_list.get(task.message_id)
+                                %>
                                 <p><span class="attention">Дата:</span> ${message.orig_date.strftime('%d-%m-%Y')}</p>
                                 <p><span class="attention">От кого:</span> ${message.sender_name} (${message.sender})</p>
                                 <p><span class="attention">Кому:</span> ${message.recipients_name} (${message.recipients})</p>

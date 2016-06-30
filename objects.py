@@ -2667,6 +2667,136 @@ class ViolationStatistics(Base):
     violation_type = Column(sqlalchemy.Integer, default=0)
 
 
+class CauseTag(Base):
+
+    __tablename__ = 'cause_tags'
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    tag = sqlalchemy.Column(sqlalchemy.String(256), default="")
+
+
+def create_tag(tag=None):
+
+    session = Session()
+
+    try:
+        new_tag = CauseTag()
+        new_tag.tag = str(tag)
+        session.add(new_tag)
+        session.commit()
+    except Exception as e:
+        print str(e)
+        raise e
+    finally:
+        session.close()
+
+
+def search_tag(search_string=None, task_tags=None):
+
+    session = Session()
+
+    try:
+        resp = session.query(CauseTag).filter(and_(CauseTag.tag.like(search_string),
+                                                   not CauseTag.id.in_(task_tags))).order_by(CauseTag.tag.desc()).all()
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        return resp
+    finally:
+        session.close()
+
+
+def get_tags(tags_id=None):
+
+    session = Session()
+
+    try:
+        if tags_id:
+            # только входящие в список
+            resp = session.query(CauseTag).filter(CauseTag.id.in_(tags_id)).\
+                order_by(CauseTag.tag.desc()).all()
+        else:
+            # все теги
+            resp = session.query(CauseTag).order_by(CauseTag.tag.desc()).all()
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        result = dict()
+        for one in resp:
+            result[one.id] = one
+        return result
+    finally:
+        session.close()
+
+
+class TaskCauseTag(Base):
+    __tablename__ = 'task_cause_tag'
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    task_uuid = sqlalchemy.Column(sqlalchemy.String(50), default="")  # Task UUID
+    tag_id = sqlalchemy.Column(sqlalchemy.Integer)  # User UUID
+
+
+def add_cause_to_task(task_uuid=None, tags_id=None):
+
+    session = Session()
+
+    if not isinstance(tags_id, list):
+        tags_id = list(tags_id)
+
+    try:
+        for tag in tags_id:
+            new = TaskCauseTag()
+            new.task_uuid = str(task_uuid)
+            new.tag_id = tag
+            session.add(new)
+            session.commit()
+    except Exception as e:
+        print str(e)
+        raise e
+    finally:
+        session.close()
+
+
+def remove_cause_from_task(task_uuid=None, tags_id=None):
+
+    session = Session()
+
+    if not isinstance(tags_id, list):
+        tags_id = list(tags_id)
+
+    try:
+        resp = session.query(TaskCauseTag).filter(and_(TaskCauseTag.task_uuid == task_uuid,
+                                                       TaskCauseTag.tag_id.in_(tags_id))).delete()
+        session.commit()
+    except Exception as e:
+        print str(e)
+        raise e
+    finally:
+        session.close()
+
+
+def get_task_cause(task_uuid=None):
+
+    session = Session()
+
+    try:
+        resp = session.query(TaskCauseTag.tag_id).filter(TaskCauseTag.task_uuid == task_uuid).all()
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        result = list()
+        for i, in resp:
+            result.append(i)
+        return result
+    finally:
+        session.close()
+
+
+
 def initial_configuration():
     # Фунции которые настраивают константы и глобальные переменные
     CHECK_DOMAINS = get_watch_domain_list()

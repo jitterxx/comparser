@@ -53,6 +53,14 @@
                         %endfor
                     </div>
                 </div>
+                <p>
+                    <span class="attention">Причины: </span>
+                    %for cause in task_cause:
+                    <span class="label label-primary">
+                        ${cause_tags.get(cause).tag}
+                    </span>
+                    %endfor
+                </p>
             </div>
             <div class="panel-heading">
                 <p>

@@ -939,6 +939,8 @@ class Tasks(object):
                 api_data = CPO.get_train_record(msg_id=task.message_id)
                 responsible = CPO.get_user_by_uuid(user_uuid=task.responsible)
                 users = CPO.get_all_users(sort="surname")
+                task_cause = CPO.get_task_cause(task_uuid=uuid)
+                cause_tags = CPO.get_tags()
             except Exception as e:
                 print "ControlCenter.task(). Ошибка: %s." % str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
@@ -946,8 +948,8 @@ class Tasks(object):
                 tmpl = self.lookup.get_template("control_center_task_show.html")
                 return tmpl.render(task=task, message=message, responsible=responsible,
                                    session_context=cherrypy.session['session_context'],
-                                   task_status=CPO.TASK_STATUS, api_data=api_data,
-                                   category=CPO.GetCategory(), users=users)
+                                   task_status=CPO.TASK_STATUS, api_data=api_data, category=CPO.GetCategory(),
+                                   users=users, task_cause=task_cause, cause_tags=cause_tags)
 
         else:
             print "ControlCenter.task(). Ошибка: не указан UUID задачи."
