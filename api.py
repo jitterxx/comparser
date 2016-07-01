@@ -1212,8 +1212,60 @@ class ControlCenter(object):
     @cherrypy.expose
     @require(member_of("users"))
     def get_notify(self, user_uuid=None):
+
+        session_context = cherrypy.session['session_context']
+        is_admin = member_of("admin")()
+        # список емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
+        client_access_list = CPO.get_watch_list(user_uuid=session_context.get("user").uuid, is_admin=is_admin)
+
+        for_day = datetime.datetime.now()
+        for_day = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (2016, 4, 4), "%Y-%m-%d %H:%M:%S")
+
+        try:
+            api_list, message_list, message_id_list, unchecked, checked = \
+                CPO.get_dialogs(for_day=for_day, cat=CPO.WARNING_CATEGORY,
+                                empl_access_list=[],
+                                client_access_list=client_access_list)
+        except Exception as e:
+            print "Control_center. Get_notify(). Ошибка. %s" % str(e)
+            show = False
+            count = 0
+        else:
+
+            #  считаем количество уведомлений
+            if len(unchecked) == 0:
+                count = len(unchecked)
+                cherrypy.session['session_context']["notifications"] = len(unchecked)
+                show = False
+            elif cherrypy.session['session_context']["notifications"] == len(unchecked):
+                # количество с прошлого запроса не изменилось
+                show = False
+                count = 0
+            else:
+                # количество изменилось
+                count = len(unchecked)
+                cherrypy.session['session_context']["notifications"] = len(unchecked)
+                show = True
+
+        if count > 4:
+            text = "У вас %s новых непроверенных уведомлений." % int(count)
+        elif count == 1:
+            text = "У вас %s новое непроверенное уведомление." % int(count)
+        else:
+            text = "У вас %s новых непроверенных уведомления." % int(count)
+
+        url = "http://localhost:8585/control_center"
+
         import json
-        return json.dump({"text": "Ответ от get_notify()"})
+
+        data = {"title": "Conversation parser",
+                "count": count,
+                "text": text,
+                "url": url,
+                "show": show
+                }
+
+        return json.dumps(data)
 
 
 class Root(object):
