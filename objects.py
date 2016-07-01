@@ -2687,6 +2687,8 @@ def create_tag(tag=None):
     except Exception as e:
         print str(e)
         raise e
+    else:
+        return new_tag.id
     finally:
         session.close()
 
@@ -2744,7 +2746,7 @@ def add_cause_to_task(task_uuid=None, tags_id=None):
     session = Session()
 
     if not isinstance(tags_id, list):
-        tags_id = list(tags_id)
+        tags_id = [tags_id]
 
     try:
         for tag in tags_id:
@@ -2765,11 +2767,12 @@ def remove_cause_from_task(task_uuid=None, tags_id=None):
     session = Session()
 
     if not isinstance(tags_id, list):
-        tags_id = list(tags_id)
+        tags_id = [tags_id]
 
     try:
-        resp = session.query(TaskCauseTag).filter(and_(TaskCauseTag.task_uuid == task_uuid,
-                                                       TaskCauseTag.tag_id.in_(tags_id))).delete()
+        session.query(TaskCauseTag).\
+            filter(and_(TaskCauseTag.task_uuid == task_uuid,
+                        TaskCauseTag.tag_id.in_(tags_id))).delete(synchronize_session=False)
         session.commit()
     except Exception as e:
         print str(e)

@@ -27,10 +27,19 @@
                 <div class="collapse" id="collapse_1">
                     <div class="well">
                         %for one in range(0, len(task_status)):
+                        %if one == close_task_status and not task_cause:
+                        <a role="button" class="btn btn-default disabled" id="close_button"
+                           href="#" data-toggle="tooltip" data-placement="top"
+                           title="Задачу нельзя закрыть без указания тега.">
+                            ${task_status[one]}
+                        </a>
+
+                        %else:
                         <a role="button" class="btn btn-default"
                            href="/control_center/tasks/change_task_status?task_uuid=${task.uuid}&status=${one}">
                             ${task_status[one]}
                         </a>
+                        %endif
                         %endfor
                     </div>
                 </div>
@@ -58,9 +67,44 @@
                     %for cause in task_cause:
                     <span class="label label-primary">
                         ${cause_tags.get(cause).tag}
+                        <a style="color: #000000;"
+                           href="/control_center/tasks/remove_tag?task_uuid=${task.uuid}&tag_id=${cause}">
+                            <i class="fa fa-times"></i>
+                        </a>
                     </span>
+                    &nbsp;
                     %endfor
+                    <span style="margin-left: 0.5em;"></span>
+                    <a data-toggle="collapse" href="#collapse_4"
+                       aria-expanded="false" aria-controls="collapse_4">
+                        <i class="fa fa-plus"></i>
+                    </a>
                 </p>
+                <div class="collapse" id="collapse_4">
+                    <div class="well">
+                        %for cause in cause_tags.keys():
+                        %if cause not in task_cause:
+                        <span class="label label-default">
+                            ${cause_tags.get(cause).tag}
+                            <a style="color: #ffffff;"
+                               href="/control_center/tasks/add_tag?task_uuid=${task.uuid}&tag_id=${cause}">
+                                <i class="fa fa-plus"></i>
+                            </a>
+                        </span>
+                        &nbsp;
+                        %endif
+                        %endfor
+                        <div>&nbsp;</div>
+                        <form class="form" action="/control_center/tasks/new_tag">
+                            <input hidden name="task_uuid" value="${task.uuid}">
+                            <div class="from-group">
+                                <input type="text" size="80" name="tag">
+                                <button class="btn btn-default" type="submit">Добавить тег</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
             </div>
             <div class="panel-heading">
                 <p>

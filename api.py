@@ -948,13 +948,13 @@ class Tasks(object):
                 tmpl = self.lookup.get_template("control_center_task_show.html")
                 return tmpl.render(task=task, message=message, responsible=responsible,
                                    session_context=cherrypy.session['session_context'],
+                                   close_task_status=CPO.TASK_CLOSED_STATUS,
                                    task_status=CPO.TASK_STATUS, api_data=api_data, category=CPO.GetCategory(),
                                    users=users, task_cause=task_cause, cause_tags=cause_tags)
 
         else:
             print "ControlCenter.task(). Ошибка: не указан UUID задачи."
             return ShowNotification().index("Произошла внутренняя ошибка. Не указан UUID задачи.")
-
 
     @cherrypy.expose
     def change_task_status(self, task_uuid=None, status=None, from_url=None):
@@ -967,7 +967,6 @@ class Tasks(object):
         else:
             raise cherrypy.HTTPRedirect(from_url or "/control_center")
         raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % task_uuid)
-
 
     @cherrypy.expose
     @require(member_of("users"))
@@ -982,7 +981,6 @@ class Tasks(object):
             raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks")
         raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % task_uuid)
 
-
     @cherrypy.expose
     @require(member_of("users"))
     def add_task_comment(self, task_uuid=None, comment=None, from_url=None):
@@ -995,6 +993,55 @@ class Tasks(object):
         else:
             raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks")
         raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % task_uuid)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def add_tag(self, task_uuid=None, tag_id=None, from_url=None):
+        if task_uuid and tag_id:
+            try:
+                CPO.add_cause_to_task(task_uuid=task_uuid, tags_id=tag_id)
+            except Exception as e:
+                print "Tasks().add_tag(). Ошибка при добавлении тега. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks")
+        raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % task_uuid)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def remove_tag(self, task_uuid=None, tag_id=None, from_url=None):
+        if task_uuid and tag_id:
+            try:
+                CPO.remove_cause_from_task(task_uuid=task_uuid, tags_id=tag_id)
+            except Exception as e:
+                print "Tasks().remove_tag(). Ошибка при удалении тега. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks")
+        raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % task_uuid)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def new_tag(self, task_uuid=None, tag="", from_url=None):
+        if task_uuid and tag:
+            try:
+                tag_id = CPO.create_tag(tag=tag)
+            except Exception as e:
+                print "Tasks().new_tag(). Ошибка при создании тега. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+            else:
+                try:
+                    CPO.add_cause_to_task(task_uuid=task_uuid, tags_id=tag_id)
+                except Exception as e:
+                    print "Tasks().new_tag(). Ошибка при добавлении тега. %s" % str(e)
+                    return ShowNotification().index("Произошла внутренняя ошибка.")
+                else:
+                    raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % task_uuid)
+
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks")
+
+
 
 
 class Statistics(object):
@@ -1161,6 +1208,12 @@ class ControlCenter(object):
 
         finally:
             return full_thread
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def get_notify(self, user_uuid=None):
+        import json
+        return json.dump({"text": "Ответ от get_notify()"})
 
 
 class Root(object):
