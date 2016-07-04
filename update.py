@@ -211,7 +211,9 @@ else:
 
 try:
     print "# Обновление №13. Добавление администратора по умолчанию."
-    result = connection.execute(sql[13])
+    result = connection.execute("SELECT count(*) FROM `users`;")
+    if not result:
+            result = connection.execute(sql[13])
 except Exception as e:
     print e.message, e.args
 else:

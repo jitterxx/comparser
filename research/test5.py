@@ -13,11 +13,9 @@ import objects as CPO
 
 import uuid
 
-CPO.CURRENT_TRAIN_EPOCH = 2
-
-causes = CPO.get_task_cause(task_uuid="031e6830-6265-4524-b884-fe0ae4ae7a6b")
-
-print causes
+#print CPO.pred_stat_compute(for_day=datetime.datetime.strptime("09-06-2016", "%d-%m-%Y"))
+print CPO.pred_stat_get_data_agr(start_date=datetime.datetime.strptime("01-01-2016", "%d-%m-%Y"),
+                                 end_date=datetime.datetime.now())
 
 
 
