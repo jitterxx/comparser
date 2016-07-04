@@ -52,7 +52,7 @@ window.setInterval(function() {
     console.log('poll...');
     GetData2("on");
 
-}, 5000);    //poll every 5 secs.
+}, 60000);    //poll every 5 secs.
 
 
 function GetData2(param1) {
