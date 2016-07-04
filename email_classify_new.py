@@ -32,6 +32,9 @@ if not args.limit:
 else:
     lim = (args.limit,)
 
+# Инициализация переменных и констант
+CPO.initial_configuration()
+
 
 # Получаем реальные данные
 session = CPO.Session()

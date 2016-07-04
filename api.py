@@ -85,7 +85,7 @@ class UserTrain(object):
 
                         # Формируем сообщение
                         try:
-                            text = "Создана автоматически после проверки. Пользователь: %s %s." % \
+                            text = u"Создана автоматически после проверки. Пользователь: %s %s." % \
                                    (session_context["user"].name, session_context["user"].surname)
                         except Exception as e:
                             print "api.UserTrain(). Ошибка формирования комментария. %s" % str(e)
@@ -1065,7 +1065,7 @@ class Statistics(object):
         dbd_data = CPO.pred_stat_get_data(start_date=start_date, end_date=end_date)
         agr_data = CPO.pred_stat_get_data_agr(start_date=start_date, end_date=end_date)
 
-        print dbd_data
+        # print dbd_data
 
         return tmpl.render(session_context=context, dbd=dbd_data, agr=agr_data, cat=CPO.GetCategory(),
                            now=datetime.datetime.now(), delta1=datetime.timedelta)
@@ -1219,7 +1219,7 @@ class ControlCenter(object):
         client_access_list = CPO.get_watch_list(user_uuid=session_context.get("user").uuid, is_admin=is_admin)
 
         for_day = datetime.datetime.now()
-        for_day = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (2016, 4, 4), "%Y-%m-%d %H:%M:%S")
+        # for_day = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (2016, 4, 4), "%Y-%m-%d %H:%M:%S")
 
         try:
             api_list, message_list, message_id_list, unchecked, checked = \

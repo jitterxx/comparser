@@ -10,6 +10,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 import objects as CPO
+import datetime
 
 sql = list()
 # 0
@@ -78,6 +79,29 @@ def update_12():
         session.close()
 
 
+# 13
+sql.append("INSERT INTO `users` (`uuid`, `name`, `surname`, `login`, `password`, `access_groups`, `disabled`, `email`)"
+           " VALUES ('uuid-initial', 'admin', '', 'admin', 'Qazcde123', 'admin,users', '0', 'info@conparser.ru');")
+
+
+# 14 расчет статистики
+def update_14():
+
+    print "Рассчитываем статистику за последние 3 месяца."
+
+    today = datetime.datetime.now()
+    for i in range(0, 184):
+        delta = datetime.timedelta(days=i)
+        try:
+            day = today - delta
+            print "Рассчитываем день: %s" % day.strftime("%d-%m-%Y %H:%M:%S")
+            CPO.pred_stat_compute(for_day=day)
+            print "*"*30
+        except Exception as e:
+            print "Ошибка расчета статистики за день %s. " % (today - delta)
+            print str(e)
+
+    print "Расчет закончен. Не забудьте добавить в CRON расчет статистики."
 
 
 
@@ -185,6 +209,21 @@ except Exception as e:
 else:
     print result
 
+try:
+    print "# Обновление №13. Добавление администратора по умолчанию."
+    result = connection.execute(sql[13])
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
+
+try:
+    print "# Обновление №14. Расчет статистики по старым данным."
+    update_14()
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
 
 connection.close()
 

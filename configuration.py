@@ -12,6 +12,11 @@ db_pass = "Qazcde123"
 db_port = 3306
 db_name = "conparser"
 
+TABLE_ARGS = {'mysql_engine': 'InnoDB',
+              'mysql_charset': 'utf8',
+              'mysql_collate': 'utf8_general_ci'
+              }
+
 # Каталог анализатора, из которого беруться сообщения для анализа
 maildir_path = "/home/sergey/Maildir"
 

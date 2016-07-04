@@ -62,6 +62,7 @@ class Settings(Base):
     ошибок, проверки результатов и сравнения эффективности наборов обучения ядра.
     """
     __tablename__ = "settings"
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     train_epoch = Column(sqlalchemy.Integer, default=0)  # хранит номер текущей эпохи обучения
@@ -111,6 +112,7 @@ def update_epoch():
 class MsgRaw(Base):
 
     __tablename__ = "email_raw_data"
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     message_id = Column(sqlalchemy.String(256))
@@ -452,6 +454,7 @@ def parse_message(msg=None, debug=False):
 class Msg(Base):
 
     __tablename__ = "email_cleared_data"
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     message_id = Column(sqlalchemy.String(256))
@@ -480,6 +483,7 @@ class Msg(Base):
 class MsgErr(Base):
 
     __tablename__ = "email_err_cleared_data"
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     message_id = Column(sqlalchemy.String(256))
@@ -618,6 +622,7 @@ def get_raw_message(msg_id=None):
 class TrainAPIRecords(Base):
 
     __tablename__ = "train_api"
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     uuid = Column(sqlalchemy.String(256))
@@ -919,6 +924,7 @@ class UserTrainData(Base):
     """
 
     __tablename__ = "user_train_data"
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     message_id = Column(sqlalchemy.String(256))
@@ -960,6 +966,7 @@ class TrainData(Base):
     """
 
     __tablename__ = "train_data"
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     message_id = Column(sqlalchemy.String(256))
@@ -996,6 +1003,7 @@ class TrainData(Base):
 
 class Category(Base):
     __tablename__ = "category"
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     code = Column(sqlalchemy.String(45))
@@ -1220,6 +1228,7 @@ def get_message_for_train(msg_uuid):
 class MsgThread(Base):
 
     __tablename__ = "threads"
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     message_id = Column(sqlalchemy.String(256))  # ИД сообщения которое относиться к диалогу
@@ -1593,6 +1602,7 @@ class User(Base):
     STATUS = {0: 'Используется', 1: 'Не используется'}
 
     __tablename__ = 'users'
+    __table_args__ = TABLE_ARGS
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     uuid = sqlalchemy.Column(sqlalchemy.String(50), default=uuid.uuid1())
@@ -1856,6 +1866,7 @@ def update_user(user_uuid=None, name=None, surname=None, login=None, password=No
 class WatchMarker(Base):
 
     __tablename__ = "watch_marker"
+    __table_args__ = TABLE_ARGS
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     client_marker = sqlalchemy.Column(sqlalchemy.String(256), default="")  # маркер для поиска в полях сообщений
@@ -2093,6 +2104,7 @@ def get_watch_domain_list():
 class Task(Base):
 
     __tablename__ = 'tasks'
+    __table_args__ = TABLE_ARGS
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     uuid = sqlalchemy.Column(sqlalchemy.String(50), default=uuid.uuid1())  # Task UUID
@@ -2375,6 +2387,7 @@ def add_task_comment(task_uuid=None, comment=None):
 class PredictionStatistics(Base):
 
     __tablename__ = 'prediction_statistics'
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     week_number = Column(sqlalchemy.Integer, default=0)
@@ -2392,7 +2405,10 @@ class PredictionStatistics(Base):
 
 def pred_stat_compute(for_day=None):
 
-    if not for_day:
+    global CURRENT_TRAIN_EPOCH
+    CURRENT_TRAIN_EPOCH = read_epoch()
+
+    if not for_day or not CURRENT_TRAIN_EPOCH:
         exc = ValueError("Не указаны параметры.")
         raise exc
     else:
@@ -2402,6 +2418,9 @@ def pred_stat_compute(for_day=None):
                                                 "%Y-%m-%d %H:%M:%S")
         end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
                                               "%Y-%m-%d %H:%M:%S")
+
+    # print "Start_date: ", start_date
+    # print "End_date: ", end_date
 
     # Общее количество классифицированных сообщений
     session = Session()
@@ -2444,7 +2463,7 @@ def pred_stat_compute(for_day=None):
         raise e
     else:
 
-        for n,c in resp:
+        for n, c in resp:
             msg_cat[n] = c
 
         print "Количество сообщений, определенных системой, во всех категориях: %s" % resp
@@ -2471,7 +2490,7 @@ def pred_stat_compute(for_day=None):
             filter(and_(TrainAPIRecords.date >= start_date, TrainAPIRecords.date <= end_date,
                         TrainAPIRecords.train_epoch == CURRENT_TRAIN_EPOCH,
                         TrainAPIRecords.user_action == 1,
-                        TrainAPIRecords.user_answer == TrainAPIRecords.auto_cat)).\
+                        TrainAPIRecords.user_answer != TrainAPIRecords.auto_cat)).\
             group_by(TrainAPIRecords.auto_cat).all()
     except Exception as e:
         print str(e)
@@ -2493,13 +2512,14 @@ def pred_stat_compute(for_day=None):
 
         # Удаляем старую статистику за этот день
         try:
-            resp = session.query(PredictionStatistics).filter(PredictionStatistics.date == for_day).delete()
+            resp = session.query(PredictionStatistics).filter(and_(PredictionStatistics.date >= start_date,
+                                                                   PredictionStatistics.date <= end_date)).delete()
             session.commit()
         except Exception as e:
             print str(e)
         else:
             print "Старые данные удалены. for_day = %s" % for_day
-            raw_input()
+            # raw_input()
 
         for c in cat:
 
@@ -2637,8 +2657,13 @@ def pred_stat_get_data_agr(start_date=None, end_date=None):
                 result["msg_in_cat_wrong"] = int(resp[0][3])
 
                 # считаем accuracy_in_cat
-                result["error_in_cat"] = float(result["msg_in_cat_wrong"]) / result["msg_in_cat_check"]
-                result["accuracy_in_cat"] = 1.0 - result["error_in_cat"]
+                if result["msg_in_cat_check"] != 0:
+                    result["error_in_cat"] = float(result["msg_in_cat_wrong"]) / result["msg_in_cat_check"]
+                    result["accuracy_in_cat"] = 1.0 - result["error_in_cat"]
+                else:
+                    result["error_in_cat"] = 0.0
+                    result["accuracy_in_cat"] = 0.0
+
             full_result[cat] = result
 
     # считаем full_accuracy
@@ -2648,6 +2673,7 @@ def pred_stat_get_data_agr(start_date=None, end_date=None):
         full_error += full_result[cat]["msg_in_cat_wrong"]
         full_check += full_result[cat]["msg_in_cat_check"]
 
+    for cat in full_result.keys():
         try:
             full_result[cat]["full_accuracy"] = 1.0 - float(full_error) / full_check
         except ZeroDivisionError:
@@ -2659,6 +2685,7 @@ def pred_stat_get_data_agr(start_date=None, end_date=None):
 class ViolationStatistics(Base):
 
     __tablename__ = 'violation_statistics'
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     week_number = Column(sqlalchemy.Integer, default=0)
@@ -2670,6 +2697,7 @@ class ViolationStatistics(Base):
 class CauseTag(Base):
 
     __tablename__ = 'cause_tags'
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     tag = sqlalchemy.Column(sqlalchemy.String(256), default="")
@@ -2735,6 +2763,7 @@ def get_tags(tags_id=None):
 
 class TaskCauseTag(Base):
     __tablename__ = 'task_cause_tag'
+    __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     task_uuid = sqlalchemy.Column(sqlalchemy.String(50), default="")  # Task UUID
@@ -2799,9 +2828,12 @@ def get_task_cause(task_uuid=None):
         session.close()
 
 
-
 def initial_configuration():
     # Фунции которые настраивают константы и глобальные переменные
+    global CURRENT_TRAIN_EPOCH
+    global CHECK_DOMAINS
+    global EXCEPTION_EMAIL
+
     CHECK_DOMAINS = get_watch_domain_list()
 
     EXCEPTION_EMAIL = get_exception_list()
