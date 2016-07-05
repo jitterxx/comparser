@@ -1281,6 +1281,7 @@ class Root(object):
     panel = Panel()
 
     @cherrypy.expose
+    @require(member_of("users"))
     def index(self, ads=None):
 
        raise cherrypy.HTTPRedirect("control_center/dialogs/warning")
