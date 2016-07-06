@@ -7,10 +7,10 @@
 """
 
 db_host = "localhost"
-db_user = "conparser"
+db_user = "conparser_demo"
 db_pass = "Qazcde123"
 db_port = 3306
-db_name = "conparser"
+db_name = "conparser_demo"
 
 TABLE_ARGS = {'mysql_engine': 'InnoDB',
               'mysql_charset': 'utf8',
@@ -18,13 +18,13 @@ TABLE_ARGS = {'mysql_engine': 'InnoDB',
               }
 
 # Каталог анализатора, из которого беруться сообщения для анализа
-maildir_path = "/home/sergey/Maildir"
+maildir_path = "/home/demo/Maildir"
 
 # Сслыка для работы системы обучения
-main_link = "http://localhost:8585/api/message/"
+main_link = "http://demo.conparser.ru/api/message/"
 
 # Параметры аккаунта откуда будут забираться сообщения для доставки в каталог.
-smtp_email = "vipct@conparser.ru"
+smtp_email = "demo@conparser.ru"
 smtp_server = "smtp.yandex.ru"
 smtp_pass = "Qazcde123"
 
