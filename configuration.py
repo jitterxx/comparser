@@ -50,12 +50,13 @@ STOP_WORDS = ["как", "или", "который", "которых", "тот", 
 
 # Список адресов, сообщения отправленные С и НА них буду игнорироваться системой.
 EXCEPTION_EMAIL = u"root@rework.reshim.com|undisclosed-recipients|hr@vipservice.ru|dobro@vipservice.ru|" \
-                  u"dl-avia@vipct.ru|iway@iwayex.com|noreply@uralairlines.ru"
+                  u"dl-avia@vipct.ru|iway@iwayex.com|noreply@uralairlines.ru|confirmation@tripcase.com|" \
+                  u"no-reply@tripcase.com|MicrosoftExchange"
 
 # Список доменов почта НА и С которых будет анализироваться системой.
 # Список задатся именами доменов разделенных "|" без пробелов
 # Если надо проверять все, оставить пустым
-CHECK_DOMAINS = u"akrikhin.ru"
+CHECK_DOMAINS = ""
 
 # Тип приложения которое будет прикреаляться к уведомлению и содержать пеерписку
 # в которой учавствует подозрительное письмо
