@@ -84,8 +84,18 @@ hr {
     text-transform: uppercase;
 }
 
+.solve-section-header {
+    color: #0083dd;
+    font-size: 1.3em;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
 .custom-list {
-    list-style: none;
+    list-style-type: none;
+    list-style-position: outside;
+    }
+
 }
 
 .li-plus {
