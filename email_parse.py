@@ -166,7 +166,7 @@ def get_clear_text(raw_text=""):
 # отсеиваем ненужные сообщения (каледарные, нотификации, исключения пользователей и т.д.)
 def exception(data):
     # emails = u'root@rework.reshim.com|undisclosed-recipients'
-    emails = EXCEPTION_EMAIL
+    emails = CPO.EXCEPTION_EMAIL
     isexception = False
     title_start = u"""Принять:|Прочтено:|Принято:|Read-Receipt:|Отменено:|Предложено новое время:"""
     text_start = u"""Тема:|Следующее собрание изменилось:|Запрос на новую встречу:|
@@ -194,15 +194,20 @@ def exception(data):
     str = data['sender'] + ':' + data['recipients'] + ':' + data['cc']
     email = re.compile(emails,re.I|re.U)
     email_re = email.search(str)
-    if email_re: 
-        #print str
-        #print email_re.group(0)
+    if debug:
+        print "**** Проверка наличия исключений EXCEPTION_EMAILS в полях TO, FROM, CC ****"
+        print "Exception emails: ", emails
+        print "Message address fields:", str
+        print "Check result:", email_re
+        print "EXCEPTION: ", isexception
+
+    if email_re:
         isexception = True
 
     # Не обрабатываем сообщения, если адрес отправителя это адрес аккаунта используещегося системой.
     # Т.е. письмо или отправлено само себе или переслано по правилам пересылки от кого-то.
     str = data['sender']
-    email = re.compile(smtp_email, re.I|re.U)
+    email = re.compile(CPO.smtp_email, re.I|re.U)
     email_re = email.search(str)
     if email_re:
         isexception = True
@@ -210,10 +215,13 @@ def exception(data):
     # Проверяем что поля От, Кому и СС, содержат адреса из доменов подлежащих проверке
     # Список доменов находится в CHECK_DOMAINS
     # Проверка работает, если список не пустой
-    if CHECK_DOMAINS:
+    if debug:
+        print "**** Проверка наличия доменов CHECK_DOMAINS в полях TO, FROM, CC ****"
+
+    if CPO.CHECK_DOMAINS:
         no_check = True
         addresses = re.split(",", data["sender"]) + re.split(",", data["recipients"]) + re.split(",", data["cc"])
-        domain_search = re.compile(CHECK_DOMAINS, re.I|re.U)
+        domain_search = re.compile(CPO.CHECK_DOMAINS, re.I|re.U)
         for one in addresses:
             if domain_search.search(one):
                 no_check = False
@@ -222,8 +230,8 @@ def exception(data):
 
         if debug:
             print "Addressess: ", addresses
-            print "Domains for check: ", re.split("|", CHECK_DOMAINS)
-            print "Result: ", not no_check
+            print "Domains for check: ", re.split("|", CPO.CHECK_DOMAINS)
+            print "Check result: ", not no_check
             print "EXCEPTION: ", isexception
 
     return isexception
