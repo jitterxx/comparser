@@ -249,22 +249,13 @@ else: debug = args.debug
 if not args.limit: limit = 10
 else: limit = args.limit
 
-#Открываем грязную базу
-#dirty_db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database=db_name)
-#dirty_con = dirty_db.cursor(buffered=True)
+# Инициализация переменных и констант
+try:
+    CPO.initial_configuration()
+except Exception as e:
+    print "Email_parser. Ошибка чтения настроек CPO.initial_configuration(). %s" % str(e)
+    raise e
 
-#Открываем чистую базу и базу ошибок
-#clear_db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database="clear_data")
-#clear_db = mysql.connector.connect(host=db_host, port=db_port, user=db_user, passwd=db_pass, database=db_name)
-#clear_con = clear_db.cursor(buffered=True)
-#err_con = clear_db.cursor(buffered=True)
-
-#Получаем грязные данные
-#query = ('SELECT * FROM email_raw_data WHERE (NOT iscleared) and (sender like %s) LIMIT %s;')
-#dirty_con.execute(query,('%%',limit))
-
-#Запоминаем обработанные номера записей
-#processed = [0]
 
 session = CPO.Session()
 

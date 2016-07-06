@@ -29,6 +29,13 @@ __author__ = 'sergey'
 CATEGORY = GetCategory()
 code1, code2 = CATEGORY.keys()
 
+# Инициализация переменных и констант
+try:
+    initial_configuration()
+except Exception as e:
+    print "Notificater(). Ошибка чтения настроек CPO.initial_configuration(). %s" % str(e)
+    raise e
+
 
 def notify():
     session = Session()

@@ -33,7 +33,12 @@ else:
     lim = (args.limit,)
 
 # Инициализация переменных и констант
-CPO.initial_configuration()
+try:
+    CPO.initial_configuration()
+except Exception as e:
+    print "Email_classsify_new(). Ошибка чтения настроек CPO.initial_configuration(). %s" % str(e)
+    raise e
+
 
 
 # Получаем реальные данные

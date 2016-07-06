@@ -2840,7 +2840,6 @@ def initial_configuration():
 
     try:
         CURRENT_TRAIN_EPOCH = read_epoch()
-        pass
     except Exception as e:
         print "Ошибка чтения эпохи. %s" % str(e)
         sys.exit(os.EX_DATAERR)
