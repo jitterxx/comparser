@@ -12,6 +12,12 @@ db_pass = "Qazcde123"
 db_port = 3306
 db_name = "vipct"
 
+# Параметры создания таблиц
+TABLE_ARGS = {'mysql_engine': 'InnoDB',
+              'mysql_charset': 'utf8',
+              'mysql_collate': 'utf8_general_ci'
+              }
+
 # Каталог отккда забираются сообщения для анализа после доставки.
 maildir_path = "/home/vipct/Maildir"
 
@@ -25,7 +31,11 @@ smtp_pass = "Qazcde123"
 
 # Кому будут направляться сообщения о классификации от имени аккаунта анализатора. см. выше.
 # Можно добавить несколько адресов получателей через пробел.
-to_address = "v.vlasova@vipct.ru y.nikitina@vipct.ru"
+# to_address = "v.vlasova@vipct.ru y.nikitina@vipct.ru"
+# Список получателей собирается автоматически из настроек уведомлений (class Watch)
+
+# Список адресов для уведомлений, в случае сбоя при формировании списка из базы наблюдателей
+FAIL_NOTIFY_LIST = ["sergey@reshim.com"]
 
 # Отправка уведомлений только для категорий из WARNING_CATEGORY
 SEND_ONLY_WARNING = True
@@ -54,4 +64,20 @@ FILE_ATTACH_TYPE = "pdf"
 
 # Место положение скрипта для решения проблемы с отсутствием X сервера
 WK_HTML_TO_PDF_PATH = "/usr/local/bin/wkhtmltopdf"
+
+# Service receiver URL. Accept connection and data from email_eater and write MsgRaw to DB
+receiver_url = "http://127.0.0.1:9595/post"
+
+# Группы доступа для пользователей
+# users -  обычные пользвоатели без привелегий
+# admin - администраторы. Доступно управление пользователями и настройка системы уведомлений
+ACCESS_GROUPS = {"users": "Пользователи", "admin": "Администраторы"}
+
+USER_STATUS = ["Активен", "Отключен"]
+
+TASK_STATUS = ["Новая", "В работе", "Закрыта"]
+
+TASK_CLOSED_STATUS = 2
+
+CLIENT_CHANNEL_TYPE = ["email"]
 
