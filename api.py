@@ -1070,6 +1070,34 @@ class Statistics(object):
         return tmpl.render(session_context=context, dbd=dbd_data, agr=agr_data, cat=CPO.GetCategory(),
                            now=datetime.datetime.now(), delta1=datetime.timedelta)
 
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def management(self, start_date=None, end_date=None):
+        tmpl = self.lookup.get_template("control_center_stat_management.html")
+        context = cherrypy.session['session_context']
+
+        if start_date and end_date:
+            start_date = datetime.datetime.strptime(start_date, "%d-%m-%Y")
+            end_date = datetime.datetime.strptime(end_date, "%d-%m-%Y")
+        else:
+            end_date = datetime.datetime.now()
+            start_date = datetime.datetime.now()
+
+        try:
+            stat_data = CPO.get_stat_for_management(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
+                            end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
+            users = CPO.get_all_users_dict()
+            members = CPO.get_all_dialog_members()
+            tags = CPO.get_tags()
+        except Exception as e:
+            print str(e)
+            raise e
+
+        return tmpl.render(session_context=context, stat=stat_data, cat=CPO.GetCategory(),
+                           users=users, members=members, tags=tags)
+
+
+
 
 class ControlCenter(object):
 

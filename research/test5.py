@@ -21,5 +21,5 @@ import uuid
 #                       end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
 
 
-CPO.show_warn_task_stat(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
-                        end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
+CPO.get_stat_for_management(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
+                            end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))

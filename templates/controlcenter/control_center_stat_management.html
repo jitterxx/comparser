@@ -1,0 +1,153 @@
+<%inherit file="control_center_base.html"/>
+
+<%block name="title">
+    <title>Панель управления - Статистика</title>
+    <script src="/static/js/Chart.bundle.js"></script>
+</%block>
+
+<%block name="navigation">
+<div id="navbar" class="navbar-collapse collapse">
+    <ul class="nav navbar-nav navbar-right navbar-style">
+        <li><a href="/control_center/dialogs/warning">Обратить внимание</a></li>
+        <li><a href="/control_center/dialogs/all">Смотреть Все</a></li>
+        <li><a href="/control_center/tasks">Задачи</a></li>
+        <li class="dropdown active">
+            <a href="/control_center/staistics" class="dropdown-toggle" data-toggle="dropdown"
+               role="button" aria-haspopup="true"
+             aria-expanded="false">
+                Статистика
+                <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li class="active"><a href="/control_center/statistics/management" >Общая</a></li>
+                <li><a href="/control_center/statistics/system" >Системная</a></li>
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+             aria-expanded="false">
+                ${session_context["user"].name}
+                ${session_context["user"].surname}
+                <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a href="/control_center/settings">Настройки</a></li>
+                <li><a href="/control_center/profile">Профиль</a></li>
+                <li><a href="/control_center/help?menu=" >Помощь</a></li>
+                <li><a href="/control_center/auth/logout">Выход</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+</%block>
+
+
+<%block name="base">
+
+
+<%
+    non_checked_by_users = stat[0]
+    confirmed_problem  = stat[1]
+    tasks_by_responsible = stat[2]
+    tasks_by_cause = stat[3]
+    tasks_by_empl = stat[4]
+    tasks_by_client = stat[5]
+%>
+
+
+<div class="row">
+    <div class="col-sm-2 col-md-2">
+        <div class="panel panel-warning" style="height: 17em; padding: 10px;" align="center">
+            <span style="font-size: 7em;" class="text-warning">${non_checked_by_users}</span>
+            <h3>не провереных диалога</h3>
+        </div>
+    </div>
+
+    <div class="col-sm-2 col-md-2">
+        <div class="thumbnail block" align="center" style="height: 17em;">
+            <span style="font-size: 7em;">${confirmed_problem}</span>
+            <h3>
+                проблем подтверждено
+            </h3>
+            Закрыто ${sum([r[1] for r in tasks_by_responsible[2]])}
+        </div>
+    </div>
+
+    <div class="col-sm-2 col-md-2">
+        <div class="thumbnail block" align="left" style="height: 17em; padding: 10px;">
+            <span style="font-size: 7em;">
+                ${sum([r[1] for r in tasks_by_responsible[0]])}
+            </span>
+            <h3>
+                открытых проблемы
+            </h3>
+            <p align="left">
+            %for one in tasks_by_responsible[0]:
+                <a href="#">
+                ${users.get(one[0]).name} - ${one[1]}
+                </a>
+            %endfor
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-sm-3 col-md-3">
+        <div class="thumbnail block" align="left" style="height: 17em; padding: 10px;">
+            <h3>
+                Проблемы в разрезе причин
+            </h3>
+            <p align="left">
+            %for one in tasks_by_cause[0]:
+                <a href="#">
+                ${tags.get(one[0]).tag} - ${one[1]}
+                </a>
+                <br>
+            %endfor
+            </p>
+        </div>
+    </div>
+
+    <div class="col-sm-3 col-md-3">
+        <div class="thumbnail block" align="left" style="height: 17em; padding: 10px;">
+            <span style="font-size: 1.5em;">
+                Проблемы по сотрудникам
+            </span>
+            <hr width="50%" align="left">
+            <p align="left">
+            %for one in tasks_by_empl[0]:
+                <a href="#">
+                ${members.get(one[0]).name} - ${one[1]}
+                </a>
+                <br>
+            %endfor
+            </p>
+        </div>
+    </div>
+
+    <div class="col-sm-4 col-md-4">
+        <div class="panel panel-info" style="height: 17em; padding: 10px;">
+            <div class="panel-heading">
+                <span style="font-size: 1.5em;">Проблемы по клиентам</span>
+            </div>
+            <div class="panel-body">
+
+            %for one in tasks_by_client[0]:
+                <a href="#">
+                ${members.get(one[0]).name} - ${one[1]}
+                </a>
+                <br>
+            %endfor
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+</%block>
+
+
+
+
+<%block name="footer"/>

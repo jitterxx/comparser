@@ -2841,6 +2841,27 @@ class DialogMember(Base):
     phone = Column(sqlalchemy.String(256), default="")
 
 
+def get_all_dialog_members(disabled=None):
+
+    session = Session()
+    try:
+        if disabled:
+            dis = [0, 1]
+        else:
+            dis = [0]
+        resp = session.query(DialogMember).all()
+    except Exception as e:
+        print "CPO.get_all_dialog_members(). Ошибка: %s" % str(e)
+        return dict()
+    else:
+        resp1 = dict()
+        for one in resp:
+            resp1[one.uuid] = one
+        return resp1
+    finally:
+        session.close()
+
+
 def get_dialog_members_list(user_uuid=None, is_admin=False):
 
     if user_uuid:
@@ -2954,7 +2975,7 @@ def add_warn_task_stat(msg_id_list=None, start=None, end=None):
                 session.commit()
 
 
-def show_warn_task_stat(start=None, end=None):
+def get_stat_for_management(start=None, end=None):
 
     start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
                                             (start.year, start.month, start.day),
@@ -3079,8 +3100,14 @@ def show_warn_task_stat(start=None, end=None):
         print str(e)
         raise(e)
     else:
-        tasks_by_responsible = resp
-        print "Задачи с разбивкой по статусу и ответственным :", tasks_by_responsible
+        tasks_by_responsible = dict()
+        print "Задачи с разбивкой по статусу и ответственным :", resp
+        for status, uuid, count in resp:
+            if status not in tasks_by_responsible.keys():
+                tasks_by_responsible[status] = list()
+                tasks_by_responsible[status].append([str(uuid), count])
+            else:
+                tasks_by_responsible[status].append([str(uuid), count])
 
     # Количество задач с разбивкой по статусу и причинам
     try:
@@ -3096,8 +3123,15 @@ def show_warn_task_stat(start=None, end=None):
         print str(e)
         raise e
     else:
-        tasks_by_cause = resp
-        print "Задачи с разбивкой по статусу и причинам :", tasks_by_cause
+        tasks_by_cause = dict()
+        print "Задачи с разбивкой по статусу и причинам :", resp
+        for status, tagid, count in resp:
+            if tagid:
+                if status not in tasks_by_cause.keys():
+                    tasks_by_cause[status] = list()
+                    tasks_by_cause[status].append([tagid, count])
+                else:
+                    tasks_by_cause[status].append([tagid, count])
 
     # Кол-во задач по диалогам с участием сотрудников с разбивкой по статусу
     try:
@@ -3115,8 +3149,15 @@ def show_warn_task_stat(start=None, end=None):
         print str(e)
         raise e
     else:
-        tasks_by_empl = resp
-        print "Кол-во задач по диалогам с участием сотрудников с разбивкой по статусу :", tasks_by_empl
+        tasks_by_empl = dict()
+        print "Кол-во задач по диалогам с участием сотрудников с разбивкой по статусу :", resp
+        for status, tagid, count in resp:
+            if tagid:
+                if status not in tasks_by_empl.keys():
+                    tasks_by_empl[status] = list()
+                    tasks_by_empl[status].append([tagid, count])
+                else:
+                    tasks_by_empl[status].append([tagid, count])
 
     # Кол-во задач по диалогам с участием клиентов с разбивкой по статусу
     try:
@@ -3134,15 +3175,22 @@ def show_warn_task_stat(start=None, end=None):
         print str(e)
         raise e
     else:
-        tasks_by_client = resp
-        print "Кол-во задач по диалогам с участием клиентов с разбивкой по статусу :", tasks_by_client
+        tasks_by_client = dict()
+        print "Кол-во задач по диалогам с участием клиентов с разбивкой по статусу :", resp
+        for status, tagid, count in resp:
+            if tagid:
+                if status not in tasks_by_client.keys():
+                    tasks_by_client[status] = list()
+                    tasks_by_client[status].append([tagid, count])
+                else:
+                    tasks_by_client[status].append([tagid, count])
 
-    return non_checked_by_users, \
-           confirmed_problem, \
-           tasks_by_responsible, \
-           tasks_by_cause, \
-           tasks_by_empl, \
-           tasks_by_client
+    return (non_checked_by_users,
+            confirmed_problem,
+            tasks_by_responsible,
+            tasks_by_cause,
+            tasks_by_empl,
+            tasks_by_client)
 
 
 def initial_configuration():
