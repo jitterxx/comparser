@@ -2828,6 +2828,201 @@ def get_task_cause(task_uuid=None):
         session.close()
 
 
+class WarnTaskStatistics(Base):
+    __tablename__ = 'warn_task_statistics'
+    __table_args__ = TABLE_ARGS
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    date = Column(sqlalchemy.DATETIME(), default=datetime.datetime.now())
+    msg_id = Column(sqlalchemy.String(256), default="")
+    user_uuid = Column(sqlalchemy.String(256), default="")
+    auto_cat = Column(sqlalchemy.String(256), default="")
+    check_cat = Column(sqlalchemy.String(256), default="")
+
+
+def add_warn_task_stat(msg_id_list=None, for_day=None):
+
+    if not isinstance(msg_id_list, list):
+        msg_id_list = [msg_id_list]
+
+    start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
+                                            (for_day.year, for_day.month, for_day.day),
+                                            "%Y-%m-%d %H:%M:%S")
+    end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
+                                          "%Y-%m-%d %H:%M:%S")
+
+    session = Session()
+
+    try:
+        resp = session.query(Msg.message_id.label("msg_id"), Msg.sender.label("sender"),
+                             Msg.recipients.label("to"), Msg.cc_recipients.label("cc"),
+                             Msg.create_date.label("date"),
+                             TrainAPIRecords.auto_cat.label("auto_cat"),
+                             TrainAPIRecords.user_answer.label("user_answer")).\
+            join(TrainAPIRecords, TrainAPIRecords.message_id == Msg.message_id).\
+            outerjoin(Task, Task.message_id == TrainAPIRecords.message_id).\
+            filter(and_(TrainAPIRecords.date >= start_date,
+                        TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.auto_cat.in_(WARNING_CATEGORY))).all()
+    except Exception as e:
+        print str(e)
+        raise(e)
+
+    now = datetime.datetime.now()
+    empl_list = {"p.kondratenko@akrikhin.ru": "kondratenko"}
+
+    for one in resp:
+        # print one
+        # ищем в полях from, to, cc маркеры которые относятся к сотрудникам, т.е. не входят в CHECK_DOMAINS
+        fields = re.split(",", one.sender) + re.split(",", one.to) + re.split(",", one.cc)
+
+        for addr in fields:
+            if addr in empl_list.keys():
+                print "Fields: ", fields
+                # добавляем запись в статистику
+                new = WarnTaskStatistics()
+                new.msg_id = one.msg_id
+                new.date = one.date
+                new.user_uuid = empl_list.get(addr)
+                new.auto_cat = one.auto_cat
+                new.check_cat = one.user_answer
+                session.add(new)
+                session.commit()
+
+
+def show_warn_task_stat(start=None, end=None):
+
+    start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
+                                            (start.year, start.month, start.day),
+                                            "%Y-%m-%d %H:%M:%S")
+    end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end.year, end.month, end.day),
+                                          "%Y-%m-%d %H:%M:%S")
+
+    tags = get_tags()
+
+    session = Session()
+
+    """
+    try:
+        # Количество срабатываний системы у диалогов с участием пользователя
+        # Количество подозрительных ситуаций на сотруднике (участнике переписки) за период
+        resp = session.query(WarnTaskStatistics.user_uuid.label("user_uuid"),
+                             func.count(WarnTaskStatistics.user_uuid).label("count")).\
+            filter(and_(WarnTaskStatistics.date >= start_date,
+                        WarnTaskStatistics.date <= end_date)).\
+            group_by(WarnTaskStatistics.user_uuid).all()
+
+    except Exception as e:
+        print str(e)
+        raise(e)
+
+    print "Количество подозрительных ситуаций на сотруднике (участнике переписки) за период - %s по %s :" %\
+          (start_date, end_date)
+    for one in resp:
+        print one.user_uuid, " : ", one.count
+
+    try:
+        # Кол-во задач из подозрительных ситуаций зафиксированных на сотруднике
+        # (где сотрудник участник проблемной ситуации) с разбивкой по причинам, по категориям, по статусу
+        my_filter = and_(WarnTaskStatistics.date >= start_date,
+                         WarnTaskStatistics.date <= end_date,
+                         WarnTaskStatistics.check_cat.in_(WARNING_CATEGORY))
+
+        resp = session.query(WarnTaskStatistics.user_uuid.label("user_uuid"),
+                             func.count(WarnTaskStatistics.user_uuid).label("count")).\
+            filter(my_filter).\
+            group_by(WarnTaskStatistics.user_uuid).all()
+
+        resp_task_status = session.query(WarnTaskStatistics.user_uuid, Task.status, func.count(Task.status)).\
+            outerjoin(Task, WarnTaskStatistics.msg_id == Task.message_id).\
+            filter(my_filter).\
+            group_by(WarnTaskStatistics.user_uuid, Task.status).all()
+
+        # print resp_task_status
+
+        resp_task_cause = session.query(WarnTaskStatistics.user_uuid.label("user_uuid"),
+                                        Task.status.label("status"),
+                                        TaskCauseTag.tag_id.label("tag_id"),
+                                        func.count(TaskCauseTag.task_uuid).label("count")).\
+            outerjoin(Task, WarnTaskStatistics.msg_id == Task.message_id).\
+            outerjoin(TaskCauseTag, Task.uuid == TaskCauseTag.task_uuid).\
+            filter(my_filter).\
+            group_by(WarnTaskStatistics.user_uuid, Task.status, TaskCauseTag.tag_id).all()
+
+        print resp_task_cause
+        print "\n"
+
+    except Exception as e:
+        print str(e)
+        raise(e)
+
+    print "Кол-во задач из подозрительных ситуаций зафиксированных на сотруднике за период - %s по %s :" %\
+          (start_date, end_date)
+    for one in resp:
+        print one.user_uuid, " : ", one.count
+        print "\tИз них со статусом:"
+        for user, status, count in resp_task_status:
+            if user == one.user_uuid:
+                print "\t\t", TASK_STATUS[status], " : ", count
+                print "\t\t Из них с тегом:"
+                for row in resp_task_cause:
+                    if row.user_uuid == one.user_uuid and row.status == status and row.tag_id:
+                        print "\t\t\t", tags.get(row.tag_id).tag, " : ", row.count
+                    if not row.tag_id:
+                        print "\t\t\tбез тега", " : ", row.count
+    """
+    my_filter = and_(WarnTaskStatistics.date >= start_date,
+                     WarnTaskStatistics.date <= end_date,
+                     WarnTaskStatistics.check_cat.in_(WARNING_CATEGORY))
+
+    users = get_all_users(sort="surname")
+
+    # Количество не проверенных диалогов после срабатывания системы, по ответственным
+    try:
+        resp = session.query(func.count(TrainAPIRecords.user_action)).\
+            filter(and_(TrainAPIRecords.date >= start_date,
+                        TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.user_action == 0,
+                        TrainAPIRecords.auto_cat.in_(WARNING_CATEGORY))).all()
+    except Exception as e:
+        print str(e)
+        raise(e)
+    else:
+        non_checked_by_users = resp[0][0]
+        print "Подозрительных (не проверенных) :", non_checked_by_users
+
+    # Количество подтвержденных проблем
+    try:
+        resp = session.query(func.count(TrainAPIRecords.user_action)).\
+            filter(and_(TrainAPIRecords.date >= start_date,
+                        TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.user_action == 1,
+                        TrainAPIRecords.user_answer.in_(WARNING_CATEGORY))).all()
+    except Exception as e:
+        print str(e)
+        raise(e)
+    else:
+        confirmed_problem = resp[0][0]
+        print "Подтвержденных проблем :", confirmed_problem
+
+    # Количество открытых задач с разбивкой по ответственным
+    try:
+        resp = session.query(Task.responsible, func.count(Task.responsible)).\
+            outerjoin(TrainAPIRecords, TrainAPIRecords.message_id == Task.message_id).\
+            filter(and_(TrainAPIRecords.date >= start_date,
+                        TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.user_action == 1,
+                        TrainAPIRecords.user_answer.in_(WARNING_CATEGORY),
+                        Task.status != TASK_CLOSED_STATUS)).\
+            group_by(Task.responsible).all()
+    except Exception as e:
+        print str(e)
+        raise(e)
+    else:
+        open_task_by_responsible = resp
+        print "Открытых задач с разбивкой по ответственным :", open_task_by_responsible
+
+
 def initial_configuration():
     # Фунции которые настраивают константы и глобальные переменные
     global CURRENT_TRAIN_EPOCH
