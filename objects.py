@@ -2828,6 +2828,73 @@ def get_task_cause(task_uuid=None):
         session.close()
 
 
+class DialogMember(Base):
+    __tablename__ = 'dialog_members'
+    __table_args__ = TABLE_ARGS
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    type = Column(sqlalchemy.Integer, default=0)
+    uuid = Column(sqlalchemy.String(256), default=uuid.uuid4().__str__())
+    name = Column(sqlalchemy.String(256), default="")
+    surname = Column(sqlalchemy.String(256), default="")
+    emails = Column(sqlalchemy.String(256), default="")
+    phone = Column(sqlalchemy.String(256), default="")
+
+
+def get_dialog_members_list(user_uuid=None, is_admin=False):
+
+    if user_uuid:
+        """
+
+        session = Session()
+        try:
+            if is_admin:
+                resp = session.query(WatchMarker).all()
+            else:
+                resp = session.query(WatchMarker).filter(WatchMarker.user_uuid == user_uuid).all()
+        except sqlalchemy.orm.exc.NoResultFound as e:
+            print "CPO.get_watch_list(). Ничего не найдено для пользователя %s. %s" % (user_uuid, str(e))
+            return list()
+        except Exception as e:
+            print "CPO.get_watch_list(). Ошибка при поиске для пользователя %s. %s" % (user_uuid, str(e))
+            raise e
+        else:
+            result = list()
+            for one in resp:
+                result.append(one.client_marker)
+
+            # Убираем дубли
+            result = list(set(result))
+
+            return result
+        finally:
+            session.close()
+        """
+        pass
+    else:
+        # возвращаем словарь маркеров и привязанных к ним участников
+        session = Session()
+        try:
+            resp = session.query(DialogMember).all()
+        except sqlalchemy.orm.exc.NoResultFound as e:
+            print "CPO.get_dialog_members_list(). Список маркеров пуст. %s" % str(e)
+            return dict()
+        except Exception as e:
+            print "CPO.get_dialog_members_list(). Ошибка при поиске. %s" % str(e)
+            raise e
+        else:
+            result = dict()
+
+            for one in resp:
+                markers = re.split(",", one.emails) + re.split(",", one.phone)
+                for marker in markers:
+                    result[marker] = one.uuid
+
+            return result
+        finally:
+            session.close()
+
+
 class WarnTaskStatistics(Base):
     __tablename__ = 'warn_task_statistics'
     __table_args__ = TABLE_ARGS
@@ -2835,20 +2902,18 @@ class WarnTaskStatistics(Base):
     id = Column(sqlalchemy.Integer, primary_key=True)
     date = Column(sqlalchemy.DATETIME(), default=datetime.datetime.now())
     msg_id = Column(sqlalchemy.String(256), default="")
-    user_uuid = Column(sqlalchemy.String(256), default="")
-    auto_cat = Column(sqlalchemy.String(256), default="")
-    check_cat = Column(sqlalchemy.String(256), default="")
+    member_uuid = Column(sqlalchemy.String(256), default="")
 
 
-def add_warn_task_stat(msg_id_list=None, for_day=None):
+def add_warn_task_stat(msg_id_list=None, start=None, end=None):
 
     if not isinstance(msg_id_list, list):
         msg_id_list = [msg_id_list]
 
     start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
-                                            (for_day.year, for_day.month, for_day.day),
+                                            (start.year, start.month, start.day),
                                             "%Y-%m-%d %H:%M:%S")
-    end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
+    end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end.year, end.month, end.day),
                                           "%Y-%m-%d %H:%M:%S")
 
     session = Session()
@@ -2868,8 +2933,7 @@ def add_warn_task_stat(msg_id_list=None, for_day=None):
         print str(e)
         raise(e)
 
-    now = datetime.datetime.now()
-    empl_list = {"p.kondratenko@akrikhin.ru": "kondratenko"}
+    empl_list = get_dialog_members_list()
 
     for one in resp:
         # print one
@@ -2883,7 +2947,7 @@ def add_warn_task_stat(msg_id_list=None, for_day=None):
                 new = WarnTaskStatistics()
                 new.msg_id = one.msg_id
                 new.date = one.date
-                new.user_uuid = empl_list.get(addr)
+                new.member_uuid = empl_list.get(addr)
                 new.auto_cat = one.auto_cat
                 new.check_cat = one.user_answer
                 session.add(new)
@@ -2971,9 +3035,6 @@ def show_warn_task_stat(start=None, end=None):
                     if not row.tag_id:
                         print "\t\t\tбез тега", " : ", row.count
     """
-    my_filter = and_(WarnTaskStatistics.date >= start_date,
-                     WarnTaskStatistics.date <= end_date,
-                     WarnTaskStatistics.check_cat.in_(WARNING_CATEGORY))
 
     users = get_all_users(sort="surname")
 
@@ -3005,22 +3066,83 @@ def show_warn_task_stat(start=None, end=None):
         confirmed_problem = resp[0][0]
         print "Подтвержденных проблем :", confirmed_problem
 
-    # Количество открытых задач с разбивкой по ответственным
+    # Количество задач с разбивкой по статусу и ответственным
     try:
-        resp = session.query(Task.responsible, func.count(Task.responsible)).\
+        resp = session.query(Task.status, Task.responsible, func.count(Task.responsible)).\
             outerjoin(TrainAPIRecords, TrainAPIRecords.message_id == Task.message_id).\
             filter(and_(TrainAPIRecords.date >= start_date,
                         TrainAPIRecords.date <= end_date,
                         TrainAPIRecords.user_action == 1,
-                        TrainAPIRecords.user_answer.in_(WARNING_CATEGORY),
-                        Task.status != TASK_CLOSED_STATUS)).\
-            group_by(Task.responsible).all()
+                        TrainAPIRecords.user_answer.in_(WARNING_CATEGORY))).\
+            group_by(Task.status, Task.responsible).all()
     except Exception as e:
         print str(e)
         raise(e)
     else:
-        open_task_by_responsible = resp
-        print "Открытых задач с разбивкой по ответственным :", open_task_by_responsible
+        tasks_by_responsible = resp
+        print "Задачи с разбивкой по статусу и ответственным :", tasks_by_responsible
+
+    # Количество задач с разбивкой по статусу и причинам
+    try:
+        resp = session.query(Task.status, TaskCauseTag.tag_id, func.count(TaskCauseTag.tag_id)).\
+            outerjoin(TaskCauseTag, TaskCauseTag.task_uuid == Task.uuid).\
+            outerjoin(TrainAPIRecords, TrainAPIRecords.message_id == Task.message_id).\
+            filter(and_(TrainAPIRecords.date >= start_date,
+                        TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.user_action == 1,
+                        TrainAPIRecords.user_answer.in_(WARNING_CATEGORY))).\
+            group_by(Task.status, TaskCauseTag.tag_id).all()
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        tasks_by_cause = resp
+        print "Задачи с разбивкой по статусу и причинам :", tasks_by_cause
+
+    # Кол-во задач по диалогам с участием сотрудников с разбивкой по статусу
+    try:
+        resp = session.query(Task.status, WarnTaskStatistics.member_uuid, func.count(WarnTaskStatistics.member_uuid)).\
+            outerjoin(TrainAPIRecords, TrainAPIRecords.message_id == Task.message_id).\
+            outerjoin(WarnTaskStatistics, WarnTaskStatistics.msg_id == Task.message_id).\
+            outerjoin(DialogMember, DialogMember.uuid == WarnTaskStatistics.member_uuid).\
+            filter(and_(TrainAPIRecords.date >= start_date,
+                        TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.user_action == 1,
+                        TrainAPIRecords.user_answer.in_(WARNING_CATEGORY),
+                        DialogMember.type == 0)).\
+            group_by(Task.status,WarnTaskStatistics.member_uuid).all()
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        tasks_by_empl = resp
+        print "Кол-во задач по диалогам с участием сотрудников с разбивкой по статусу :", tasks_by_empl
+
+    # Кол-во задач по диалогам с участием клиентов с разбивкой по статусу
+    try:
+        resp = session.query(Task.status, WarnTaskStatistics.member_uuid, func.count(WarnTaskStatistics.member_uuid)).\
+            outerjoin(TrainAPIRecords, TrainAPIRecords.message_id == Task.message_id).\
+            outerjoin(WarnTaskStatistics, WarnTaskStatistics.msg_id == Task.message_id).\
+            outerjoin(DialogMember, DialogMember.uuid == WarnTaskStatistics.member_uuid).\
+            filter(and_(TrainAPIRecords.date >= start_date,
+                        TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.user_action == 1,
+                        TrainAPIRecords.user_answer.in_(WARNING_CATEGORY),
+                        DialogMember.type == 1)).\
+            group_by(Task.status,WarnTaskStatistics.member_uuid).all()
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        tasks_by_client = resp
+        print "Кол-во задач по диалогам с участием клиентов с разбивкой по статусу :", tasks_by_client
+
+    return non_checked_by_users, \
+           confirmed_problem, \
+           tasks_by_responsible, \
+           tasks_by_cause, \
+           tasks_by_empl, \
+           tasks_by_client
 
 
 def initial_configuration():

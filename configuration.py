@@ -79,5 +79,6 @@ TASK_CLOSED_STATUS = 2
 
 CLIENT_CHANNEL_TYPE = ["email"]
 
+DIALOG_MEMBER_TYPE = {0: "employee", 1: "client"}
 
 

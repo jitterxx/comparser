@@ -15,8 +15,11 @@ import uuid
 
 #print CPO.pred_stat_compute(for_day=datetime.datetime.strptime("09-06-2016", "%d-%m-%Y"))
 
+#CPO.create_tables()
 
-# CPO.add_warn_task_stat(for_day=datetime.datetime.strptime("11-03-2016", "%d-%m-%Y"))
+#CPO.add_warn_task_stat(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
+#                       end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
+
 
 CPO.show_warn_task_stat(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
                         end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
