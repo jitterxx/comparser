@@ -104,6 +104,9 @@ def update_14():
     print "Расчет закончен. Не забудьте добавить в CRON расчет статистики."
 
 
+# 15
+sql_update_15 = "ALTER TABLE `train_api` ADD COLUMN `check_date` DATETIME NULL DEFAULT NULL AFTER `date`;"
+
 
 # Создаем новые таблицы
 CPO.create_tables()
@@ -221,7 +224,15 @@ else:
 
 try:
     print "# Обновление №14. Расчет статистики по старым данным."
-    update_14()
+    #   update_14()
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
+
+
+try:
+    result = connection.execute(sql_update_15)
 except Exception as e:
     print e.message, e.args
 else:

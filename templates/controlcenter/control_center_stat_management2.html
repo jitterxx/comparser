@@ -187,7 +187,11 @@
 						</div>
 						<div class="col-sm-9 col-lg-7 widget-right">
 							<div class="large">
-                                ${sum([r[1] for r in tasks_by_responsible[2]])}
+                                %if tasks_by_responsible.get(2):
+                                ${sum([r[1] for r in tasks_by_responsible.get(2)])}
+                                %else:
+                                0
+                                %endif
                             </div>
 							<div class="text-muted">
                                 закрыто
@@ -249,173 +253,6 @@
         </div><!--/.row-->
 
     </div>
-
-
-
-    <!--
-<div class="row">
-    <div class="col-xs-12 col-md-6 col-lg-3">
-        <div class="panel panel-orange panel-widget">
-            <div class="row">
-                <div class="col-sm-3 col-lg-5 widget-left">
-                    <i class="fa fa-question fa-3x"  aria-hidden="true"></i>
-                </div>
-                <div class="col-sm-9 col-lg-7 widget-right">
-                    <div class="large">
-                        ${non_checked_by_users}
-                    </div>
-                    <div class="text-muted" >
-                        на проверку
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xs-12 col-md-6 col-lg-3">
-        <div class="panel panel-red panel-widget">
-            <div class="row">
-                <div class="col-sm-3 col-lg-5 widget-left">
-                    <i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i>
-                </div>
-                <div class="col-sm-9 col-lg-7 widget-right">
-                    <div class="large">
-                        ${confirmed_problem}
-                    </div>
-                    <div class="text-muted">
-                        подтверждено
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xs-12 col-md-6 col-lg-3">
-        <div class="panel panel-red panel-widget">
-            <div class="row">
-                <div class="col-sm-3 col-lg-5 widget-left">
-                    <i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i>
-                </div>
-                <div class="col-sm-9 col-lg-7 widget-right">
-                    <div class="large">
-                        ${confirmed_problem}
-                    </div>
-                    <div class="text-muted">
-                        подтверждено
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xs-12 col-md-6 col-lg-3">
-        <div class="panel panel-red panel-widget">
-            <div class="row">
-                <div class="col-sm-3 col-lg-5 widget-left">
-                    <i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i>
-                </div>
-                <div class="col-sm-9 col-lg-7 widget-right">
-                    <div class="large">
-                        ${confirmed_problem}
-                    </div>
-                    <div class="text-muted">
-                        подтверждено
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-
-<div class="row">
-    <div class="col-sm-2 col-md-2">
-        <div class="panel panel-warning" style="height: 17em; padding: 10px;" align="center">
-            <span style="font-size: 7em;" class="text-warning">${non_checked_by_users}</span>
-            <h3>не провереных диалога</h3>
-        </div>
-    </div>
-
-    <div class="col-sm-2 col-md-2">
-        <div class="thumbnail block" align="center" style="height: 17em;">
-            <span style="font-size: 7em;">${confirmed_problem}</span>
-            <h3>
-                проблем подтверждено
-            </h3>
-            Закрыто ${sum([r[1] for r in tasks_by_responsible[2]])}
-        </div>
-    </div>
-
-    <div class="col-sm-2 col-md-2">
-        <div class="thumbnail block" align="left" style="height: 17em; padding: 10px;">
-            <span style="font-size: 7em;">
-                ${sum([r[1] for r in tasks_by_responsible[0]])}
-            </span>
-            <h3>
-                открытых проблемы
-            </h3>
-            <p align="left">
-            %for one in tasks_by_responsible[0]:
-                <a href="#">
-                ${users.get(one[0]).name} - ${one[1]}
-                </a>
-            %endfor
-            </p>
-        </div>
-    </div>
-
-</div>
-
-<div class="row">
-    <div class="col-sm-3 col-md-3">
-        <div class="thumbnail block" align="left" style="height: 17em; padding: 10px;">
-            <h3>
-                Проблемы в разрезе причин
-            </h3>
-            <p align="left">
-            %for one in tasks_by_cause[0]:
-                <a href="#">
-                ${tags.get(one[0]).tag} - ${one[1]}
-                </a>
-                <br>
-            %endfor
-            </p>
-        </div>
-    </div>
-
-    <div class="col-sm-3 col-md-3">
-        <div class="thumbnail block" align="left" style="height: 17em; padding: 10px;">
-            <span style="font-size: 1.5em;">
-                Проблемы по сотрудникам
-            </span>
-            <hr width="50%" align="left">
-            <p align="left">
-            %for one in tasks_by_empl[0]:
-                <a href="#">
-                ${members.get(one[0]).name} - ${one[1]}
-                </a>
-                <br>
-            %endfor
-            </p>
-        </div>
-    </div>
-
-    <div class="col-sm-4 col-md-4">
-        <div class="panel panel-info" style="height: 17em; padding: 10px;">
-            <div class="panel-heading">
-                <span style="font-size: 1.5em;">Проблемы по клиентам</span>
-            </div>
-            <div class="panel-body">
-
-            %for one in tasks_by_client[0]:
-                <a href="#">
-                ${members.get(one[0]).name} - ${one[1]}
-                </a>
-                <br>
-            %endfor
-            </div>
-        </div>
-    </div>
-</div>
--->
 
 
 	<script src="/static/js/jquery-1.11.1.min.js"></script>

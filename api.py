@@ -67,7 +67,6 @@ class UserTrain(object):
             else:
                 # Если категория после проверки в WARNING_CAT и ответ новый, то создаем задачу
                 if status[0] and category in WARNING_CATEGORY:
-                    session_context = cherrypy.session['session_context']
 
                     try:
                         api_rec = CPO.get_train_record(uuid=uuid)
@@ -78,71 +77,30 @@ class UserTrain(object):
                     # создаем задачу
                     try:
                         # ответственный за закрытие задачи - проверяющий
-                        responsible = session_context.get("user").uuid
-                        if not responsible:
-                            responsible = "UNKNOWN-UUID"
-                        task_uuid = CPO.create_task(responsible=responsible, message_id=api_rec.message_id)
+                        if cherrypy.session.get('session_context'):
+                            responsible = cherrypy.session['session_context'].get("user")
+                            task_uuid = CPO.create_task(responsible=responsible.uuid, message_id=api_rec.message_id)
+                            text = u"Создана автоматически после проверки. Пользователь: %s %s." % \
+                                   (responsible.name, responsible.surname)
+
+                        else:
+                            task_uuid = CPO.create_task(responsible=None, message_id=api_rec.message_id)
+                            text = "Создана автоматически после проверки. Пользователь неизвестен."
 
                         # Формируем сообщение
                         try:
-                            text = u"Создана автоматически после проверки. Пользователь: %s %s." % \
-                                   (session_context["user"].name, session_context["user"].surname)
+                            CPO.add_task_comment(task_uuid=task_uuid, comment=text)
                         except Exception as e:
-                            print "api.UserTrain(). Ошибка формирования комментария. %s" % str(e)
-                            text = "Создана автоматически после проверки. Пользователь неизвестен."
+                            print "api.UserTrain(). Ошибка добавления комментария. %s" % str(e)
 
-                        CPO.add_task_comment(task_uuid=task_uuid, comment=text)
                     except Exception as e:
                         print "api.UserTrain(). Ошибка создания Задачи. %s" % str(e)
 
-                """
-                try:
-                    api_rec = CPO.get_train_record(uuid=uuid)
-                except Exception as e:
-                    print "api.UserTrain(). Ошибка получения записи TrainAPI. %s" % str(e)
-                    api_rec = None
-
-                # Если ответ пользователя не совпадает с WARNING_CATEGORY,
-                # необходимо закрыть таску открытую для этого сообщения
-                session_context = cherrypy.session['session_context']
-                if category not in WARNING_CATEGORY:
-                    # Формируем сообщение
+                    # добавляем адресатов в DialogMembers
                     try:
-                        text = "Закрыто пользователем %s %s после проверки." % \
-                               (session_context["user"].name, session_context["user"].surname)
+                        CPO.add_msg_members(msg_id_list=api_rec.message_id)
                     except Exception as e:
-                        print str(e)
-                        text = "Закрыто пользователем после проверки."
-
-                    # Меняем статус задачи на Закрыто
-                    try:
-                        CPO.change_task_status(api_uuid=uuid, status=2, message=text)
-                    except Exception as e:
-                        print "api.UserTrain(). Ошибка при смене статуса задачи. %s" % str(e)
-                else:
-                    # Необходимо проверить, была ли это смена или подтверждение WARNING_CAT. Смотреть TrainAPI.auto_cat
-                    if api_rec.auto_cat not in WARNING_CATEGORY:
-                        # была смена на WARNING_CAT, создаем задачу
-                        try:
-                            # вычисляем ответственного за закрытие задачи
-                            # Стандартно это ответственный за клиента или менеджера
-                            responsible = session_context.get("user").uuid
-                            if not responsible:
-                                responsible = "UNKNOWN-UUID"
-                            task_uuid = CPO.create_task(responsible=responsible, message_id=api_rec.message_id)
-
-                            # Формируем сообщение
-                            try:
-                                text = "Создана автоматически после проверки. Пользователь: %s %s." % \
-                                       (session_context["user"].name, session_context["user"].surname)
-                            except Exception as e:
-                                print "api.UserTrain(). Ошибка формирования комментария. %s" % str(e)
-                                text = "Создана автоматически после проверки. Пользователь неизвестен."
-
-                            CPO.add_task_comment(task_uuid=task_uuid, comment=text)
-                        except Exception as e:
-                            print "api.UserTrain(). Ошибка создания Задачи. %s" % str(e)
-                """
+                        print "api.UserTrain(). Ошибка добавления адресотов DialogMembers. %s" % str(e)
 
                 tmpl = lookup.get_template("usertrain_page.html")
                 return tmpl.render(status=status)
@@ -1101,6 +1059,8 @@ class Statistics(object):
     def get_chart_data(self, chart_id=None):
 
         try:
+
+
             stat = CPO.get_stat_for_management(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
                                                end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
             users = CPO.get_all_users_dict()
@@ -1117,59 +1077,66 @@ class Statistics(object):
             print str(e)
             raise e
 
-        kelly_colors_hex = [
-            0xFFB300, # Vivid Yellow
-            0x803E75, # Strong Purple
-            0xFF6800, # Vivid Orange
-            0xA6BDD7, # Very Light Blue
-            0xC10020, # Vivid Red
-            0xCEA262, # Grayish Yellow
-            0x817066, # Medium Gray
+        import numpy as np
+        import colorsys
 
-            # The following don't work well for people with defective color vision
-            0x007D34, # Vivid Green
-            0xF6768E, # Strong Purplish Pink
-            0x00538A, # Strong Blue
-            0xFF7A5C, # Strong Yellowish Pink
-            0x53377A, # Strong Violet
-            0xFF8E00, # Vivid Orange Yellow
-            0xB32851, # Strong Purplish Red
-            0xF4C800, # Vivid Greenish Yellow
-            0x7F180D, # Strong Reddish Brown
-            0x93AA00, # Vivid Yellowish Green
-            0x593315, # Deep Yellowish Brown
-            0xF13A13, # Vivid Reddish Orange
-            0x232C16, # Dark Olive Green
-            ]
+        colors = [
+            ["#CC0033", "#FFCCCC"],
+            ["#996600", "#FFCC66"],
+            ["#CCCC00", "#FFFFCC"],
+            ["#990066", "#FF66CC"],
+            ["#660066", "#CC66FF"],
+            ["#663366", "#CC99FF"],
+            ["#003366", "#0066FF"],
+            ["#006699", "#99CCFF"],
+            ["#009999", "#99FFCC"],
+            ["#009933", "#66FF99"]
+        ]
 
         data = list()
         if chart_id == "problem_by_cause":
+            i = 0
             for one in tasks_by_cause[0]:
                 part = {
                     "value": one[1],
-                    "color": "#30a5ff",
-                    "highlight": "#62b9fb",
+                    "color": colors[i][0],
+                    "highlight": colors[i][1],
                     "label": tags.get(one[0]).tag
                 }
                 data.append(part)
+                i += 1
+                if i == len(colors):
+                    i = 0
+
         elif chart_id == "problem_by_employee":
+            i = 0
             for one in tasks_by_empl[0]:
                 part = {
                     "value": one[1],
-                    "color": "#30a5ff",
-                    "highlight": "#62b9fb",
+                    "color": colors[i][0],
+                    "highlight": colors[i][1],
                     "label": members.get(one[0]).name
                 }
                 data.append(part)
+                i += 1
+                if i == len(colors):
+                    i = 0
+
         elif chart_id == "problem_by_client":
+            i = 0
             for one in tasks_by_client[0]:
                 part = {
                     "value": one[1],
-                    "color": "#30a5ff",
-                    "highlight": "#62b9fb",
+                    "color": colors[i][0],
+                    "highlight": colors[i][1],
                     "label": members.get(one[0]).name
                 }
                 data.append(part)
+                i += 1
+                if i == len(colors):
+                    i = 0
+        elif chart_id == "tasks":
+            pass
 
         import json
 

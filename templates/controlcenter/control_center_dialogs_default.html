@@ -139,33 +139,34 @@
             <div class="panel panel-warning">
             %endif
                 <div class="panel-heading" align="left">
-                    <a href="/control_center/show_full_thread?msg_id=${one.message_id}" target="_blank"
-                       title="Полная переписка">
-                        <i class="fa fa-list-alt fa-2x"></i>
-                    </a>
-                    %if one.message_id in task_list.keys():
-                        %if task_list[one.message_id].status == 2:
-                            <a href="/control_center/tasks/task?uuid=${task_list[one.message_id].uuid}" title="Проблема решена"
-                             target="_blank">
-                                <i class="fa fa-check-circle-o fa-2x text-success"></i>
+                    <div class="row">
+                        <div class="col-sm-12 col-md-12">
+                            <a href="/control_center/show_full_thread?msg_id=${one.message_id}" target="_blank"
+                               title="Полная переписка">
+                                <i class="fa fa-list-alt fa-2x"></i>
                             </a>
-                        %else:
-                            <a href="/control_center/tasks/task?uuid=${task_list[one.message_id].uuid}" title="Проблема не решена"
-                             target="_blank">
-                                <i class="fa fa-question-circle fa-2x text-danger"></i>
-                            </a>
-                        %endif
-                    %else:
-                    <!--
-                        <a href="/control_center/tasks/create_task?msg_id=${one.message_id}" title="Требуется действие"
-                         target="_blank">
-                            <i class="fa fa-exclamation-circle fa-2x text-danger"></i>
-                        </a>
-                        -->
-                    %endif
-
-                </div>
-                <div class="panel-heading" align="left">
+                            %if one.message_id in task_list.keys():
+                                %if task_list[one.message_id].status == 2:
+                                    <a href="/control_center/tasks/task?uuid=${task_list[one.message_id].uuid}" title="Проблема решена"
+                                     target="_blank">
+                                        <i class="fa fa-check-circle-o fa-2x text-success"></i>
+                                    </a>
+                                %else:
+                                    <a href="/control_center/tasks/task?uuid=${task_list[one.message_id].uuid}" title="Проблема не решена"
+                                     target="_blank">
+                                        <i class="fa fa-question-circle fa-2x text-danger"></i>
+                                    </a>
+                                %endif
+                            %else:
+                            <!--
+                                <a href="/control_center/tasks/create_task?msg_id=${one.message_id}" title="Требуется действие"
+                                 target="_blank">
+                                    <i class="fa fa-exclamation-circle fa-2x text-danger"></i>
+                                </a>
+                                -->
+                            %endif
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-6" align="left">
                             <span class="attention">Категория: </span> ${category[api_list[one.message_id].auto_cat].category}
@@ -189,15 +190,21 @@
                         </div>
                     </div>
 
-                </div>
-                <div class="panel-heading">
-                    <p><span class="attention">Дата:</span> ${one.orig_date.strftime('%d-%m-%Y')}</p>
-                    <p><span class="attention">От кого:</span> ${one.sender_name} (${one.sender})</p>
-                    <p><span class="attention">Кому:</span> ${one.recipients_name} (${one.recipients})</p>
-                    <p><span class="attention">Тема:</span> ${one.message_title}</p>
+                    <div class="row">
+                        <div class="col-md-12 col-lg-12" align="left">
+                        <p><span class="attention">Дата:</span> ${one.orig_date.strftime('%d-%m-%Y')}</p>
+                        <p><span class="attention">От кого:</span> ${one.sender_name} (${one.sender})</p>
+                        <p><span class="attention">Кому:</span> ${one.recipients_name} (${one.recipients})</p>
+                        <p><span class="attention">Тема:</span> ${one.message_title}</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="panel-body">
-                    ${one.message_text}
+                    <div class="row">
+                        <div class="col-md-12 col-lg-12" align="left">
+                            ${one.message_text}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

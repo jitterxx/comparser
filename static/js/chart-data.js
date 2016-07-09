@@ -101,7 +101,7 @@ var randomScalingFactor = function(){ return Math.round(Math.random()*1000)};
 						highlight: "#f6495f",
 						label: "Red"
 					}
-	
+
 				];
 
 window.onload = function(){
@@ -135,16 +135,17 @@ function GetChartData(chart_id) {
         dataType: 'json',
         data: {chart_id:chart_id},
         success: function (data, textStatus) {
-                    console.log("Chart data :", data);
+                    // console.log("Chart data :", data);
                     DrawPieChart(chart_id, data);
             }
     });
 };
 
 function DrawPieChart(chart_id, pieData){
+
 	var chart = document.getElementById(chart_id).getContext("2d");
-	console.log(pieData);
 	window.myPie = new Chart(chart).Pie(pieData, {responsive : true
 	});
+	console.log(window.myPie.options.legendTemplate);
 	document.getElementById("legend_" + chart_id).innerHTML = window.myPie.generateLegend();
 }

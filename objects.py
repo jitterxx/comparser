@@ -630,6 +630,7 @@ class TrainAPIRecords(Base):
     auto_cat = Column(sqlalchemy.String(256), default="")
     category = Column(sqlalchemy.String(256))
     date = Column(sqlalchemy.DATETIME())
+    check_date = Column(sqlalchemy.DATETIME())
     user_action = Column(sqlalchemy.Integer)
     user_answer = Column(sqlalchemy.String(45))
     train_epoch = Column(sqlalchemy.Integer)
@@ -1049,6 +1050,7 @@ def set_user_train_data(uuid, category):
             train_epoch = query.train_epoch
             query.user_action = 1
             query.user_answer = category
+            query.check_date = datetime.datetime.now()
             session.commit()
         else:
             return [False, "Для этого сообщения ответ был получен ранее."]
@@ -2079,6 +2081,90 @@ def get_watchers_for_email(message=None):
         return result
 
 
+def get_watchers_uuid_for_email(message_id=None):
+    """
+    Вернуть список UUID ответственных по этому сообщению.
+    Проверяем поля ОТ, КОМУ, КОПИЯ.
+
+    :param message:
+    :return:
+    """
+
+    marker_dict = get_watch_list()
+
+    session = Session()
+
+    try:
+        message = session.query(Msg).filter(Msg.message_id == message_id).one_or_none()
+    except Exception as e:
+        print "CPO.get_watchers_uuid_for_email(). Ошибка получения сообщения. ", str(e)
+        raise e
+    else:
+        if not message:
+            print "CPO.get_watchers_uuid_for_email(). Сообщение не найдено. "
+            excp = ValueError("Сообщение не найдено.")
+            raise excp
+
+        # print "\n","*"*30,"\n"
+        # print "Marker dict: %s" % marker_dict
+        # print "MSG sender field: %s" % message.sender, type(message.sender)
+        # print "MSG recipients field: %s" % message.recipients, type(message.recipients)
+        # print "MSG cc_recipients field: %s" % message.cc_recipients, type(message.cc_recipients)
+
+        fields = str(message.sender).split(",") + str(message.recipients).split(",") + str(message.cc_recipients).split(",")
+
+        # print "Fields list: %s" % fields
+
+    finally:
+        session.close()
+
+    emails = list()
+    for one in fields:
+        if one != "empty":
+            emails.append(one)
+            try:
+                domain = one.split("@")[1]
+            except IndexError:
+                emails.append(one)
+            except Exception as e:
+                print "CPO.get_watchers_uuid_for_email(). Ошибка получения доменного имени из : %s. %s" % (one, str(e))
+            else:
+                emails.append(domain)
+
+    # удаляем дубликаты
+    emails = set(emails)
+    emails = list(emails)
+
+    # print "Emails SET: %s" % emails
+
+    # получаем список пользователей
+    try:
+        users = get_all_users_dict()
+    except Exception as e:
+        print "CPO.get_watchers_uuid_for_email(). Ошибка получения списка пользователей. %s" % str(e)
+        # Что-то делаем если список не получен, возвращаем спец список для таких случаев
+        return ["uuid-initial"]
+    else:
+        # print "Users list: %s" % users
+
+        user_list = list()
+        for marker in marker_dict.keys():
+
+            # print "\tMarker: %s" % marker
+
+            # для каждого маркера, проверяем его наличие
+            if marker in emails and marker_dict.get(marker):
+                # print "\tUser: ", marker_dict.get(marker)
+                user_list += marker_dict.get(marker)
+
+        # print "Users: ", user_list
+        if not user_list:
+            # Возвращаем спец список для таких случаев
+            return ["uuid-initial"]
+
+        return user_list
+
+
 def get_watch_domain_list():
 
     marker_dict = get_watch_list()
@@ -2216,8 +2302,15 @@ def create_task(responsible=None, message_id=None, comment=None, status=None):
     if responsible:
         new_task.responsible = responsible
     else:
-        excp = ValueError("Ответственный должен быть указан обязательно.")
-        raise excp
+        # Вычисляем ответственного
+        print "Вычисляем ответственного для задачи."
+        try:
+            resp = get_watchers_uuid_for_email(message_id=message_id)
+        except Exception as e:
+            print "CPO.create_task(). Ошибка вычисления ответственного. ", str(e)
+            raise e
+        else:
+            new_task.responsible = resp[0]
 
     if message_id:
         new_task.message_id = message_id
@@ -2916,8 +3009,8 @@ def get_dialog_members_list(user_uuid=None, is_admin=False):
             session.close()
 
 
-class WarnTaskStatistics(Base):
-    __tablename__ = 'warn_task_statistics'
+class MsgMembers(Base):
+    __tablename__ = 'message_members'
     __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
@@ -2926,53 +3019,40 @@ class WarnTaskStatistics(Base):
     member_uuid = Column(sqlalchemy.String(256), default="")
 
 
-def add_warn_task_stat(msg_id_list=None, start=None, end=None):
+def add_msg_members(msg_id_list=None):
 
     if not isinstance(msg_id_list, list):
         msg_id_list = [msg_id_list]
 
-    start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
-                                            (start.year, start.month, start.day),
-                                            "%Y-%m-%d %H:%M:%S")
-    end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end.year, end.month, end.day),
-                                          "%Y-%m-%d %H:%M:%S")
-
     session = Session()
 
     try:
-        resp = session.query(Msg.message_id.label("msg_id"), Msg.sender.label("sender"),
-                             Msg.recipients.label("to"), Msg.cc_recipients.label("cc"),
-                             Msg.create_date.label("date"),
-                             TrainAPIRecords.auto_cat.label("auto_cat"),
-                             TrainAPIRecords.user_answer.label("user_answer")).\
-            join(TrainAPIRecords, TrainAPIRecords.message_id == Msg.message_id).\
-            outerjoin(Task, Task.message_id == TrainAPIRecords.message_id).\
-            filter(and_(TrainAPIRecords.date >= start_date,
-                        TrainAPIRecords.date <= end_date,
-                        TrainAPIRecords.auto_cat.in_(WARNING_CATEGORY))).all()
+        resp = session.query(Msg).filter(Msg.message_id.in_(msg_id_list)).all()
     except Exception as e:
-        print str(e)
-        raise(e)
+        print "CPO.add_msg_members(). Ошибка получения сообщения. ", str(e)
+        raise e
 
     empl_list = get_dialog_members_list()
 
     for one in resp:
         # print one
         # ищем в полях from, to, cc маркеры которые относятся к сотрудникам, т.е. не входят в CHECK_DOMAINS
-        fields = re.split(",", one.sender) + re.split(",", one.to) + re.split(",", one.cc)
+        fields = re.split(",", one.sender) + re.split(",", one.recipients) + re.split(",", one.cc_recipients)
 
         for addr in fields:
             if addr in empl_list.keys():
                 print "Fields: ", fields
                 # добавляем запись в статистику
-                new = WarnTaskStatistics()
-                new.msg_id = one.msg_id
-                new.date = one.date
-                new.member_uuid = empl_list.get(addr)
-                new.auto_cat = one.auto_cat
-                new.check_cat = one.user_answer
-                session.add(new)
-                session.commit()
+                try:
+                    new = MsgMembers()
+                    new.msg_id = one.message_id
+                    new.date = one.create_date
+                    new.member_uuid = empl_list.get(addr)
+                    session.add(new)
+                    session.commit()
+                except Exception as e:
+                    print "CPO.add_msg_members(). Ошибка записи.", str(e)
+                    raise e
 
 
 def get_stat_for_management(start=None, end=None):
@@ -3135,16 +3215,16 @@ def get_stat_for_management(start=None, end=None):
 
     # Кол-во задач по диалогам с участием сотрудников с разбивкой по статусу
     try:
-        resp = session.query(Task.status, WarnTaskStatistics.member_uuid, func.count(WarnTaskStatistics.member_uuid)).\
+        resp = session.query(Task.status, MsgMembers.member_uuid, func.count(MsgMembers.member_uuid)).\
             outerjoin(TrainAPIRecords, TrainAPIRecords.message_id == Task.message_id).\
-            outerjoin(WarnTaskStatistics, WarnTaskStatistics.msg_id == Task.message_id).\
-            outerjoin(DialogMember, DialogMember.uuid == WarnTaskStatistics.member_uuid).\
+            outerjoin(MsgMembers, MsgMembers.msg_id == Task.message_id).\
+            outerjoin(DialogMember, DialogMember.uuid == MsgMembers.member_uuid).\
             filter(and_(TrainAPIRecords.date >= start_date,
                         TrainAPIRecords.date <= end_date,
                         TrainAPIRecords.user_action == 1,
                         TrainAPIRecords.user_answer.in_(WARNING_CATEGORY),
                         DialogMember.type == 0)).\
-            group_by(Task.status,WarnTaskStatistics.member_uuid).all()
+            group_by(Task.status, MsgMembers.member_uuid).all()
     except Exception as e:
         print str(e)
         raise e
@@ -3161,16 +3241,16 @@ def get_stat_for_management(start=None, end=None):
 
     # Кол-во задач по диалогам с участием клиентов с разбивкой по статусу
     try:
-        resp = session.query(Task.status, WarnTaskStatistics.member_uuid, func.count(WarnTaskStatistics.member_uuid)).\
+        resp = session.query(Task.status, MsgMembers.member_uuid, func.count(MsgMembers.member_uuid)).\
             outerjoin(TrainAPIRecords, TrainAPIRecords.message_id == Task.message_id).\
-            outerjoin(WarnTaskStatistics, WarnTaskStatistics.msg_id == Task.message_id).\
-            outerjoin(DialogMember, DialogMember.uuid == WarnTaskStatistics.member_uuid).\
+            outerjoin(MsgMembers, MsgMembers.msg_id == Task.message_id).\
+            outerjoin(DialogMember, DialogMember.uuid == MsgMembers.member_uuid).\
             filter(and_(TrainAPIRecords.date >= start_date,
                         TrainAPIRecords.date <= end_date,
                         TrainAPIRecords.user_action == 1,
                         TrainAPIRecords.user_answer.in_(WARNING_CATEGORY),
                         DialogMember.type == 1)).\
-            group_by(Task.status,WarnTaskStatistics.member_uuid).all()
+            group_by(Task.status, MsgMembers.member_uuid).all()
     except Exception as e:
         print str(e)
         raise e
