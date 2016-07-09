@@ -2781,10 +2781,27 @@ class ViolationStatistics(Base):
     __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
-    week_number = Column(sqlalchemy.Integer, default=0)
     start_date = Column(sqlalchemy.DATETIME())
     end_date = Column(sqlalchemy.DATETIME())
-    violation_type = Column(sqlalchemy.Integer, default=0)
+    to_check = Column(sqlalchemy.Integer, default=0)
+    confirmed = Column(sqlalchemy.Integer, default=0)
+    closed = Column(sqlalchemy.Integer, default=0)
+
+
+def get_violation_stat(start_date=None, end_date=None):
+
+    session = Session()
+    try:
+        resp = session.query(ViolationStatistics).all()
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        result = resp
+        print resp
+        return result
+    finally:
+        session.close()
 
 
 class CauseTag(Base):
@@ -3204,6 +3221,11 @@ def get_stat_for_management(start=None, end=None):
         raise e
     else:
         tasks_by_cause = dict()
+        for st in range(0, len(TASK_STATUS)):
+            tasks_by_cause[st] = list()
+            for t in tags.keys():
+                tasks_by_cause[st].append([t, 0])
+
         print "Задачи с разбивкой по статусу и причинам :", resp
         for status, tagid, count in resp:
             if tagid:
@@ -3271,6 +3293,9 @@ def get_stat_for_management(start=None, end=None):
             tasks_by_cause,
             tasks_by_empl,
             tasks_by_client)
+
+
+
 
 
 def initial_configuration():

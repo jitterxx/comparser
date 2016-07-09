@@ -105,10 +105,10 @@ var randomScalingFactor = function(){ return Math.round(Math.random()*1000)};
 				];
 
 window.onload = function(){
-	var chart1 = document.getElementById("line-chart").getContext("2d");
-	window.myLine = new Chart(chart1).Line(lineChartData, {
-		responsive: true
-	});
+	//var chart1 = document.getElementById("line-chart").getContext("2d");
+	//window.myLine = new Chart(chart1).Line(lineChartData, {
+	//	responsive: true
+	//});
 	//var chart2 = document.getElementById("bar-chart").getContext("2d");
 	//window.myBar = new Chart(chart2).Bar(barChartData, {
 	//	responsive : true
@@ -126,6 +126,7 @@ window.onload = function(){
     GetChartData("problem_by_cause");
     GetChartData("problem_by_employee");
     GetChartData("problem_by_client");
+    GetChartData("violation_stats");
 
 };
 
@@ -134,18 +135,34 @@ function GetChartData(chart_id) {
         url: '/control_center/statistics/get_chart_data',
         dataType: 'json',
         data: {chart_id:chart_id},
-        success: function (data, textStatus) {
-                    // console.log("Chart data :", data);
-                    DrawPieChart(chart_id, data);
+        success: function (data) {
+                    console.log(chart_id)
+                    console.log("Chart data :", data);
+                    if (chart_id == "violation_stats"){
+                        DrawLineChart(chart_id, data);
+                    }
+                    else {
+                        DrawPieChart(chart_id, data);
+                    }
+
             }
     });
 };
+
 
 function DrawPieChart(chart_id, pieData){
 
 	var chart = document.getElementById(chart_id).getContext("2d");
 	window.myPie = new Chart(chart).Pie(pieData, {responsive : true
 	});
-	console.log(window.myPie.options.legendTemplate);
+	//console.log(window.myPie.options.legendTemplate);
 	document.getElementById("legend_" + chart_id).innerHTML = window.myPie.generateLegend();
+}
+
+function DrawLineChart(chart_id, lineChartData){
+
+	var chart = document.getElementById(chart_id).getContext("2d");
+	window.myLine = new Chart(chart).Line(lineChartData, { responsive: true
+	});
+    //document.getElementById("legend_" + chart_id).innerHTML = window.myPie.generateLegend();
 }

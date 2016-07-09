@@ -1058,27 +1058,22 @@ class Statistics(object):
     @require(member_of("admin"))
     def get_chart_data(self, chart_id=None):
 
-        try:
-
-
-            stat = CPO.get_stat_for_management(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
-                                               end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
-            users = CPO.get_all_users_dict()
-            members = CPO.get_all_dialog_members()
-            tags = CPO.get_tags()
-            non_checked_by_users = stat[0]
-            confirmed_problem  = stat[1]
-            tasks_by_responsible = stat[2]
-            tasks_by_cause = stat[3]
-            tasks_by_empl = stat[4]
-            tasks_by_client = stat[5]
-
-        except Exception as e:
-            print str(e)
-            raise e
-
-        import numpy as np
-        import colorsys
+        if chart_id != "violation_stats":
+            try:
+                stat = CPO.get_stat_for_management(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
+                                                   end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
+                users = CPO.get_all_users_dict()
+                members = CPO.get_all_dialog_members()
+                tags = CPO.get_tags()
+                non_checked_by_users = stat[0]
+                confirmed_problem = stat[1]
+                tasks_by_responsible = stat[2]
+                tasks_by_cause = stat[3]
+                tasks_by_empl = stat[4]
+                tasks_by_client = stat[5]
+            except Exception as e:
+                print str(e)
+                raise e
 
         colors = [
             ["#CC0033", "#FFCCCC"],
@@ -1096,6 +1091,7 @@ class Statistics(object):
         data = list()
         if chart_id == "problem_by_cause":
             i = 0
+            print "tasks_by_cause: ",tasks_by_cause
             for one in tasks_by_cause[0]:
                 part = {
                     "value": one[1],
@@ -1135,8 +1131,66 @@ class Statistics(object):
                 i += 1
                 if i == len(colors):
                     i = 0
-        elif chart_id == "tasks":
-            pass
+        elif chart_id == "violation_stats":
+            try:
+                viol_stat = CPO.get_violation_stat(start_date=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
+                                                   end_date=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
+
+            except Exception as e:
+                print str(e)
+                raise e
+
+            # Формируем датасет
+            part1 = {
+                "label": "",
+                "fillColor": "rgba(255,204,153,0.2)",
+                "strokeColor": "#ffb53e",
+                "pointColor": "#ffb53e",
+                "pointStrokeColor": "#fff",
+                "pointHighlightFill": "#fff",
+                "pointHighlightStroke" : "rgba(220,220,220,1)",
+                "data": list()
+            }
+            part2 = {
+                "label": "",
+                "fillColor": "rgba(255,204,204,0.2)",
+                "strokeColor": "#f9243f",
+                "pointColor": "#f9243f",
+                "pointStrokeColor": "#fff",
+                "pointHighlightFill": "#fff",
+                "pointHighlightStroke" : "rgba(220,220,220,1)",
+                "data": list()
+            }
+            part3 = {
+                "label": "",
+                "fillColor": "rgba(204,255,204,0.2)",
+                "strokeColor": "#1ebfae",
+                "pointColor": "#1ebfae",
+                "pointStrokeColor": "#fff",
+                "pointHighlightFill": "#fff",
+                "pointHighlightStroke" : "rgba(220,220,220,1)",
+                "data": list()
+            }
+            data = {"labels": list(), "datasets": [part1, part2, part3]}
+            data["datasets"][0]["label"] = u"на проверку"
+            data["datasets"][1]["label"] = u"подтверждено"
+            data["datasets"][2]["label"] = u"закрыто"
+
+            to_check = list()
+            confirmed = list()
+            closed = list()
+
+            for one in viol_stat:
+                data["labels"].append(one.start_date.strftime("%d-%m-%Y"))
+                to_check.append(one.to_check)
+                confirmed.append(one.confirmed)
+                closed.append(one.closed)
+
+            data["datasets"][0]["data"] = to_check
+            data["datasets"][1]["data"] = confirmed
+            data["datasets"][2]["data"] = closed
+
+            print "Line data:", data
 
         import json
 
