@@ -1073,7 +1073,7 @@ class Statistics(object):
     @cherrypy.expose
     @require(member_of("admin"))
     def management(self, start_date=None, end_date=None):
-        tmpl = self.lookup.get_template("control_center_stat_management.html")
+        tmpl = self.lookup.get_template("control_center_stat_management2.html")
         context = cherrypy.session['session_context']
 
         if start_date and end_date:
@@ -1096,7 +1096,84 @@ class Statistics(object):
         return tmpl.render(session_context=context, stat=stat_data, cat=CPO.GetCategory(),
                            users=users, members=members, tags=tags)
 
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def get_chart_data(self, chart_id=None):
 
+        try:
+            stat = CPO.get_stat_for_management(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
+                                               end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
+            users = CPO.get_all_users_dict()
+            members = CPO.get_all_dialog_members()
+            tags = CPO.get_tags()
+            non_checked_by_users = stat[0]
+            confirmed_problem  = stat[1]
+            tasks_by_responsible = stat[2]
+            tasks_by_cause = stat[3]
+            tasks_by_empl = stat[4]
+            tasks_by_client = stat[5]
+
+        except Exception as e:
+            print str(e)
+            raise e
+
+        kelly_colors_hex = [
+            0xFFB300, # Vivid Yellow
+            0x803E75, # Strong Purple
+            0xFF6800, # Vivid Orange
+            0xA6BDD7, # Very Light Blue
+            0xC10020, # Vivid Red
+            0xCEA262, # Grayish Yellow
+            0x817066, # Medium Gray
+
+            # The following don't work well for people with defective color vision
+            0x007D34, # Vivid Green
+            0xF6768E, # Strong Purplish Pink
+            0x00538A, # Strong Blue
+            0xFF7A5C, # Strong Yellowish Pink
+            0x53377A, # Strong Violet
+            0xFF8E00, # Vivid Orange Yellow
+            0xB32851, # Strong Purplish Red
+            0xF4C800, # Vivid Greenish Yellow
+            0x7F180D, # Strong Reddish Brown
+            0x93AA00, # Vivid Yellowish Green
+            0x593315, # Deep Yellowish Brown
+            0xF13A13, # Vivid Reddish Orange
+            0x232C16, # Dark Olive Green
+            ]
+
+        data = list()
+        if chart_id == "problem_by_cause":
+            for one in tasks_by_cause[0]:
+                part = {
+                    "value": one[1],
+                    "color": "#30a5ff",
+                    "highlight": "#62b9fb",
+                    "label": tags.get(one[0]).tag
+                }
+                data.append(part)
+        elif chart_id == "problem_by_employee":
+            for one in tasks_by_empl[0]:
+                part = {
+                    "value": one[1],
+                    "color": "#30a5ff",
+                    "highlight": "#62b9fb",
+                    "label": members.get(one[0]).name
+                }
+                data.append(part)
+        elif chart_id == "problem_by_client":
+            for one in tasks_by_client[0]:
+                part = {
+                    "value": one[1],
+                    "color": "#30a5ff",
+                    "highlight": "#62b9fb",
+                    "label": members.get(one[0]).name
+                }
+                data.append(part)
+
+        import json
+
+        return json.dumps(data)
 
 
 class ControlCenter(object):

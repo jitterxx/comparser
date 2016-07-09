@@ -3,6 +3,7 @@
 <%block name="title">
     <title>Панель управления - Статистика</title>
     <script src="/static/js/Chart.bundle.js"></script>
+
 </%block>
 
 <%block name="navigation">
@@ -52,6 +53,77 @@
     tasks_by_client = stat[5]
 %>
 
+<div class="row">
+    <div class="col-xs-12 col-md-6 col-lg-3">
+        <div class="panel panel-orange panel-widget">
+            <div class="row">
+                <div class="col-sm-3 col-lg-5 widget-left">
+                    <i class="fa fa-question fa-3x"  aria-hidden="true"></i>
+                </div>
+                <div class="col-sm-9 col-lg-7 widget-right">
+                    <div class="large">
+                        ${non_checked_by_users}
+                    </div>
+                    <div class="text-muted" >
+                        на проверку
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-6 col-lg-3">
+        <div class="panel panel-red panel-widget">
+            <div class="row">
+                <div class="col-sm-3 col-lg-5 widget-left">
+                    <i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i>
+                </div>
+                <div class="col-sm-9 col-lg-7 widget-right">
+                    <div class="large">
+                        ${confirmed_problem}
+                    </div>
+                    <div class="text-muted">
+                        подтверждено
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-6 col-lg-3">
+        <div class="panel panel-red panel-widget">
+            <div class="row">
+                <div class="col-sm-3 col-lg-5 widget-left">
+                    <i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i>
+                </div>
+                <div class="col-sm-9 col-lg-7 widget-right">
+                    <div class="large">
+                        ${confirmed_problem}
+                    </div>
+                    <div class="text-muted">
+                        подтверждено
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-6 col-lg-3">
+        <div class="panel panel-red panel-widget">
+            <div class="row">
+                <div class="col-sm-3 col-lg-5 widget-left">
+                    <i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i>
+                </div>
+                <div class="col-sm-9 col-lg-7 widget-right">
+                    <div class="large">
+                        ${confirmed_problem}
+                    </div>
+                    <div class="text-muted">
+                        подтверждено
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
 
 <div class="row">
     <div class="col-sm-2 col-md-2">
