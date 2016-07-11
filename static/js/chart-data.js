@@ -123,18 +123,21 @@ window.onload = function(){
 	//window.myPie = new Chart(chart4).Pie(pieData, {responsive : true
 	//});
 
-    GetChartData("problem_by_cause");
-    GetChartData("problem_by_employee");
-    GetChartData("problem_by_client");
-    GetChartData("violation_stats");
+    var start_date = document.getElementById("start_date").value;
+    var end_date = document.getElementById("end_date").value;
+
+    GetChartData("problem_by_cause", start_date, end_date);
+    GetChartData("problem_by_employee", start_date, end_date);
+    GetChartData("problem_by_client", start_date, end_date);
+    GetChartData("violation_stats", start_date, end_date);
 
 };
 
-function GetChartData(chart_id) {
+function GetChartData(chart_id, start_date, end_date) {
     jQuery.ajax({
         url: '/control_center/statistics/get_chart_data',
         dataType: 'json',
-        data: {chart_id:chart_id},
+        data: {chart_id:chart_id, start_date:start_date, end_date:end_date},
         success: function (data) {
                     console.log(chart_id)
                     console.log("Chart data :", data);

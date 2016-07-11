@@ -1042,29 +1042,40 @@ class Statistics(object):
             start_date = datetime.datetime.now()
 
         try:
-            stat_data = CPO.get_stat_for_management(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
-                            end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
             users = CPO.get_all_users_dict()
             members = CPO.get_all_dialog_members()
             tags = CPO.get_tags()
+            stat_data = CPO.get_stat_for_management(start=start_date, end=end_date)
         except Exception as e:
             print str(e)
             raise e
 
         return tmpl.render(session_context=context, stat=stat_data, cat=CPO.GetCategory(),
-                           users=users, members=members, tags=tags)
+                           users=users, members=members, tags=tags,
+                           start_date=start_date, end_date=end_date)
 
     @cherrypy.expose
     @require(member_of("admin"))
-    def get_chart_data(self, chart_id=None):
+    def get_chart_data(self, chart_id=None, start_date=None, end_date=None, days=0):
+
+        now = datetime.datetime.now()
+        if not start_date:
+            start_date = now
+        else:
+            start_date = datetime.datetime.strptime(start_date, "%d-%m-%Y")
+
+        if not end_date:
+            end_date = now
+        else:
+            end_date = datetime.datetime.strptime(end_date, "%d-%m-%Y")
 
         if chart_id != "violation_stats":
             try:
-                stat = CPO.get_stat_for_management(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
-                                                   end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
                 users = CPO.get_all_users_dict()
                 members = CPO.get_all_dialog_members()
                 tags = CPO.get_tags()
+                stat = CPO.get_stat_for_management(start=start_date, end=start_date,
+                                                   tags=tags, members=members, users=users)
                 non_checked_by_users = stat[0]
                 confirmed_problem = stat[1]
                 tasks_by_responsible = stat[2]
@@ -1133,11 +1144,10 @@ class Statistics(object):
                     i = 0
         elif chart_id == "violation_stats":
             try:
-                viol_stat = CPO.get_violation_stat(start_date=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
-                                                   end_date=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
+                viol_stat = CPO.get_violation_stat(start_date=start_date, end_date=end_date)
 
             except Exception as e:
-                print str(e)
+                print "Statistics.get_chart_data(). Ошибка получения данных для графика violation_stats.", str(e)
                 raise e
 
             # Формируем датасет
@@ -1190,7 +1200,7 @@ class Statistics(object):
             data["datasets"][1]["data"] = confirmed
             data["datasets"][2]["data"] = closed
 
-            print "Line data:", data
+            # print "Line data:", data
 
         import json
 
