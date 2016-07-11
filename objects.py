@@ -2804,6 +2804,73 @@ def get_violation_stat(start_date=None, end_date=None):
         session.close()
 
 
+def violation_stat_calculate():
+    """
+    Расчет статистики для оперативного центра (график динамики основых показателей)
+     - ситуаций на проверку
+     - проблем подтверждено
+     - проблем закрыто
+
+     Рассчитывается после каждого запуска модуля классификации.
+
+    :return:
+    """
+
+    # Вычисляем сегодняшний день
+    # Проверяем наличие данных за этот день, т.е. где старт_дате = сегодняшнему дню
+    # Если есть, перезаписываем
+    # Если нет, создаем новую запись. Енд_дате = сегодняшнее число и время запуска
+
+    for_day = datetime.datetime.now()
+
+    start = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (for_day.year, for_day.month, for_day.day),
+                                       "%Y-%m-%d %H:%M:%S")
+    end = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
+                                     "%Y-%m-%d %H:%M:%S")
+    session = Session()
+    try:
+        resp = session.query(ViolationStatistics).filter(ViolationStatistics.start_date == start).one_or_none()
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        # считаем статистику
+        to_check = 0
+        confirmed = 0
+        closed = 0
+
+        # считаем на проверку
+        # считаем подтвержденные проблемы
+        # считаем закрытые
+
+        if resp:
+            try:
+                resp.end_date = for_day
+                resp.to_check = to_check
+                resp.confirmed = confirmed
+                resp.closed = closed
+                session.commit()
+            except Exception as e:
+                print str(e)
+                raise e
+        else:
+            try:
+                new = ViolationStatistics()
+                new.start_date = start
+                new.end_date = for_day
+                new.to_check = to_check
+                new.confirmed = confirmed
+                new.closed = closed
+                session.add(new)
+                session.commit()
+            except Exception as e:
+                print str(e)
+                raise e
+
+    finally:
+        session.close()
+
+
 class CauseTag(Base):
 
     __tablename__ = 'cause_tags'
