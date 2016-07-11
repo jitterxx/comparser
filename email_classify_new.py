@@ -126,6 +126,14 @@ else:
                     if args.debug:
                         print "email_classify_new(). Ошибка создания Задачи. %s" % str(e)
                 """
+    # обновляем статистику после классификации
+    if clear:
+        if args.debug:
+            print "Email_classify_new(). Считаем дневную статистику по основным показателям."
+        try:
+            CPO.violation_stat_daily()
+        except Exception as e:
+            print "email_classify_new(). Ошибка вычисления статистики. ", str(e)
 
 finally:
     session.close()

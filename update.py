@@ -107,6 +107,8 @@ def update_14():
 # 15
 sql_update_15 = "ALTER TABLE `train_api` ADD COLUMN `check_date` DATETIME NULL DEFAULT NULL AFTER `date`;"
 
+# 16
+sql_update_16 = "ALTER TABLE `tasks` ADD COLUMN `last_status_change` DATETIME NULL AFTER `status`;"
 
 # Создаем новые таблицы
 CPO.create_tables()
@@ -233,6 +235,13 @@ else:
 
 try:
     result = connection.execute(sql_update_15)
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
+
+try:
+    result = connection.execute(sql_update_16)
 except Exception as e:
     print e.message, e.args
 else:

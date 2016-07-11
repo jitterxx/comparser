@@ -2198,6 +2198,7 @@ class Task(Base):
     message_id = sqlalchemy.Column(sqlalchemy.String(256), default="")  # Message ID
     comment = sqlalchemy.Column(sqlalchemy.TEXT, default="")
     status = Column(Integer, default=0)
+    last_status_change = Column(sqlalchemy.DATETIME(), default=datetime.datetime.now())
 
 
 def get_tasks(msg_id_list=None, task_status=None):
@@ -2372,13 +2373,15 @@ def change_task_status(api_uuid=None, status=None, message=None, task_uuid=None)
 
                 else:
                     # Записываем сообщение и новый статус задачи
-                    cur_time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M")
+                    now = datetime.datetime.now()
+                    cur_time = now.strftime("%d-%m-%Y %H:%M")
                     message = "<p><i class='task_comment_time'>%s</i> %s</p>" % (cur_time, str(message))
                     if task.comment:
                         task.comment = str(task.comment) + str(message)
                     else:
                         task.comment = str(message)
                     task.status = int(status)
+                    task.last_status_change = now
 
                     session.commit()
                 finally:
@@ -2387,6 +2390,7 @@ def change_task_status(api_uuid=None, status=None, message=None, task_uuid=None)
         session = Session()
         try:
             # получаем задачу по TASK_UUID
+            now = datetime.datetime.now()
             task = session.query(Task).filter(Task.uuid == task_uuid).one()
         except sqlalchemy.orm.exc.NoResultFound as e:
             print "change_task_status. Задача с UUID %s не найдена. " % task_uuid
@@ -2401,7 +2405,7 @@ def change_task_status(api_uuid=None, status=None, message=None, task_uuid=None)
         else:
             # Записываем сообщение и новый статус задачи
             task.status = int(status)
-
+            task.last_status_change = now
             session.commit()
         finally:
             session.close()
@@ -2791,20 +2795,42 @@ class ViolationStatistics(Base):
 def get_violation_stat(start_date=None, end_date=None):
 
     session = Session()
+    start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
+                                            (start_date.year, start_date.month, start_date.day),
+                                            "%Y-%m-%d %H:%M:%S")
+    if isinstance(end_date, int):
+        delta_n = datetime.delta(days=end_date)
+        end_date = start_date - delta_n
+        end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end_date.year, end_date.month, end_date.day),
+                                              "%Y-%m-%d %H:%M:%S")
+    elif isinstance(end_date, datetime.datetime):
+        end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end_date.year, end_date.month, end_date.day),
+                                              "%Y-%m-%d %H:%M:%S")
+    else:
+        delta_n = datetime.delta(days=7)
+        end_date = start_date - delta_n
+        end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end_date.year, end_date.month, end_date.day),
+                                              "%Y-%m-%d %H:%M:%S")
+
+    print "get_violation_stat()"
+    print start_date, end_date
+
     try:
-        resp = session.query(ViolationStatistics).all()
+        resp = session.query(ViolationStatistics).\
+            filter(and_(ViolationStatistics.start_date >= start_date,
+                        ViolationStatistics.end_date <= end_date)).\
+            order_by(ViolationStatistics.start_date.asc()).all()
     except Exception as e:
-        print str(e)
+        print "get_violation_stat(). Ошибка чтения статистики из базы.", str(e)
         raise e
     else:
         result = resp
-        print resp
         return result
     finally:
         session.close()
 
 
-def violation_stat_calculate():
+def violation_stat_daily():
     """
     Расчет статистики для оперативного центра (график динамики основых показателей)
      - ситуаций на проверку
@@ -2822,16 +2848,21 @@ def violation_stat_calculate():
     # Если нет, создаем новую запись. Енд_дате = сегодняшнее число и время запуска
 
     for_day = datetime.datetime.now()
+    # for_day = datetime.datetime.strptime("%s-%s-%s 22:59:59" % (2016, 03, 04),
+    #                                   "%Y-%m-%d %H:%M:%S")
 
     start = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (for_day.year, for_day.month, for_day.day),
                                        "%Y-%m-%d %H:%M:%S")
     end = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
                                      "%Y-%m-%d %H:%M:%S")
+
     session = Session()
     try:
-        resp = session.query(ViolationStatistics).filter(ViolationStatistics.start_date == start).one_or_none()
+        stat_rec = session.query(ViolationStatistics).filter(and_(ViolationStatistics.start_date >= start,
+                                                                  ViolationStatistics.end_date <= end)).one_or_none()
+        print stat_rec
     except Exception as e:
-        print str(e)
+        print "CPO.violation_stat_daily(). Ошибка получения записи с данными за день: %s. " % start, str(e)
         raise e
     else:
         # считаем статистику
@@ -2840,18 +2871,58 @@ def violation_stat_calculate():
         closed = 0
 
         # считаем на проверку
-        # считаем подтвержденные проблемы
-        # считаем закрытые
+        try:
+            resp = session.query(func.count(TrainAPIRecords.user_action)).\
+                filter(and_(TrainAPIRecords.date >= start,
+                            TrainAPIRecords.date <= end,
+                            TrainAPIRecords.user_action == 0,
+                            TrainAPIRecords.auto_cat.in_(WARNING_CATEGORY))).all()
+        except Exception as e:
+            print "CPO.violation_stat_daily(). Ошибка вычисления to_check. ", str(e)
+            raise e
+        else:
+            to_check = resp[0][0]
+            print "CPO.violation_stat_daily(). Ситуаций на проверку:", to_check
 
-        if resp:
+        # считаем подтвержденные проблемы
+        try:
+            resp = session.query(func.count(TrainAPIRecords.user_action)).\
+                filter(and_(TrainAPIRecords.check_date >= start,
+                            TrainAPIRecords.check_date <= end,
+                            TrainAPIRecords.user_action == 1,
+                            TrainAPIRecords.user_answer.in_(WARNING_CATEGORY))).all()
+        except Exception as e:
+            print "CPO.violation_stat_daily(). Ошибка вычисления confirmed. ", str(e)
+            raise e
+        else:
+            confirmed = resp[0][0]
+            print "CPO.violation_stat_daily(). Подтвержденных проблем :", confirmed
+
+        # считаем закрытые
+        try:
+            resp = session.query(func.count(Task.uuid)).\
+                outerjoin(TrainAPIRecords, TrainAPIRecords.message_id == Task.message_id).\
+                filter(and_(Task.status == TASK_CLOSED_STATUS,
+                            Task.last_status_change >= start,
+                            Task.last_status_change <= end,
+                            TrainAPIRecords.user_action == 1,
+                            TrainAPIRecords.user_answer.in_(WARNING_CATEGORY))).all()
+        except Exception as e:
+            print "CPO.violation_stat_daily(). Ошибка вычисления closed. ", str(e)
+            raise e
+        else:
+            closed = resp[0][0]
+            print "CPO.violation_stat_daily(). Закрытых проблем :", closed
+
+        if stat_rec:
             try:
-                resp.end_date = for_day
-                resp.to_check = to_check
-                resp.confirmed = confirmed
-                resp.closed = closed
+                stat_rec.end_date = for_day
+                stat_rec.to_check = to_check
+                stat_rec.confirmed = confirmed
+                stat_rec.closed = closed
                 session.commit()
             except Exception as e:
-                print str(e)
+                print "CPO.violation_stat_daily(). Ошибка обновления статистики.", str(e)
                 raise e
         else:
             try:
@@ -2864,7 +2935,7 @@ def violation_stat_calculate():
                 session.add(new)
                 session.commit()
             except Exception as e:
-                print str(e)
+                print "CPO.violation_stat_daily(). Ошибка записи статистики. ", str(e)
                 raise e
 
     finally:
@@ -3139,7 +3210,7 @@ def add_msg_members(msg_id_list=None):
                     raise e
 
 
-def get_stat_for_management(start=None, end=None):
+def get_stat_for_management(start=None, end=None, users=None, members=None, tags=None):
 
     start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
                                             (start.year, start.month, start.day),
@@ -3147,81 +3218,14 @@ def get_stat_for_management(start=None, end=None):
     end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end.year, end.month, end.day),
                                           "%Y-%m-%d %H:%M:%S")
 
-    tags = get_tags()
+    if not tags:
+        tags = get_tags()
+    if not users:
+        users = get_all_users_dict()
+    if not members:
+        members = get_all_dialog_members()
 
     session = Session()
-
-    """
-    try:
-        # Количество срабатываний системы у диалогов с участием пользователя
-        # Количество подозрительных ситуаций на сотруднике (участнике переписки) за период
-        resp = session.query(WarnTaskStatistics.user_uuid.label("user_uuid"),
-                             func.count(WarnTaskStatistics.user_uuid).label("count")).\
-            filter(and_(WarnTaskStatistics.date >= start_date,
-                        WarnTaskStatistics.date <= end_date)).\
-            group_by(WarnTaskStatistics.user_uuid).all()
-
-    except Exception as e:
-        print str(e)
-        raise(e)
-
-    print "Количество подозрительных ситуаций на сотруднике (участнике переписки) за период - %s по %s :" %\
-          (start_date, end_date)
-    for one in resp:
-        print one.user_uuid, " : ", one.count
-
-    try:
-        # Кол-во задач из подозрительных ситуаций зафиксированных на сотруднике
-        # (где сотрудник участник проблемной ситуации) с разбивкой по причинам, по категориям, по статусу
-        my_filter = and_(WarnTaskStatistics.date >= start_date,
-                         WarnTaskStatistics.date <= end_date,
-                         WarnTaskStatistics.check_cat.in_(WARNING_CATEGORY))
-
-        resp = session.query(WarnTaskStatistics.user_uuid.label("user_uuid"),
-                             func.count(WarnTaskStatistics.user_uuid).label("count")).\
-            filter(my_filter).\
-            group_by(WarnTaskStatistics.user_uuid).all()
-
-        resp_task_status = session.query(WarnTaskStatistics.user_uuid, Task.status, func.count(Task.status)).\
-            outerjoin(Task, WarnTaskStatistics.msg_id == Task.message_id).\
-            filter(my_filter).\
-            group_by(WarnTaskStatistics.user_uuid, Task.status).all()
-
-        # print resp_task_status
-
-        resp_task_cause = session.query(WarnTaskStatistics.user_uuid.label("user_uuid"),
-                                        Task.status.label("status"),
-                                        TaskCauseTag.tag_id.label("tag_id"),
-                                        func.count(TaskCauseTag.task_uuid).label("count")).\
-            outerjoin(Task, WarnTaskStatistics.msg_id == Task.message_id).\
-            outerjoin(TaskCauseTag, Task.uuid == TaskCauseTag.task_uuid).\
-            filter(my_filter).\
-            group_by(WarnTaskStatistics.user_uuid, Task.status, TaskCauseTag.tag_id).all()
-
-        print resp_task_cause
-        print "\n"
-
-    except Exception as e:
-        print str(e)
-        raise(e)
-
-    print "Кол-во задач из подозрительных ситуаций зафиксированных на сотруднике за период - %s по %s :" %\
-          (start_date, end_date)
-    for one in resp:
-        print one.user_uuid, " : ", one.count
-        print "\tИз них со статусом:"
-        for user, status, count in resp_task_status:
-            if user == one.user_uuid:
-                print "\t\t", TASK_STATUS[status], " : ", count
-                print "\t\t Из них с тегом:"
-                for row in resp_task_cause:
-                    if row.user_uuid == one.user_uuid and row.status == status and row.tag_id:
-                        print "\t\t\t", tags.get(row.tag_id).tag, " : ", row.count
-                    if not row.tag_id:
-                        print "\t\t\tбез тега", " : ", row.count
-    """
-
-    users = get_all_users(sort="surname")
 
     # Количество не проверенных диалогов после срабатывания системы, по ответственным
     try:
@@ -3232,7 +3236,7 @@ def get_stat_for_management(start=None, end=None):
                         TrainAPIRecords.auto_cat.in_(WARNING_CATEGORY))).all()
     except Exception as e:
         print str(e)
-        raise(e)
+        raise e
     else:
         non_checked_by_users = resp[0][0]
         print "Подозрительных (не проверенных) :", non_checked_by_users
@@ -3262,9 +3266,14 @@ def get_stat_for_management(start=None, end=None):
             group_by(Task.status, Task.responsible).all()
     except Exception as e:
         print str(e)
-        raise(e)
+        raise e
     else:
         tasks_by_responsible = dict()
+        for st in range(0, len(TASK_STATUS)):
+            tasks_by_responsible[st] = list()
+            for t in users.keys():
+                tasks_by_responsible[st].append([t, 0])
+
         print "Задачи с разбивкой по статусу и ответственным :", resp
         for status, uuid, count in resp:
             if status not in tasks_by_responsible.keys():
@@ -3319,6 +3328,11 @@ def get_stat_for_management(start=None, end=None):
         raise e
     else:
         tasks_by_empl = dict()
+        for st in range(0, len(TASK_STATUS)):
+            tasks_by_empl[st] = list()
+            for t in members.keys():
+                tasks_by_empl[st].append([t, 0])
+
         print "Кол-во задач по диалогам с участием сотрудников с разбивкой по статусу :", resp
         for status, tagid, count in resp:
             if tagid:
@@ -3345,6 +3359,11 @@ def get_stat_for_management(start=None, end=None):
         raise e
     else:
         tasks_by_client = dict()
+        for st in range(0, len(TASK_STATUS)):
+            tasks_by_client[st] = list()
+            for t in members.keys():
+                tasks_by_client[st].append([t, 0])
+
         print "Кол-во задач по диалогам с участием клиентов с разбивкой по статусу :", resp
         for status, tagid, count in resp:
             if tagid:
