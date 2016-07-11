@@ -116,11 +116,19 @@ def notify():
                     msg.notified = 1
                     session.commit()
                 except Exception as e:
-                    print "Ошибка при отметке уведомления для сообщения. Ошибка: ", str(e)
+                    print "Notificater(). Ошибка при отметке уведомления для сообщения. Ошибка: ", str(e)
                     raise e
 
             print "#" * 30
         else:
+            # Сообщение не из WARNING_CATEGORY помечаем как с отправленным уведомлением
+            try:
+                msg.notified = 1
+                session.commit()
+            except Exception as e:
+                print "Notificater(). Ошибка при отметке уведомления как отправленного. Ошибка: ", str(e)
+                raise e
+
             print "Notificater(). Уведомление не отправлено."
             print "#" * 30
 
