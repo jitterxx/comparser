@@ -17,9 +17,7 @@ import uuid
 
 #CPO.create_tables()
 
-#CPO.add_warn_task_stat(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
-#                       end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
+#CPO.get_stat_for_management(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
+#                            end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
 
-
-CPO.get_stat_for_management(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
-                            end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
+CPO.violation_stat_daily(for_day="02-07-2016")

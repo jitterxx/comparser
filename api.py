@@ -490,6 +490,9 @@ class Settings(object):
             # получаем список уведомлений
             watch_list = CPO.get_watch_list()
 
+            # Список участников даилогов
+            members = CPO.get_all_dialog_members(disabled=True)
+
         except Exception as e:
             print "ControlCenter.Settings.Administration(). Ошибка: %s." % str(e)
             return ShowNotification().index("Произошла внутренняя ошибка.")
@@ -499,7 +502,8 @@ class Settings(object):
 
             tmpl = self.lookup.get_template("control_center_settings_administration.html")
             return tmpl.render(session_context=cherrypy.session['session_context'], users=users,
-                               categories=categories, user_status=CPO.USER_STATUS, watch_list=watch_list)
+                               categories=categories, user_status=CPO.USER_STATUS, watch_list=watch_list,
+                               members=members, exceptions=CPO.EXCEPTION_EMAIL)
 
     @cherrypy.expose
     @require(member_of("admin"))

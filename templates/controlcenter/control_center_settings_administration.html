@@ -1,16 +1,59 @@
-<%inherit file="control_center_base.html"/>
+<%inherit file="control_center_base_new.html"/>
 
 <%block name="title">
   <title>Панель управления - Настройки</title>
 </%block>
 
 
-<%block name="navigation">
-<div id="navbar" class="navbar-collapse collapse">
-    <ul class="nav navbar-nav navbar-right navbar-style">
-        <li><a href="/control_center">На главную</a></li>
+<%block name="navigation_side">
+<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
+    <ul class="nav menu">
+        <li class="active">
+            <a href="index.html">
+                <svg class="glyph stroked gear"><use xlink:href="#stroked-gear"/></svg>
+                Администрирование
+            </a>
+        </li>
+        <!--
+        <li><a href="widgets.html"><svg class="glyph stroked calendar"><use xlink:href="#stroked-calendar"></use></svg> Widgets</a></li>
+        <li><a href="charts.html"><svg class="glyph stroked line-graph"><use xlink:href="#stroked-line-graph"></use></svg> Charts</a></li>
+        <li><a href="tables.html"><svg class="glyph stroked table"><use xlink:href="#stroked-table"></use></svg> Tables</a></li>
+        <li><a href="forms.html"><svg class="glyph stroked pencil"><use xlink:href="#stroked-pencil"></use></svg> Forms</a></li>
+        <li><a href="panels.html"><svg class="glyph stroked app-window"><use xlink:href="#stroked-app-window"></use></svg> Alerts &amp; Panels</a></li>
+        <li><a href="icons.html"><svg class="glyph stroked star"><use xlink:href="#stroked-star"></use></svg> Icons</a></li>
+        <li class="parent ">
+            <a href="#">
+                <span data-toggle="collapse" href="#sub-item-1"><svg class="glyph stroked chevron-down"><use xlink:href="#stroked-chevron-down"></use></svg></span> Dropdown
+            </a>
+            <ul class="children collapse" id="sub-item-1">
+                <li>
+                    <a class="" href="#">
+                        <svg class="glyph stroked chevron-right"><use xlink:href="#stroked-chevron-right"></use></svg> Sub Item 1
+                    </a>
+                </li>
+                <li>
+                    <a class="" href="#">
+                        <svg class="glyph stroked chevron-right"><use xlink:href="#stroked-chevron-right"></use></svg> Sub Item 2
+                    </a>
+                </li>
+                <li>
+                    <a class="" href="#">
+                        <svg class="glyph stroked chevron-right"><use xlink:href="#stroked-chevron-right"></use></svg> Sub Item 3
+                    </a>
+                </li>
+            </ul>
+        </li>
+        -->
+        <li role="presentation" class="divider"></li>
+        <li>
+            <a href="/control_center">
+                <svg class="glyph stroked arrow left"><use xlink:href="#stroked-arrow-left"/></svg>
+                Назад
+            </a>
+        </li>
     </ul>
-</div>
+
+</div><!--/.sidebar-->
 </%block>
 
 <%block name="base">
@@ -130,10 +173,91 @@
 
 <div class="row">
     <div class="col-sm-12 col-md-12" align="left">
+        <h2>Управление участниками диалогов</h2>
+        <p>
+            Участники диалогов со стороны компании и клиентов.
+        </p>
+        <p>
+            Система использует эти данные в операционном центре и при расчете статистики.
+        </p>
+        <div style="margin-bottom: 1em;">
+            <a href="new_dialog_member?from_url=/control_center/settings/administration">
+                <i class="fa fa-plus-circle fa-2x"></i>
+            </a>
+        </div>
+        <h4>Сотрудники</h4>
+        <table class="table table-condensed table-hover" border="0">
+            %for member in members.values():
+            %if member.type == 0:
+            <tr align="center">
+                <td width="20%">${member.name} ${member.surname}</td>
+                <td width="10%">${member.uuid}</td>
+                <td width="10%">${member.emails}</td>
+                <td width="5%">${member.phone}</td>
+                <td width="10%">
+                    <a href="edit_dialog_member?uuid=${member.uuid}">
+                        <i class="fa fa-pencil"></i>
+                    </a>
+                </td>
+                <td></td>
+            </tr>
+            %endif
+            %endfor
+        </table>
+
+        <h4>Клиенты</h4>
+        <table class="table table-condensed table-hover" border="0">
+            %for member in members.values():
+            %if member.type == 1:
+            <tr align="center">
+                <td width="20%">${member.name} ${member.surname}</td>
+                <td width="10%">${member.uuid}</td>
+                <td width="10%">${member.emails}</td>
+                <td width="5%">${member.phone}</td>
+                <td width="10%">
+                    <a href="edit_dialog_member?uuid=${member.uuid}">
+                        <i class="fa fa-pencil"></i>
+                    </a>
+                </td>
+                <td></td>
+            </tr>
+            %endif
+            %endfor
+        </table>
+
+
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-6 col-lg-6" align="left">
         <h2>Управление исключениями</h2>
         <p>
             Сообщения у которых указанные адреса встретятся в полях От, Кому, Копия не будут обрабатываться.
         </p>
+        <p>
+            Звонки с указанными телефонами обрабатываться не будут.
+        </p>
+        <div style="margin-bottom: 1em;">
+            <a href="new_exception?from_url=/control_center/settings/administration">
+                <i class="fa fa-plus-circle fa-2x"></i>
+            </a>
+        </div>
+
+        <table class="table table-condensed table-hover" border="0">
+            %for one in exceptions.split("|"):
+            <tr align="center">
+                <td width="30%">${one}</td>
+                <td width="10%">
+                    <a href="delete_exception?uuid=${one}">
+                        <i class="fa fa-pencil"></i>
+                    </a>
+                </td>
+                <td></td>
+            </tr>
+            %endfor
+        </table>
     </div>
 </div>
 </%block>
