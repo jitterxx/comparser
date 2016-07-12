@@ -2795,22 +2795,26 @@ class ViolationStatistics(Base):
 def get_violation_stat(start_date=None, end_date=None):
 
     session = Session()
-    start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
-                                            (start_date.year, start_date.month, start_date.day),
-                                            "%Y-%m-%d %H:%M:%S")
-    if isinstance(end_date, int):
-        delta_n = datetime.delta(days=end_date)
-        end_date = start_date - delta_n
-        end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end_date.year, end_date.month, end_date.day),
-                                              "%Y-%m-%d %H:%M:%S")
-    elif isinstance(end_date, datetime.datetime):
-        end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end_date.year, end_date.month, end_date.day),
-                                              "%Y-%m-%d %H:%M:%S")
+    # start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
+    #                                        (start_date.year, start_date.month, start_date.day),
+    #                                        "%Y-%m-%d %H:%M:%S")
+
+    end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end_date.year, end_date.month, end_date.day),
+                                          "%Y-%m-%d %H:%M:%S")
+
+    if isinstance(start_date, int):
+        delta_n = datetime.timedelta(days=start_date)
+        start_date = end_date - delta_n
+        start_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (start_date.year, start_date.month, start_date.day),
+                                                "%Y-%m-%d %H:%M:%S")
+    elif isinstance(start_date, datetime.datetime):
+        start_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (start_date.year, start_date.month, start_date.day),
+                                                "%Y-%m-%d %H:%M:%S")
     else:
-        delta_n = datetime.delta(days=7)
-        end_date = start_date - delta_n
-        end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end_date.year, end_date.month, end_date.day),
-                                              "%Y-%m-%d %H:%M:%S")
+        delta_n = datetime.timedelta(days=7)
+        start_date = end_date - delta_n
+        start_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (start_date.year, start_date.month, start_date.day),
+                                                "%Y-%m-%d %H:%M:%S")
 
     print "get_violation_stat()"
     print start_date, end_date
@@ -2830,7 +2834,7 @@ def get_violation_stat(start_date=None, end_date=None):
         session.close()
 
 
-def violation_stat_daily():
+def violation_stat_daily(for_day=None):
     """
     Расчет статистики для оперативного центра (график динамики основых показателей)
      - ситуаций на проверку
@@ -2847,20 +2851,22 @@ def violation_stat_daily():
     # Если есть, перезаписываем
     # Если нет, создаем новую запись. Енд_дате = сегодняшнее число и время запуска
 
-    for_day = datetime.datetime.now()
-    # for_day = datetime.datetime.strptime("%s-%s-%s 22:59:59" % (2016, 03, 04),
-    #                                   "%Y-%m-%d %H:%M:%S")
+    if for_day:
+        for_day = datetime.datetime.strptime(for_day, "%d-%m-%Y")
+    else:
+        for_day = datetime.datetime.now()
 
     start = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (for_day.year, for_day.month, for_day.day),
                                        "%Y-%m-%d %H:%M:%S")
     end = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
                                      "%Y-%m-%d %H:%M:%S")
 
+    print "Dates: %s - %s" % (start, end)
+
     session = Session()
     try:
         stat_rec = session.query(ViolationStatistics).filter(and_(ViolationStatistics.start_date >= start,
                                                                   ViolationStatistics.end_date <= end)).one_or_none()
-        print stat_rec
     except Exception as e:
         print "CPO.violation_stat_daily(). Ошибка получения записи с данными за день: %s. " % start, str(e)
         raise e
@@ -2875,7 +2881,7 @@ def violation_stat_daily():
             resp = session.query(func.count(TrainAPIRecords.user_action)).\
                 filter(and_(TrainAPIRecords.date >= start,
                             TrainAPIRecords.date <= end,
-                            TrainAPIRecords.user_action == 0,
+                            # TrainAPIRecords.user_action == 0, #  Считаем сколько вообще было подозрительных в день
                             TrainAPIRecords.auto_cat.in_(WARNING_CATEGORY))).all()
         except Exception as e:
             print "CPO.violation_stat_daily(). Ошибка вычисления to_check. ", str(e)
@@ -3212,9 +3218,15 @@ def add_msg_members(msg_id_list=None):
 
 def get_stat_for_management(start=None, end=None, users=None, members=None, tags=None):
 
-    start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
-                                            (start.year, start.month, start.day),
-                                            "%Y-%m-%d %H:%M:%S")
+    if not start:
+        start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
+                                                (end.year, end.month, end.day),
+                                                "%Y-%m-%d %H:%M:%S")
+    else:
+        start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" %
+                                                (start.year, start.month, start.day),
+                                                "%Y-%m-%d %H:%M:%S")
+
     end_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (end.year, end.month, end.day),
                                           "%Y-%m-%d %H:%M:%S")
 

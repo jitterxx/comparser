@@ -10,7 +10,7 @@ db_host = "localhost"
 db_user = "conparser"
 db_pass = "Qazcde123"
 db_port = 3306
-db_name = "conparser"
+db_name = "vipct"
 
 TABLE_ARGS = {'mysql_engine': 'InnoDB',
               'mysql_charset': 'utf8',

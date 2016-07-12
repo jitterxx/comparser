@@ -149,62 +149,82 @@
         %>
 
 		<div class="row">
+			%if start_date:
 			<input hidden type="text" value="${start_date.strftime('%d-%m-%Y')}" id="start_date">
+			%else:
+			<input hidden type="text" value="${start_date}" id="start_date">
+			%endif
 			<input hidden type="text" value="${end_date.strftime('%d-%m-%Y')}" id="end_date">
 			<div class="col-xs-12 col-md-6 col-lg-3">
-				<div class="panel panel-orange panel-widget ">
-					<div class="row no-padding">
-						<div class="col-sm-3 col-lg-5 widget-left">
-							<i class="fa fa-question fa-4x"  aria-hidden="true"></i>
-						</div>
-						<div class="col-sm-9 col-lg-7 widget-right">
-							<div class="large">
-                                ${non_checked_by_users}
-                            </div>
-							<div class="text-muted">
-                                ситуаций на проверку
-                            </div>
-                        </div>
-					</div>
-				</div>
-				<div class="panel panel-red panel-widget">
-					<div class="row no-padding">
-						<div class="col-sm-3 col-lg-5 widget-left">
-							<i class="fa fa-exclamation-triangle fa-4x" aria-hidden="true"></i>
-						</div>
-						<div class="col-sm-9 col-lg-7 widget-right">
-							<div class="large">
-                                ${confirmed_problem}
-                            </div>
-							<div class="text-muted">
-                                проблем подтверждено
-                            </div>
+				<div class="well">
+					<p class="lead">
+						%if start_date:
+						Данные за период (${start_date.strftime("%d-%m-%Y")} - ${end_date.strftime("%d-%m-%Y")})
+						%else:
+						Текущая ситуация (${end_date.strftime("%d-%m-%Y")})
+						%endif
+					</p>
+
+					<div class="panel panel-orange panel-widget ">
+						<div class="row no-padding">
+							<div class="col-sm-3 col-lg-5 widget-left">
+								<i class="fa fa-question fa-4x"  aria-hidden="true"></i>
+							</div>
+							<div class="col-sm-9 col-lg-7 widget-right">
+								<div class="large">
+									${non_checked_by_users}
+								</div>
+								<div class="text-muted">
+									ситуаций на проверку
+								</div>
+							</div>
 						</div>
 					</div>
-				</div>
-				<div class="panel panel-teal panel-widget">
-					<div class="row no-padding">
-						<div class="col-sm-3 col-lg-5 widget-left">
-							<i class="fa fa-check fa-4x" aria-hidden="true"></i>
+					<div class="panel panel-red panel-widget">
+						<div class="row no-padding">
+							<div class="col-sm-3 col-lg-5 widget-left">
+								<i class="fa fa-exclamation-triangle fa-4x" aria-hidden="true"></i>
+							</div>
+							<div class="col-sm-9 col-lg-7 widget-right">
+								<div class="large">
+									${confirmed_problem}
+								</div>
+								<div class="text-muted">
+									проблем подтверждено
+								</div>
+							</div>
 						</div>
-						<div class="col-sm-9 col-lg-7 widget-right">
-							<div class="large">
-                                %if tasks_by_responsible.get(2):
-                                ${sum([r[1] for r in tasks_by_responsible.get(2)])}
-                                %else:
-                                0
-                                %endif
-                            </div>
-							<div class="text-muted">
-                                проблем закрыто
-                            </div>
+					</div>
+					<div class="panel panel-teal panel-widget">
+						<div class="row no-padding">
+							<div class="col-sm-3 col-lg-5 widget-left">
+								<i class="fa fa-check fa-4x" aria-hidden="true"></i>
+							</div>
+							<div class="col-sm-9 col-lg-7 widget-right">
+								<div class="large">
+									%if tasks_by_responsible.get(2):
+									${sum([r[1] for r in tasks_by_responsible.get(2)])}
+									%else:
+									0
+									%endif
+								</div>
+								<div class="text-muted">
+									проблем закрыто
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 			<div class="col-xs-12 col-md-6 col-lg-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading">Данные за неделю</div>
+                        <div class="panel-heading">
+							%if start_date:
+							Данные за период (${start_date.strftime("%d-%m-%Y")} - ${end_date.strftime("%d-%m-%Y")})
+							%else:
+							Данные за последние 7 дней
+							%endif
+						</div>
                         <div class="panel-body">
                             <div class="canvas-wrapper">
                                 <canvas class="main-chart" id="violation_stats" height="200" width="600"></canvas>

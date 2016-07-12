@@ -1034,12 +1034,15 @@ class Statistics(object):
         tmpl = self.lookup.get_template("control_center_stat_management2.html")
         context = cherrypy.session['session_context']
 
-        if start_date and end_date:
+        if start_date:
             start_date = datetime.datetime.strptime(start_date, "%d-%m-%Y")
+        else:
+            start_date = None
+
+        if end_date:
             end_date = datetime.datetime.strptime(end_date, "%d-%m-%Y")
         else:
             end_date = datetime.datetime.now()
-            start_date = datetime.datetime.now()
 
         try:
             users = CPO.get_all_users_dict()
@@ -1059,17 +1062,18 @@ class Statistics(object):
     def get_chart_data(self, chart_id=None, start_date=None, end_date=None, days=0):
 
         now = datetime.datetime.now()
-        if not start_date:
-            start_date = now
-        else:
-            start_date = datetime.datetime.strptime(start_date, "%d-%m-%Y")
-
-        if not end_date:
-            end_date = now
-        else:
-            end_date = datetime.datetime.strptime(end_date, "%d-%m-%Y")
 
         if chart_id != "violation_stats":
+            if start_date == "None" or not start_date:
+                start_date = now
+            else:
+                start_date = datetime.datetime.strptime(start_date, "%d-%m-%Y")
+
+            if not end_date or end_date == "None":
+                end_date = now
+            else:
+                end_date = datetime.datetime.strptime(end_date, "%d-%m-%Y")
+
             try:
                 users = CPO.get_all_users_dict()
                 members = CPO.get_all_dialog_members()
@@ -1143,7 +1147,18 @@ class Statistics(object):
                 if i == len(colors):
                     i = 0
         elif chart_id == "violation_stats":
+            if not start_date or start_date == "None":
+                start_date = 7
+            else:
+                start_date = datetime.datetime.strptime(start_date, "%d-%m-%Y")
+
+            if not end_date or end_date == "None":
+                end_date = now
+            else:
+                end_date = datetime.datetime.strptime(end_date, "%d-%m-%Y")
+
             try:
+                print "JS date: ", start_date, end_date
                 viol_stat = CPO.get_violation_stat(start_date=start_date, end_date=end_date)
 
             except Exception as e:
