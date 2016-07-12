@@ -1048,7 +1048,8 @@ class Statistics(object):
             users = CPO.get_all_users_dict()
             members = CPO.get_all_dialog_members()
             tags = CPO.get_tags()
-            stat_data = CPO.get_stat_for_management(start=start_date, end=end_date)
+            stat_data = CPO.get_stat_for_management(start=start_date, end=end_date,
+                                                    tags=tags, members=members, users=users)
         except Exception as e:
             print str(e)
             raise e

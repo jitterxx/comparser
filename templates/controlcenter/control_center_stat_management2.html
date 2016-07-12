@@ -220,9 +220,9 @@
                     <div class="panel panel-default">
                         <div class="panel-heading">
 							%if start_date:
-							Данные за период (${start_date.strftime("%d-%m-%Y")} - ${end_date.strftime("%d-%m-%Y")})
+							Динамика за период (${start_date.strftime("%d-%m-%Y")} - ${end_date.strftime("%d-%m-%Y")})
 							%else:
-							Данные за последние 7 дней
+							Динамика за последние 7 дней
 							%endif
 						</div>
                         <div class="panel-body">
@@ -238,7 +238,14 @@
         <div class="row">
             <div class="col-xs-12 col-md-6 col-lg-4">
                 <div class="panel panel-default">
-					<div class="panel-heading">Проблемы по причинам</div>
+					<div class="panel-heading">
+						Проблемы по причинам
+						%if start_date:
+						(${start_date.strftime("%d-%m-%Y")} - ${end_date.strftime("%d-%m-%Y")})
+						%else:
+						(${end_date.strftime("%d-%m-%Y")})
+						%endif
+					</div>
 					<div class="panel-body">
 						<div class="canvas-wrapper">
 							<canvas class="chart" id="problem_by_cause" ></canvas>
@@ -250,7 +257,14 @@
             </div>
             <div class="col-xs-12 col-md-6 col-lg-4">
                 <div class="panel panel-default">
-					<div class="panel-heading">Проблемы по сотрудникам</div>
+					<div class="panel-heading">
+						Проблемы по сотрудникам
+						%if start_date:
+						(${start_date.strftime("%d-%m-%Y")} - ${end_date.strftime("%d-%m-%Y")})
+						%else:
+						(${end_date.strftime("%d-%m-%Y")})
+						%endif
+					</div>
 					<div class="panel-body">
 						<div class="canvas-wrapper">
 							<canvas class="chart" id="problem_by_employee" ></canvas>
@@ -262,7 +276,14 @@
             </div>
             <div class="col-xs-12 col-md-6 col-lg-4">
                 <div class="panel panel-default">
-					<div class="panel-heading">Проблемы по клиентам</div>
+					<div class="panel-heading">
+						Проблемы по клиентам
+						%if start_date:
+						(${start_date.strftime("%d-%m-%Y")} - ${end_date.strftime("%d-%m-%Y")})
+						%else:
+						(${end_date.strftime("%d-%m-%Y")})
+						%endif
+					</div>
 					<div class="panel-body">
 						<div class="canvas-wrapper">
 							<canvas class="chart" id="problem_by_client" ></canvas>

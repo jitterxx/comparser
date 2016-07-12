@@ -2805,15 +2805,15 @@ def get_violation_stat(start_date=None, end_date=None):
     if isinstance(start_date, int):
         delta_n = datetime.timedelta(days=start_date)
         start_date = end_date - delta_n
-        start_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (start_date.year, start_date.month, start_date.day),
+        start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (start_date.year, start_date.month, start_date.day),
                                                 "%Y-%m-%d %H:%M:%S")
     elif isinstance(start_date, datetime.datetime):
-        start_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (start_date.year, start_date.month, start_date.day),
+        start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (start_date.year, start_date.month, start_date.day),
                                                 "%Y-%m-%d %H:%M:%S")
     else:
         delta_n = datetime.timedelta(days=7)
         start_date = end_date - delta_n
-        start_date = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (start_date.year, start_date.month, start_date.day),
+        start_date = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (start_date.year, start_date.month, start_date.day),
                                                 "%Y-%m-%d %H:%M:%S")
 
     print "get_violation_stat()"
