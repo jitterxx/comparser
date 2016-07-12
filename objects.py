@@ -3095,6 +3095,76 @@ class DialogMember(Base):
     phone = Column(sqlalchemy.String(256), default="")
 
 
+def create_dialog_member(name=None, surname=None, m_type=None, emails=None, phone=None):
+
+    emails = re.split(",|\s+", emails.lower())
+
+    phone = str.replace(phone, "+", "")
+    phone = str.replace(phone, "-", "")
+    phone = str.replace(phone, "(", "")
+    phone = str.replace(phone, ")", "")
+    phone = re.split(",|\s+", phone.lower())
+
+    # print "Emails: ", ":".join([p for p in emails if p]), "\n"
+    # print "Phones: ", ":".join([p for p in phone if p])
+
+    session = Session()
+    try:
+        new = DialogMember()
+        new.name = str(name)
+        new.surname = str(surname)
+        new.type = int(m_type)
+        new.emails = ":".join([p for p in emails if p])
+        new.phone = ":".join([p for p in phone if p])
+        session.add(new)
+        session.commit()
+    except Exception as e:
+        print ""
+        raise e
+    finally:
+        session.close()
+
+
+def update_dialog_member(member_uuid=None, name=None, surname=None, emails=None, phone=None, m_type=None):
+
+    emails = re.split(",|\s+", emails.lower())
+
+    phone = str.replace(phone, "+", "")
+    phone = str.replace(phone, "-", "")
+    phone = str.replace(phone, "(", "")
+    phone = str.replace(phone, ")", "")
+    phone = re.split(",|\s+", phone.lower())
+
+    print "Emails: ", ":".join([p for p in emails if p]), "\n"
+    print "Phones: ", ":".join([p for p in phone if p])
+
+    session = Session()
+    try:
+        resp = session.query(DialogMember).filter(DialogMember.uuid == member_uuid).one_or_none()
+    except Exception as e:
+        print "CPO.updare_dialog_member(). Ошибка при поиске для участника %s. %s" % (member_uuid, str(e))
+        raise e
+    else:
+        if resp:
+            try:
+                resp.name = str(name)
+                resp.surname = str(surname)
+                resp.type = int(m_type)
+                resp.emails = ":".join([p for p in emails if p])
+                resp.phone = ":".join([p for p in phone if p])
+                session.commit()
+            except Exception as e:
+                print ""
+                raise e
+    finally:
+        session.close()
+
+
+
+def change_dialog_member_type(member_uuid=None):
+    pass
+
+
 def get_all_dialog_members(disabled=None):
 
     session = Session()
@@ -3116,36 +3186,21 @@ def get_all_dialog_members(disabled=None):
         session.close()
 
 
-def get_dialog_members_list(user_uuid=None, is_admin=False):
+def get_dialog_members_list(member_uuid=None, is_admin=False):
 
-    if user_uuid:
-        """
+    if member_uuid:
 
         session = Session()
         try:
-            if is_admin:
-                resp = session.query(WatchMarker).all()
-            else:
-                resp = session.query(WatchMarker).filter(WatchMarker.user_uuid == user_uuid).all()
-        except sqlalchemy.orm.exc.NoResultFound as e:
-            print "CPO.get_watch_list(). Ничего не найдено для пользователя %s. %s" % (user_uuid, str(e))
-            return list()
+            resp = session.query(DialogMember).filter(DialogMember.uuid == member_uuid).one_or_none()
         except Exception as e:
-            print "CPO.get_watch_list(). Ошибка при поиске для пользователя %s. %s" % (user_uuid, str(e))
+            print "CPO.get_dialog_member_list(). Ошибка при поиске для участника %s. %s" % (member_uuid, str(e))
             raise e
         else:
-            result = list()
-            for one in resp:
-                result.append(one.client_marker)
-
-            # Убираем дубли
-            result = list(set(result))
-
-            return result
+            return resp
         finally:
             session.close()
-        """
-        pass
+
     else:
         # возвращаем словарь маркеров и привязанных к ним участников
         session = Session()

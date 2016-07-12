@@ -577,7 +577,6 @@ class Settings(object):
             return self.edit_user(user_uuid=user_uuid,
                                   message="Не указан логин или емайл или пароль или группа доступа.")
 
-
     @cherrypy.expose
     @require(member_of("admin"))
     def change_user_status(self, user_uuid=None):
@@ -638,6 +637,80 @@ class Settings(object):
         else:
             tmpl = self.lookup.get_template("control_center_new_watch_rec.html")
             return tmpl.render(session_context=cherrypy.session['session_context'], users=users, from_url=from_url)
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def new_dialog_member(self, message=None, from_url=None):
+        tmpl = self.lookup.get_template("control_center_new_dialog_member.html")
+        return tmpl.render(session_context=cherrypy.session['session_context'], message=message,
+                           dialog_member_type=CPO.DIALOG_MEMBER_TYPE)
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def create_dialog_member(self, m_type=None, name=None, surname=None, emails=None, phone=None):
+
+        if m_type and (emails or phone):
+            if not name:
+                name = str(CPO.DIALOG_MEMBER_TYPE.get(int(m_type))) + "-" + CPO.uuid.uuid4().__str__()[0:3]
+
+            if not surname:
+                surname = ""
+
+            try:
+                result = CPO.create_dialog_member(name=str(name), surname=str(surname),
+                                                  m_type=int(m_type), emails=str(emails), phone=str(phone))
+            except Exception as e:
+                print "API.ControlCenter.Settings.create_dialog_member(). Ошибка при создании участника. %s" % str(e)
+            else:
+                raise cherrypy.HTTPRedirect("administration")
+        else:
+            return self.new_dialog_member(message="Не указан тип, хотя бы один емайл или телефон.")
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def edit_dialog_member(self, member_uuid=None, message=None):
+        try:
+            member = CPO.get_dialog_members_list(member_uuid=str(member_uuid))
+        except Exception as e:
+            print "API.ControlCenter.Administration.%s. Ошибка при редактировании участника диалога. %s" % \
+                  (self.__name__, str(e))
+        else:
+            tmpl = self.lookup.get_template("control_center_edit_dialog_member.html")
+            return tmpl.render(session_context=cherrypy.session['session_context'], message=message,
+                               dialog_member_type=CPO.DIALOG_MEMBER_TYPE, member=member)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def save_dialog_member_data(self, member_uuid=None, m_type=None, name=None, surname=None, emails=None, phone=None):
+
+        if member_uuid and (emails or phone):
+
+            if not name:
+                name = str(CPO.DIALOG_MEMBER_TYPE.get(int(m_type))) + CPO.uuid.uuid4().__str__()[2]
+
+            try:
+                result = CPO.update_dialog_member(member_uuid=str(member_uuid), name=str(name), surname=str(surname),
+                                                  m_type=int(m_type), emails=str(emails), phone=str(phone))
+            except Exception as e:
+                print "API.ControlCenter.Settings.save_dialog_member_data(). Ошибка при изменении участника." \
+                      " %s" % str(e)
+            else:
+                raise cherrypy.HTTPRedirect("administration")
+        else:
+            return self.edit_dialog_member(member_uuid=member_uuid,
+                                           message="Не указан тип, емайл или телефон.")
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def change_dialog_member_status(self, member_uuid=None):
+        if member_uuid:
+            try:
+                CPO.change_dialog_member_type(member_uuid=member_uuid)
+            except Exception as e:
+                print "ControlCenter.Settings.Administration.change_dialog_member_status(). Ошибка: %s." % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+
+        raise cherrypy.HTTPRedirect("administration")
 
 
 class Dialogs(object):

@@ -9,7 +9,7 @@
 <div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
     <ul class="nav menu">
         <li class="active">
-            <a href="index.html">
+            <a href="">
                 <svg class="glyph stroked gear"><use xlink:href="#stroked-gear"/></svg>
                 Администрирование
             </a>
@@ -191,11 +191,10 @@
             %if member.type == 0:
             <tr align="center">
                 <td width="20%">${member.name} ${member.surname}</td>
-                <td width="10%">${member.uuid}</td>
-                <td width="10%">${member.emails}</td>
-                <td width="5%">${member.phone}</td>
+                <td width="10%">${member.emails.replace(":", "<br>")}</td>
+                <td width="5%">${member.phone.replace(":", "<br>")}</td>
                 <td width="10%">
-                    <a href="edit_dialog_member?uuid=${member.uuid}">
+                    <a href="edit_dialog_member?member_uuid=${member.uuid}">
                         <i class="fa fa-pencil"></i>
                     </a>
                 </td>
@@ -211,11 +210,10 @@
             %if member.type == 1:
             <tr align="center">
                 <td width="20%">${member.name} ${member.surname}</td>
-                <td width="10%">${member.uuid}</td>
-                <td width="10%">${member.emails}</td>
-                <td width="5%">${member.phone}</td>
+                <td width="10%">${member.emails.replace(":", "<br>")}</td>
+                <td width="5%">${member.phone.replace(":", "<br>")}</td>
                 <td width="10%">
-                    <a href="edit_dialog_member?uuid=${member.uuid}">
+                    <a href="edit_dialog_member?member_uuid=${member.uuid}">
                         <i class="fa fa-pencil"></i>
                     </a>
                 </td>

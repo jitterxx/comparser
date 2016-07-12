@@ -1,0 +1,94 @@
+<%inherit file="control_center_base_new.html"/>
+
+<%block name="title">
+  <title>Панель управления - Редактирование участника</title>
+</%block>
+
+<%block name="navigation_side">
+<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
+    <ul class="nav menu">
+        <li>
+            <a href="administration">
+                <svg class="glyph stroked arrow left"><use xlink:href="#stroked-arrow-left"/></svg>
+                Назад
+            </a>
+        </li>
+    </ul>
+
+</div><!--/.sidebar-->
+</%block>
+
+
+<%block name="base">
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left" style="margin-top: 3em;margin-bottom: 3em;">
+        %if message:
+        <p>${message}</p>
+        %endif
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-sm-12 col-md-12" align="left">
+        <form class="form-horizontal" method="post" action="save_dialog_member_data">
+            <input type="hidden" name="member_uuid" value="${member.uuid}">
+            <div class="form-group">
+                <label for="inputName" class="col-sm-2 control-label">Имя</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="inputName" name="name" value="${member.name}">
+               </div>
+            </div>
+            <div class="form-group">
+                <label for="inputSurname" class="col-sm-2 control-label">Фамилия</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="inputSurname" name="surname"  value="${member.surname}">
+               </div>
+            </div>
+            <div class="form-group">
+                <label for="m_type" class="col-sm-2 control-label">Тип</label>
+                <div class="col-sm-3" id="m_type">
+                    %for t in dialog_member_type.keys():
+                    <div class="radio" aria-required="true">
+                        <label>
+                            %if member.type == t:
+                            <input type="radio" name="m_type" id="m_type_${t}" value="${t}" checked>
+                            %else:
+                            <input type="radio" name="m_type" id="m_type_${t}" value="${t}">
+                            %endif
+                            ${dialog_member_type[t]}
+                        </label>
+                    </div>
+                    %endfor
+               </div>
+            </div>
+            <div class="form-group">
+                <label for="inputEmails" class="col-sm-2 control-label">Адреса электронной почты</label>
+                <div class="col-sm-3">
+                    <textarea class="form-control" id="inputEmails" name="emails" rows="3" cols="40">${member.emails.replace(":", "\r\n")}</textarea>
+               </div>
+            </div>
+            <div class="form-group">
+                <label for="inputPhone" class="col-sm-2 control-label">Телефоны</label>
+                <div class="col-sm-3">
+                    <textarea class="form-control" id="inputPhone" name="phone" rows="3" cols="40">${member.phone.replace(":", "\r\n")}</textarea>
+               </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Сохранить</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+
+</%block>
+
+
+
+
+<%block name="footer"/>
