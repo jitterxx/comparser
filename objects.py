@@ -47,8 +47,12 @@ def get_exception_list():
 
     :return:
     """
+    exc_list = list()
 
-    return EXCEPTION_EMAIL
+    for one in get_address_exceptions().values():
+        exc_list.append(one.address)
+
+    return "|".join(exc_list)
 
 
 # Текущая эпоха обучения. Значение должно быть считано из БД
@@ -1816,7 +1820,7 @@ def create_user(name=None, surname=None, login=None, password=None, email=None, 
 
 
 def update_user(user_uuid=None, name=None, surname=None, login=None, password=None, email=None,
-                access_groups=None, status=None):
+                access_groups=None, status=None, self_update=False):
 
     print user_uuid
     print login
@@ -1827,12 +1831,13 @@ def update_user(user_uuid=None, name=None, surname=None, login=None, password=No
     print access_groups
     print status
 
-    for one in access_groups:
-        if one not in ACCESS_GROUPS.keys():
-            exc = ValueError("Указана не существующая группа доступа < %s >." % one)
-            raise exc
+    if not self_update:
+        for one in access_groups:
+            if one not in ACCESS_GROUPS.keys():
+                exc = ValueError("Указана не существующая группа доступа < %s >." % one)
+                raise exc
 
-    print "Проверка групп пройдена."
+        print "Проверка групп пройдена."
 
     session = Session()
     try:
@@ -1842,15 +1847,21 @@ def update_user(user_uuid=None, name=None, surname=None, login=None, password=No
         raise e
 
     try:
-
-        new_user.name = str(name)
-        new_user.surname = str(surname)
-        new_user.login = str(login)
-        new_user.password = str(password)
-        new_user.email = str(email)
-        new_user.disabled = int(status)
-        print ",".join(access_groups)
-        new_user.access_groups = ",".join(access_groups)
+        if not self_update:
+            new_user.name = str(name)
+            new_user.surname = str(surname)
+            new_user.login = str(login)
+            new_user.password = str(password)
+            new_user.email = str(email)
+            new_user.disabled = int(status)
+            print ",".join(access_groups)
+            new_user.access_groups = ",".join(access_groups)
+        else:
+            new_user.name = str(name)
+            new_user.surname = str(surname)
+            new_user.login = str(login)
+            new_user.password = str(password)
+            new_user.email = str(email)
 
         session.commit()
 
@@ -3448,6 +3459,65 @@ def get_stat_for_management(start=None, end=None, users=None, members=None, tags
             tasks_by_client)
 
 
+class AddressException(Base):
+    __tablename__ = 'address_exception'
+    __table_args__ = TABLE_ARGS
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    address = Column(sqlalchemy.String(256), default="")
+
+
+def get_address_exceptions(exception_id=None):
+
+    session = Session()
+
+    try:
+        if exception_id:
+            resp = session.query(AddressException).order_by(AddressException.address.desc()).all()
+        else:
+            # все теги
+            resp = session.query(AddressException).order_by(AddressException.address.desc()).all()
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        result = dict()
+        for one in resp:
+            result[one.id] = one
+        return result
+    finally:
+        session.close()
+
+
+def create_exception(address=None):
+    session = Session()
+
+    try:
+        new = AddressException()
+        new.address = str(address)
+        session.add(new)
+        session.commit()
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        pass
+    finally:
+        session.close()
+
+
+def delete_exception(uuid=None):
+    session = Session()
+
+    try:
+        session.query(AddressException).\
+            filter(AddressException.id == int(uuid)).delete(synchronize_session=False)
+        session.commit()
+    except Exception as e:
+        print str(e)
+        raise e
+    finally:
+        session.close()
 
 
 

@@ -10,6 +10,7 @@ body {
 	background: #f1f4f7;
 	padding-top: 50px;
 	color: #5f6468;
+	font-size: 12pt;
 }
 
 p {
@@ -17,7 +18,7 @@ p {
 }
 
 a, a:hover, a:focus {
-	color: #30a5ff;
+	color: #0083dd;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -47,7 +48,7 @@ h3, h4 {
 }
 
 .color-gray { color: #5f6468; }
-.color-blue { color: #30a5ff; }
+.color-blue { color: #0083dd; }
 .color-teal { color: #1ebfae; }
 .color-orange { color: #ffb53e; }
 .color-red { color: #f9243f; }
@@ -478,7 +479,7 @@ a.bg-danger:hover {
 
 .nav-pills li.active a,
 .nav-pills li.active a:hover {
-	background: #30a5ff;
+	background: #0083dd;
 }
 
 .tab-content {
@@ -503,7 +504,7 @@ a.bg-danger:hover {
 	background: #555;
 	border: 1px solid #30a5ff;
 	outline: 0;
-	box-shadow: inset 0px 0px 0px 1px #30a5ff;
+	box-shadow: inset 0px 0px 0px 1px #0083dd;
 }
 
 .user-menu {
@@ -569,7 +570,7 @@ a.bg-danger:hover {
 .sidebar ul.nav .active > a:hover, .sidebar ul.nav li.parent a.active:hover,
 .sidebar ul.nav .active > a:focus, .sidebar ul.nav li.parent a.active:focus {
 	color: #fff;
-	background-color: #30a5ff;
+	background-color: #0083dd;
 }*/
 
 .sidebar ul.nav ul,
@@ -588,8 +589,14 @@ a.bg-danger:hover {
 .sidebar ul.nav ul.children li a {
 	height: 40px;
 	background: #f9f9f9;
-	color: #30a5ff!important;
+	color: #30a5ff;
 }
+
+.sidebar ul.nav ul.children li.active a {
+	background: #0083dd;
+	color: #fff;
+}
+
 
 .sidebar ul.nav li.current a {
 	background-color: #30a5ff;

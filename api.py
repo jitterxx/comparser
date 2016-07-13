@@ -465,18 +465,43 @@ class Settings(object):
 
     @cherrypy.expose
     @require(member_of("users"))
-    def index(self):
+    def index(self, message=None):
         # Показываем общие для админов и не админов настройки
         from_url = cherrypy.request.headers.get('Referer')
         tmpl = self.lookup.get_template("control_center_settings.html")
         is_admin = member_of("admin")()
 
         return tmpl.render(from_url=from_url, session_context=cherrypy.session['session_context'],
-                           is_admin=is_admin)
+                           is_admin=is_admin, access_groups=CPO.ACCESS_GROUPS, message=message)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def save_user_self_data(self, user_uuid=None, login=None, name=None, surname=None, email=None, password=None):
+        cur_user = cherrypy.session['session_context']["user"]
+        print "CUR user uuid:", cur_user.uuid
+        print "Reg user uuid:", user_uuid
+        if login and email and password and user_uuid == cur_user.uuid:
+            if not name:
+                name = email
+
+            if not surname:
+                surname = ""
+
+            try:
+                result = CPO.update_user(user_uuid=user_uuid, name=name, surname=surname, login=login, password=password,
+                                         email=email, self_update=True)
+            except Exception as e:
+                print "API.ControlCenter.Administration.save_user_self_data(). Ошибка при редактировании пользователя." \
+                      " %s" % str(e)
+            else:
+                return self.index(message="Чтобы изменения вступили в силу перелогиньтесь.")
+        else:
+            return self.index(message="Не указан логин, емайл или пароль.")
 
     @cherrypy.expose
     @require(member_of("admin"))
-    def administration(self):
+    def administration(self, message=None):
+        from_url = cherrypy.request.headers.get('Referer') or "/"
         # административные настройки: создание, редактирование пользователей портала(те кто получает уведомления).
         # Настройка списков уведомлений=доступа к сообщениям и событиям
         try:
@@ -493,6 +518,10 @@ class Settings(object):
             # Список участников даилогов
             members = CPO.get_all_dialog_members(disabled=True)
 
+            # Исключения
+            exceptions = CPO.get_address_exceptions()
+            print exceptions
+
         except Exception as e:
             print "ControlCenter.Settings.Administration(). Ошибка: %s." % str(e)
             return ShowNotification().index("Произошла внутренняя ошибка.")
@@ -503,7 +532,7 @@ class Settings(object):
             tmpl = self.lookup.get_template("control_center_settings_administration.html")
             return tmpl.render(session_context=cherrypy.session['session_context'], users=users,
                                categories=categories, user_status=CPO.USER_STATUS, watch_list=watch_list,
-                               members=members, exceptions=CPO.EXCEPTION_EMAIL)
+                               members=members, exceptions=exceptions, from_url=from_url)
 
     @cherrypy.expose
     @require(member_of("admin"))
@@ -551,7 +580,7 @@ class Settings(object):
 
 
     @cherrypy.expose
-    @require(member_of("users"))
+    @require(member_of("admin"))
     def save_user_data(self, user_uuid=None, login=None, name=None, surname=None, email=None, password=None,
                        access_groups=None, status=None):
 
@@ -711,6 +740,41 @@ class Settings(object):
                 return ShowNotification().index("Произошла внутренняя ошибка.")
 
         raise cherrypy.HTTPRedirect("administration")
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def new_exception(self, from_url=None, message=None):
+        tmpl = self.lookup.get_template("control_center_new_exception.html")
+        return tmpl.render(session_context=cherrypy.session['session_context'], message=message)
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def create_exception(self, address=None):
+        if address:
+
+            try:
+                result = CPO.create_exception(address=address)
+            except Exception as e:
+                print "API.ControlCenter.Administration.create_exception(). Ошибка при создании исключения. %s" % str(e)
+            else:
+                raise cherrypy.HTTPRedirect("administration")
+        else:
+            return self.new_exception(message="Не указана строка адреса для проверки.")
+
+    @cherrypy.expose
+    @require(member_of("admin"))
+    def delete_exception(self, uuid=None):
+        from_url = None
+        if uuid:
+            try:
+                CPO.delete_exception(uuid=int(uuid))
+            except Exception as e:
+                print "ControlCenter.Settings.Administration.delete_exception(). Ошибка: %s." % str(e)
+                return self.administration(message="Ошибка удаления исключения.")
+            else:
+                raise cherrypy.HTTPRedirect(from_url or "administration")
+
+        raise cherrypy.HTTPRedirect(from_url or "administration")
 
 
 class Dialogs(object):
@@ -1122,6 +1186,7 @@ class Statistics(object):
             end_date = datetime.datetime.now()
 
         try:
+            cur_day = datetime.datetime.now()
             users = CPO.get_all_users_dict()
             members = CPO.get_all_dialog_members()
             tags = CPO.get_tags()
@@ -1132,7 +1197,7 @@ class Statistics(object):
             raise e
 
         return tmpl.render(session_context=context, stat=stat_data, cat=CPO.GetCategory(),
-                           users=users, members=members, tags=tags,
+                           users=users, members=members, tags=tags, cur_day=cur_day,
                            start_date=start_date, end_date=end_date)
 
     @cherrypy.expose

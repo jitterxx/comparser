@@ -1,36 +1,120 @@
-<%inherit file="control_center_base.html"/>
+<%inherit file="control_center_base_new.html"/>
 
 <%block name="title">
   <title>Панель управления - Настройки</title>
 </%block>
 
 
-<%block name="navigation">
-<div id="navbar" class="navbar-collapse collapse">
-    <ul class="nav navbar-nav navbar-right navbar-style">
-        % if is_admin:
-        <li><a href="administration">Администрирование</a></li>
+<%block name="navigation_side">
+<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
+    <ul class="nav menu">
+        <li role="presentation"><br></li>
+        <li class="active">
+            <a href="/control_center/settings">
+                <svg class="glyph stroked gear"><use xlink:href="#stroked-gear"/></svg>
+                Личные
+            </a>
+        </li>
+        %if is_admin:
+        <li>
+            <a href="administration">
+                <svg class="glyph stroked gear"><use xlink:href="#stroked-gear"/></svg>
+                Настройка системы
+            </a>
+        </li>
         %endif
-        <li><a href="${from_url}">Назад</a></li>
+        <li role="presentation" class="divider"></li>
+        <li>
+            <a href="${from_url}">
+                <svg class="glyph stroked arrow left"><use xlink:href="#stroked-arrow-left"/></svg>
+                Назад
+            </a>
+        </li>
     </ul>
-</div>
+
+</div><!--/.sidebar-->
 </%block>
 
 <%block name="base">
+<%
+    user = session_context.get("user")
+%>
 
 <div class="row">
-    <div class="col-sm-12 col-md-12" align="left">
-        <div align="center">
-            ${session_context["user"].login}<br>
-            ${is_admin}
+    <div class="col-sm-12 col-md-12" align="left" style="margin-top: 3em;margin-bottom: 3em;">
+        %if message:
+        <div class="alert bg-warning" role="alert">
+            ${message}
         </div>
+        %endif
     </div>
 </div>
 
 <div class="row">
     <div class="col-sm-12 col-md-12" align="left">
-        <p>Редактирование имени, фамилии</p>
-        <p>Переключатель: показывать все сообщения или только с уведомлениями</p>
+        <form class="form-horizontal" method="post" action="save_user_self_data">
+            <input hidden name="user_uuid" value="${user.uuid}">
+            <div class="form-group">
+                <label for="inputName" class="col-sm-2 control-label">Имя</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="inputName" name="name"
+                    value="${user.name}">
+               </div>
+            </div>
+            <div class="form-group">
+                <label for="inputSurname" class="col-sm-2 control-label">Фамилия</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="inputSurname" name="surname"
+                           value="${user.surname}">
+               </div>
+            </div>
+            <div class="form-group">
+                <label for="inputLogin" class="col-sm-2 control-label">Логин*</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="inputLogin" name="login" required
+                    value="${user.login}">
+               </div>
+            </div>
+            <div class="form-group">
+                <label for="inputPassword3" class="col-sm-2 control-label">Пароль*</label>
+                <div class="col-sm-3">
+                    <input type="password" class="form-control" id="inputPassword3" name="password"
+                           value="${user.password}" required>
+               </div>
+            </div>
+            <div class="form-group">
+                <label for="inputEmail3" class="col-sm-2 control-label">Email*</label>
+                <div class="col-sm-3">
+                    <input type="email" class="form-control" id="inputEmail3" name="email" placeholder="Email" required
+                    value="${user.email}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="access" class="col-sm-2 control-label">Группы доступа</label>
+                <div class="col-sm-3" id="access">
+                    <%
+                        groups = user.access_groups.split(",")
+                    %>
+                    % for one in access_groups.keys():
+                    <div class="checkbox">
+                        <label>
+                            %if one in groups:
+                            <input type="checkbox" disabled checked>
+                            ${access_groups[one]}<br>
+                            %else:
+                            <input type="checkbox" disabled> ${access_groups[one]}<br>
+                            %endif
+                        </label>
+                    </div>
+                    %endfor
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Сохранить</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 

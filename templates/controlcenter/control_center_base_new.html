@@ -22,8 +22,9 @@
         <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
         <link href="/static/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
 
-        <!-- Custom styles for this template -->
+        <!-- Custom styles for this template
         <link href="/static/css/control-panel.css" rel="stylesheet">
+        -->
 
         <link rel="stylesheet" href="/static/css/font-awesome.min.css">
 
@@ -56,7 +57,11 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="#">Conversation <span>parser</span></a>
+				<a class="navbar-brand" href="/">
+                    <i class="fa fa-rocket fa-lg" aria-hidden="true" style="color: #0083dd;"></i>
+                    Conversation <span>parser</span>
+                </a>
+
 				<ul class="user-menu">
 					<li class="dropdown pull-right">
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -64,23 +69,16 @@
                                 <use xlink:href="#stroked-male-user"></use>
                             </svg>
                             ${session_context["user"].name}
+                            ${session_context["user"].surname}
                             <span class="caret"></span>
                         </a>
 						<ul class="dropdown-menu" role="menu">
 							<li>
-                                <a href="#">
-                                    <svg class="glyph stroked male-user">
-                                        <use xlink:href="#stroked-male-user"></use>
-                                    </svg>
-                                    Profile
-                                </a>
-                            </li>
-							<li>
-                                <a href="#">
+                                <a href="/control_center/settings">
                                     <svg class="glyph stroked gear">
                                         <use xlink:href="#stroked-gear"></use>
                                     </svg>
-                                    Settings
+                                    Настройки
                                 </a>
                             </li>
 							<li>
@@ -88,7 +86,7 @@
                                     <svg class="glyph stroked cancel">
                                         <use xlink:href="#stroked-cancel"></use>
                                     </svg>
-                                    Logout
+                                    Выход
                                 </a>
                             </li>
 						</ul>
@@ -103,6 +101,7 @@
     <%block name="navigation_side">
 	<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
 		<ul class="nav menu">
+            <li><br></li>
 			<li class="active"><a href="index.html"><svg class="glyph stroked dashboard-dial"><use xlink:href="#stroked-dashboard-dial"></use></svg> Dashboard</a></li>
 			<li><a href="widgets.html"><svg class="glyph stroked calendar"><use xlink:href="#stroked-calendar"></use></svg> Widgets</a></li>
 			<li><a href="charts.html"><svg class="glyph stroked line-graph"><use xlink:href="#stroked-line-graph"></use></svg> Charts</a></li>
@@ -181,17 +180,16 @@
 
       </div>
     </footer>
+
     </%block>
 
 	<script src="/static/js/jquery-1.11.1.min.js"></script>
 	<script src="/static/js/bootstrap.min.js"></script>
-	<script src="/static/js/chart.min.js"></script>
-	<script src="/static/js/chart-data.js"></script>
-	<script src="/static/js/easypiechart.js"></script>
-	<script src="/static/js/easypiechart-data.js"></script>
+    <script src="/static/js/notification.js"></script>
 	<script src="/static/js/bootstrap-datepicker.js"></script>
 	<script>
 		$('#calendar').datepicker({
+		    locale: 'ru'
 		});
 
 		!function ($) {
