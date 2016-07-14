@@ -1265,10 +1265,6 @@ class Root(object):
 
     api = API()
     control_center = ControlCenter()
-    # demo = Demo()
-    # connect = MainSite()
-    # test = Test()
-    panel = Panel()
 
     @cherrypy.expose
     @require(member_of("users"))
