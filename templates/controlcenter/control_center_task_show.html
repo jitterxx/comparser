@@ -1,10 +1,25 @@
-<%inherit file="control_center_base.html"/>
+<%inherit file="control_center_base_new.html"/>
 
 <%block name="title">
   <title>Панель управления - Задача</title>
 </%block>
 
 
+<%block name="navigation_side">
+
+<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
+    <ul class="nav menu">
+        <li role="presentation"><br></li>
+        <li role="presentation" class="divider"></li>
+        <li>
+            <a href="/control_center/tasks">
+                <svg class="glyph stroked arrow left"><use xlink:href="#stroked-arrow-left"/></svg>
+                Назад
+            </a>
+        </li>
+    </ul>
+</div><!--/.sidebar-->
+</%block>
 
 
 <%block name="base">
@@ -12,151 +27,185 @@
 <div class="row">
     <div class="col-sm-12 col-md-12" align="left">
         <div align="center">
-            <h2>Задача по событию</h2>
+            <h2>Проблема</h2>
         </div>
         <div class="panel panel-default">
-            <div class="panel-heading">
-                <p>
-                    <span class="attention">Статус: </span> ${task_status[task.status]}
-                    <span style="margin-left: 0.5em;"></span>
-                    <a data-toggle="collapse" href="#collapse_1"
-                       aria-expanded="false" aria-controls="collapse_1">
-                        <i class="fa fa-exchange"></i>
-                    </a>
-                </p>
-                <div class="collapse" id="collapse_1">
-                    <div class="well">
-                        %for one in range(0, len(task_status)):
-                        %if one == close_task_status and not task_cause:
-                        <a role="button" class="btn btn-default disabled" id="close_button"
-                           href="#" data-toggle="tooltip" data-placement="top"
-                           title="Задачу нельзя закрыть без указания тега.">
-                            ${task_status[one]}
-                        </a>
+            <div class="panel-body">
+                <table>
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"><strong>Подтверждена</strong></td>
+                        <td width="95%" align="left">
+                            %if api_data.user_action == 1 and api_data.check_date:
+                            ${api_data.check_date.strftime('%H:%M %d-%m-%Y')}
+                            %else:
+                            нет
+                            %endif
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"><strong>Дата</strong></td>
+                        <td width="95%" align="left">${msg.orig_date.strftime('%H:%M %d-%m-%Y')}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"><strong>От кого</strong></td>
+                        <td width="95%" align="left">${msg.sender_name} (${msg.sender})</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"><strong>Кому</strong></td>
+                        <td width="95%" align="left">${msg.recipients_name} (${msg.recipients})</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"><strong>Тема</strong></td>
+                        <td width="95%" align="left">${msg.message_title}</td>
+                    </tr>
+                    <tr height="3em;">
+                        <td colspan="2" style="padding-top: 2em;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            ${msg.message_text}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
 
-                        %else:
-                        <a role="button" class="btn btn-default"
-                           href="/control_center/tasks/change_task_status?task_uuid=${task.uuid}&status=${one}">
-                            ${task_status[one]}
-                        </a>
-                        %endif
-                        %endfor
-                    </div>
-                </div>
-                <p>
-                    <span class="attention">Ответственный: </span> ${responsible.name} ${responsible.surname}
-                    <span style="margin-left: 0.5em;"></span>
-                    <a data-toggle="collapse" href="#collapse_2"
-                       aria-expanded="false" aria-controls="collapse_2">
-                        <i class="fa fa-exchange"></i>
-                    </a>
-                </p>
-                <div class="collapse" id="collapse_2">
-                    <div class="well">
-                        %for one in users:
-                        <a role="button" class="btn btn-default"
-                           href="/control_center/tasks/change_task_responsible?
-                           task_uuid=${task.uuid}&responsible=${one.uuid}&from_url=">
-                            ${one.name} ${one.surname}
-                        </a>
-                        %endfor
-                    </div>
-                </div>
-                <p>
-                    <span class="attention">Причины: </span>
-                    %for cause in task_cause:
-                    <span class="label label-primary">
-                        ${cause_tags.get(cause).tag}
-                        <a style="color: #000000;"
-                           href="/control_center/tasks/remove_tag?task_uuid=${task.uuid}&tag_id=${cause}">
-                            <i class="fa fa-times"></i>
-                        </a>
-                    </span>
-                    &nbsp;
-                    %endfor
-                    <span style="margin-left: 0.5em;"></span>
-                    <a data-toggle="collapse" href="#collapse_4"
-                       aria-expanded="false" aria-controls="collapse_4">
-                        <i class="fa fa-plus"></i>
-                    </a>
-                </p>
-                <div class="collapse" id="collapse_4">
-                    <div class="well">
-                        %for cause in cause_tags.keys():
-                        %if cause not in task_cause:
-                        <span class="label label-default">
-                            ${cause_tags.get(cause).tag}
-                            <a style="color: #ffffff;"
-                               href="/control_center/tasks/add_tag?task_uuid=${task.uuid}&tag_id=${cause}">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <table class="">
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"><strong>Статус</strong></td>
+                        <td width="95%" align="left">
+                            ${task_status[task.status]}
+                            <span style="margin-left: 0.5em;"></span>
+                            <a data-toggle="collapse" href="#collapse_1_${task.uuid}"
+                               aria-expanded="false" aria-controls="collapse_1_${task.uuid}">
+                                <i class="fa fa-exchange"></i>
+                            </a>
+                            </td>
+                        </tr>
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"></td>
+                        <td width="95%" align="left">
+                            <div class="collapse" id="collapse_1_${task.uuid}">
+                                %for one in range(0, len(task_status)):
+                                %if one != task.status:
+                                <a role="button" class="btn btn-default"
+                                   href="/control_center/tasks/change_task_status?task_uuid=${task.uuid}&status=${one}&from_url=/control_center/task?task_uuid=${task.uuid}">
+                                    ${task_status[one]}
+                                </a>
+                                %endif
+                                %endfor
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"><strong>Ответственный</strong></td>
+                        <td width="95%" align="left">
+                            ${users.get(task.responsible).name} ${users.get(task.responsible).surname}
+                            <span style="margin-left: 0.5em;"></span>
+                            <a data-toggle="collapse" href="#collapse_2_${task.uuid}"
+                               aria-expanded="false" aria-controls="collapse_2_${task.uuid}">
+                                <i class="fa fa-exchange"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"></td>
+                        <td width="95%" align="left">
+                            <div class="collapse" id="collapse_2_${task.uuid}">
+                                %for one in users.values():
+                                %if one.uuid != task.responsible:
+                                <a role="button" class="btn btn-default"
+                                   href="/control_center/tasks/change_task_responsible?task_uuid=${task.uuid}&responsible=${one.uuid}&from_url=/control_center/task?task_uuid=${task.uuid}">
+                                    ${one.name} ${one.surname}
+                                </a>
+                                %endif
+                                %endfor
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"><strong>Причины</strong></td>
+                        <td width="95%" align="left">
+                            %for cause in task_cause:
+                            <span class="label label-primary">
+                                ${cause_tags.get(cause).tag}
+                                <a style="color: #000000;"
+                                   href="/control_center/tasks/remove_tag?task_uuid=${task.uuid}&tag_id=${cause}">
+                                    <i class="fa fa-times"></i>
+                                </a>
+                            </span>
+                            &nbsp;
+                            %endfor
+                            <span style="margin-left: 0.5em;"></span>
+                            <a data-toggle="collapse" href="#collapse_4"
+                               aria-expanded="false" aria-controls="collapse_4">
                                 <i class="fa fa-plus"></i>
                             </a>
-                        </span>
-                        &nbsp;
-                        %endif
-                        %endfor
-                        <div>&nbsp;</div>
-                        <form class="form" action="/control_center/tasks/new_tag">
-                            <input hidden name="task_uuid" value="${task.uuid}">
-                            <div class="from-group">
-                                <input type="text" size="80" name="tag">
-                                <button class="btn btn-default" type="submit">Добавить тег</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"></td>
+                        <td width="95%" align="left">
+                            <div class="collapse" id="collapse_4">
+                                %for cause in cause_tags.keys():
+                                %if cause not in task_cause:
+                                <span class="label label-default">
+                                    ${cause_tags.get(cause).tag}
+                                    <a style="color: #ffffff;"
+                                       href="/control_center/tasks/add_tag?task_uuid=${task.uuid}&tag_id=${cause}">
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                </span>
+                                &nbsp;
+                                %endif
+                                %endfor
+                                <div>&nbsp;</div>
+                                <form class="form" action="/control_center/tasks/new_tag">
+                                    <input hidden name="task_uuid" value="${task.uuid}">
+                                    <div class="from-group">
+                                        <input type="text" size="80" name="tag">
+                                        <button class="btn btn-default" type="submit">Добавить тег</button>
+                                    </div>
+                                </form>
                             </div>
-
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="panel-heading">
-                <p>
-                    <span class="attention">Комментарии</span>
-                    <span style="margin-left: 0.5em;"></span>
-                    <a data-toggle="collapse" href="#collapse_3"
-                       aria-expanded="false" aria-controls="collapse_3">
-                        <i class="fa fa-plus"></i>
-                    </a>
-                </p>
-                <div class="collapse" id="collapse_3">
-                    <div class="well">
-                        <form class="form" action="/control_center/tasks/add_task_comment">
-                            <input hidden name="task_uuid" value="${task.uuid}">
-                            <div class="from-group">
-                                <textarea size="3" cols="100" name="comment"></textarea>
+                        </td>
+                    </tr>
+                    <tr  style="border-bottom: 1px solid #ccc;">
+                        <td style="padding: 5px;" width="5%" align="right"><strong>Комментарии</strong></td>
+                        <td width="95%" align="left">
+                            <a data-toggle="collapse" href="#collapse_3"
+                               aria-expanded="false" aria-controls="collapse_3">
+                                <i class="fa fa-plus"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" width="5%" align="right"></td>
+                        <td width="95%" align="left">
+                            <div class="collapse" id="collapse_3">
+                                <form class="form" action="/control_center/tasks/add_task_comment">
+                                    <br>
+                                    <input hidden name="task_uuid" value="${task.uuid}">
+                                    <div class="from-group">
+                                        <textarea size="3" cols="100" name="comment"></textarea>
+                                    </div>
+                                    <button class="btn btn-default" type="submit">Добавить комментарий</button>
+                                    <br>
+                                </form>
                             </div>
-                            <button class="btn btn-default" type="submit">Добавить комментарий</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="panel-body">
-                ${task.comment}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" colspan="2" align="left">
+                            ${task.comment}
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
-        <div class="panel panel-default">
-            <div class="panel-heading" align="center">
-                <p align="center"><h3>Сообщение</h3></p>
-            </div>
-            <div class="panel-heading">
-                %if api_data.user_answer != "":
-                <p><span class="attention">Категория:</span> ${category[api_data.user_answer].category}</p>
-                %else:
-                <%
-                    auto_cat = None
-                    auto_cat = str(api_data.category).split("-", 1)[0]
-                %>
-                <p><span class="attention">Категория:</span> ${category[auto_cat].category}</p>
-                %endif
-            </div>
-            <div class="panel-heading">
-                <p><span class="attention">Дата:</span> ${message.orig_date.strftime('%d-%m-%Y')}</p>
-                <p><span class="attention">От кого:</span> ${message.sender_name} (${message.sender})</p>
-                <p><span class="attention">Кому:</span> ${message.recipients_name} (${message.recipients})</p>
-                <p><span class="attention">Тема:</span> ${message.message_title}</p>
-            </div>
-            <div class="panel-body">
-                ${message.message_text}
-            </div>
-        </div>
-
 
     </div>
 </div>

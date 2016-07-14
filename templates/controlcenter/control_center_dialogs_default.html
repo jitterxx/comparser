@@ -66,7 +66,10 @@
                         <svg class="glyph stroked flag"><use xlink:href="#stroked-flag"/></svg>
                         Обратить внимание
                     </a>
-                </li>
+                </li><%
+    day = cur_day.strftime("%d-%m-%Y")
+%>
+
                 <li>
                     <a class="" href="/control_center/dialogs/all?day=${day}">
                         <svg class="glyph stroked chevron-right"><use xlink:href="#stroked-chevron-right"></use></svg>

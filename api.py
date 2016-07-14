@@ -990,7 +990,12 @@ class Tasks(object):
 
     @cherrypy.expose
     @require(member_of("users"))
-    def index(self):
+    def index(self, message=None):
+
+        users = dict()
+        tasks = dict()
+        task_msgid_list = list()
+        msg_list = list()
 
         try:
             # получаем задачу и сообщение
@@ -1000,16 +1005,12 @@ class Tasks(object):
             # responsible = CPO.get_user_by_uuid(user_uuid=task.responsible)
             users = CPO.get_all_users_dict(disabled=True)
             tasks, task_msgid_list = CPO.get_tasks_grouped(grouped="status", sort="create_time",
-                                                          user_uuid=cherrypy.session['session_context']["user"].uuid)
+                                                           user_uuid=cherrypy.session['session_context']["user"].uuid)
             msg_list = CPO.get_clear_message(msg_id_list=task_msgid_list)
-
+            session_context=cherrypy.session['session_context']
         except Exception as e:
             print "ControlCenter.tasks(). Ошибка: %s." % str(e)
-            return ShowNotification().index("Произошла внутренняя ошибка.")
-            users = dict()
-            tasks = dict()
-            task_msgid_list = list()
-            msg_list = list()
+            # return ShowNotification().index("Произошла внутренняя ошибка.")
         else:
 
             print "Users: %s" % users
@@ -1017,13 +1018,13 @@ class Tasks(object):
             print "Msg: %s" % msg_list
 
             tmpl = self.lookup.get_template("control_center_tasks_all.html")
-            return tmpl.render(session_context=cherrypy.session['session_context'], task_list=tasks,
+            return tmpl.render(session_context=session_context, task_list=tasks,
                                task_status=CPO.TASK_STATUS, task_closed_status=CPO.TASK_CLOSED_STATUS,
-                               users=users, msg_list=msg_list)
+                               users=users, msg_list=msg_list, cur_day=datetime.datetime.now(), message=message)
 
     @cherrypy.expose
     @require(member_of("users"))
-    def task(self, uuid=None):
+    def task(self, uuid=None, message=None):
         """
         Функция показа задачи.
         :param uuid:
@@ -1034,10 +1035,10 @@ class Tasks(object):
             try:
                 # получаем задачу и сообщение
                 task = CPO.get_task_by_uuid(task_uuid=uuid)
-                message = CPO.get_clear_message(msg_id=task.message_id)
+                msg = CPO.get_clear_message(msg_id=task.message_id)
                 api_data = CPO.get_train_record(msg_id=task.message_id)
                 responsible = CPO.get_user_by_uuid(user_uuid=task.responsible)
-                users = CPO.get_all_users(sort="surname")
+                users = CPO.get_all_users_dict(disabled=True)
                 task_cause = CPO.get_task_cause(task_uuid=uuid)
                 cause_tags = CPO.get_tags()
             except Exception as e:
@@ -1045,7 +1046,7 @@ class Tasks(object):
                 return ShowNotification().index("Произошла внутренняя ошибка.")
             else:
                 tmpl = self.lookup.get_template("control_center_task_show.html")
-                return tmpl.render(task=task, message=message, responsible=responsible,
+                return tmpl.render(task=task, message=message, responsible=responsible, msg=msg,
                                    session_context=cherrypy.session['session_context'],
                                    close_task_status=CPO.TASK_CLOSED_STATUS,
                                    task_status=CPO.TASK_STATUS, api_data=api_data, category=CPO.GetCategory(),
