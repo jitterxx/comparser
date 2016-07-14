@@ -3254,7 +3254,7 @@ def get_dialog_members_list(member_uuid=None, is_admin=False):
             result = dict()
 
             for one in resp:
-                markers = re.split(",", one.emails) + re.split(",", one.phone)
+                markers = re.split(":", one.emails) + re.split(":", one.phone)
                 for marker in markers:
                     result[marker] = one.uuid
 
@@ -3287,6 +3287,7 @@ def add_msg_members(msg_id_list=None):
         raise e
 
     empl_list = get_dialog_members_list()
+    print "Member marker list:", empl_list
 
     for one in resp:
         # print one
