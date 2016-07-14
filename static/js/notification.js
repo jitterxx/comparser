@@ -48,12 +48,11 @@ function Notify(data)
 
 
 //Poll our backend for notifications, set some reasonable timeout for your application
-window.setInterval(function() {
-    console.log('poll...');
+var notification_interval = setInterval(function() {
+    console.log('Notification poll...');
     GetData2("on");
 
-}, 60000);    //poll every 5 secs.
-
+}, 60000);    //poll every 60 secs.
 
 function GetData2(param1) {
     jQuery.ajax({

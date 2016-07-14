@@ -2270,31 +2270,56 @@ def get_task_by_uuid(task_uuid=None):
 def get_tasks_grouped(user_uuid=None, grouped="status", sort="time"):
 
     session = Session()
-    try:
-        if sort == "time":
-            resp = session.query(Task).filter(Task.responsible == user_uuid).\
-                order_by(Task.id.desc()).all()
-        else:
-            resp = session.query(Task).filter(Task.responsible == user_uuid).\
-                order_by(Task.id.desc()).all()
+    if user_uuid:
+        try:
+            if sort == "time":
+                resp = session.query(Task).filter(Task.responsible == user_uuid).\
+                    order_by(Task.id.desc()).all()
+            else:
+                resp = session.query(Task).filter(Task.responsible == user_uuid).\
+                    order_by(Task.id.desc()).all()
 
-    except Exception as e:
-        print "Objects.get_tasks_grouped(). Ошибка получения Tasks. %s" % str(e)
-        raise e
+        except Exception as e:
+            print "Objects.get_tasks_grouped(). Ошибка получения Tasks. %s" % str(e)
+            raise e
+        else:
+            result = dict()
+            task_msgid_list = list()
+            if grouped == "status":
+                for one in resp:
+                    task_msgid_list.append(one.message_id)
+                    if result.get(one.status):
+                        result[one.status].append(one)
+                    else:
+                        result[one.status] = list()
+                        result[one.status].append(one)
+            return result, task_msgid_list
+        finally:
+            session.close()
     else:
-        result = dict()
-        task_msgid_list = list()
-        if grouped == "status":
-            for one in resp:
-                task_msgid_list.append(one.message_id)
-                if result.get(one.status):
-                    result[one.status].append(one)
-                else:
-                    result[one.status] = list()
-                    result[one.status].append(one)
-        return result, task_msgid_list
-    finally:
-        session.close()
+        try:
+            if sort == "time":
+                resp = session.query(Task).order_by(Task.id.desc()).all()
+            else:
+                resp = session.query(Task).order_by(Task.id.desc()).all()
+
+        except Exception as e:
+            print "Objects.get_tasks_grouped(). Ошибка получения Tasks. %s" % str(e)
+            raise e
+        else:
+            result = dict()
+            task_msgid_list = list()
+            if grouped == "status":
+                for one in resp:
+                    task_msgid_list.append(one.message_id)
+                    if result.get(one.status):
+                        result[one.status].append(one)
+                    else:
+                        result[one.status] = list()
+                        result[one.status].append(one)
+            return result, task_msgid_list
+        finally:
+            session.close()
 
 
 def create_task(responsible=None, message_id=None, comment=None, status=None):

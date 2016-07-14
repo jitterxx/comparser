@@ -104,7 +104,7 @@ var randomScalingFactor = function(){ return Math.round(Math.random()*1000)};
 
 				];
 
-window.onload = function(){
+function Load_charts(){
 	//var chart1 = document.getElementById("line-chart").getContext("2d");
 	//window.myLine = new Chart(chart1).Line(lineChartData, {
 	//	responsive: true
@@ -169,3 +169,13 @@ function DrawLineChart(chart_id, lineChartData){
 	});
     //document.getElementById("legend_" + chart_id).innerHTML = window.myPie.generateLegend();
 }
+
+
+window.onload = Load_charts();
+
+//Poll our backend for notifications, set some reasonable timeout for your application
+var chart_interval = setInterval(function() {
+    console.log('Chart data poll...');
+    Load_charts();
+
+}, 60000);    //poll every 60 secs.

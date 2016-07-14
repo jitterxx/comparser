@@ -997,17 +997,18 @@ class Tasks(object):
         task_msgid_list = list()
         msg_list = list()
 
+        is_admin = member_of("admin")()
+
         try:
-            # получаем задачу и сообщение
-            # task = CPO.get_task_by_uuid(task_uuid=uuid)
-            # message = CPO.get_clear_message(msg_id=task.message_id)
-            # api_data = CPO.get_train_record(msg_id=task.message_id)
-            # responsible = CPO.get_user_by_uuid(user_uuid=task.responsible)
+            session_context = cherrypy.session['session_context']
             users = CPO.get_all_users_dict(disabled=True)
-            tasks, task_msgid_list = CPO.get_tasks_grouped(grouped="status", sort="create_time",
-                                                           user_uuid=cherrypy.session['session_context']["user"].uuid)
+            if is_admin:
+                tasks, task_msgid_list = CPO.get_tasks_grouped(grouped="status", sort="create_time")
+            else:
+                tasks, task_msgid_list = CPO.get_tasks_grouped(grouped="status", sort="create_time",
+                                                               user_uuid=session_context["user"].uuid)
             msg_list = CPO.get_clear_message(msg_id_list=task_msgid_list)
-            session_context=cherrypy.session['session_context']
+
         except Exception as e:
             print "ControlCenter.tasks(). Ошибка: %s." % str(e)
             # return ShowNotification().index("Произошла внутренняя ошибка.")
@@ -1041,10 +1042,18 @@ class Tasks(object):
                 users = CPO.get_all_users_dict(disabled=True)
                 task_cause = CPO.get_task_cause(task_uuid=uuid)
                 cause_tags = CPO.get_tags()
+                session_context=cherrypy.session['session_context']
+                is_admin = member_of("admin")()
             except Exception as e:
                 print "ControlCenter.task(). Ошибка: %s." % str(e)
                 return ShowNotification().index("Произошла внутренняя ошибка.")
             else:
+                # Если запрошен доступ к задаче других пользователей и текущий пользователь не администратор
+                if responsible.uuid != session_context["user"].uuid and not is_admin:
+                    print "ControlCenter.task(). Пользователь не имеет доступа к этой задаче. " \
+                          "Ответственный - %s. Текущий пользователь: %s" % (responsible.uuid, session_context["user"].uuid)
+                    return self.index(message="У вас нет доступа задачам других пользователей.")
+
                 tmpl = self.lookup.get_template("control_center_task_show.html")
                 return tmpl.render(task=task, message=message, responsible=responsible, msg=msg,
                                    session_context=cherrypy.session['session_context'],
@@ -1171,10 +1180,12 @@ class Statistics(object):
                            now=datetime.datetime.now(), delta1=datetime.timedelta)
 
     @cherrypy.expose
-    @require(member_of("admin"))
+    @require(member_of("users"))
     def management(self, start_date=None, end_date=None):
         tmpl = self.lookup.get_template("control_center_stat_management2.html")
         context = cherrypy.session['session_context']
+
+        is_admin = member_of("admin")()
 
         if start_date:
             start_date = datetime.datetime.strptime(start_date, "%d-%m-%Y")
@@ -1199,7 +1210,7 @@ class Statistics(object):
 
         return tmpl.render(session_context=context, stat=stat_data, cat=CPO.GetCategory(),
                            users=users, members=members, tags=tags, cur_day=cur_day,
-                           start_date=start_date, end_date=end_date)
+                           start_date=start_date, end_date=end_date, is_admin=is_admin)
 
     @cherrypy.expose
     @require(member_of("admin"))
@@ -1396,7 +1407,17 @@ class ControlCenter(object):
     @cherrypy.expose
     @require(member_of("users"))
     def index(self, day=None):
-        raise cherrypy.HTTPRedirect("dialogs/warning")
+        try:
+            is_admin = member_of("admin")()
+        except Exception as e:
+            print "Control_center.index(). Ошибка определения привилегий пользователя. %s" % str(e)
+            raise cherrypy.HTTPRedirect("dialogs/warning")
+        else:
+            if is_admin:
+                raise cherrypy.HTTPRedirect("/control_center/statistics/management")
+            else:
+                raise cherrypy.HTTPRedirect("dialogs/warning")
+
 
     """
     @cherrypy.expose
