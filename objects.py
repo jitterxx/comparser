@@ -3130,6 +3130,9 @@ class DialogMember(Base):
     emails = Column(sqlalchemy.String(256), default="")
     phone = Column(sqlalchemy.String(256), default="")
 
+    def __init__(self):
+        self.uuid = uuid.uuid4().__str__()
+
 
 def create_dialog_member(name=None, surname=None, m_type=None, emails=None, phone=None):
 
@@ -3178,7 +3181,7 @@ def update_dialog_member(member_uuid=None, name=None, surname=None, emails=None,
     try:
         resp = session.query(DialogMember).filter(DialogMember.uuid == member_uuid).one_or_none()
     except Exception as e:
-        print "CPO.updare_dialog_member(). Ошибка при поиске для участника %s. %s" % (member_uuid, str(e))
+        print "CPO.update_dialog_member(). Ошибка при поиске для участника %s. %s" % (member_uuid, str(e))
         raise e
     else:
         if resp:
@@ -3194,7 +3197,6 @@ def update_dialog_member(member_uuid=None, name=None, surname=None, emails=None,
                 raise e
     finally:
         session.close()
-
 
 
 def change_dialog_member_type(member_uuid=None):

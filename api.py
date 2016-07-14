@@ -194,14 +194,13 @@ class Settings(object):
 
             # Исключения
             exceptions = CPO.get_address_exceptions()
-            print exceptions
 
         except Exception as e:
             print "ControlCenter.Settings.Administration(). Ошибка: %s." % str(e)
             return ShowNotification().index("Произошла внутренняя ошибка.")
         else:
 
-            print "Watch list: %s" % watch_list
+            # print "Watch list: %s" % watch_list
 
             tmpl = self.lookup.get_template("control_center_settings_administration.html")
             return tmpl.render(session_context=cherrypy.session['session_context'], users=users,
