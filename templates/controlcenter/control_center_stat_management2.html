@@ -80,7 +80,7 @@
 			<div class="well">
 				<p class="lead">
 					%if start_date:
-					Данные за период (${start_date.strftime("%d-%m-%Y")} - ${end_date.strftime("%d-%m-%Y")})
+					Данные за период (${start_date.strftime("%d-%m-%y")} - ${end_date.strftime("%d-%m-%y")})
 					%else:
 					Текущая ситуация (${end_date.strftime("%d-%m-%Y")})
 					%endif
@@ -162,7 +162,7 @@
 				<div class="panel-heading">
 					Проблемы по причинам
 					%if start_date:
-					(${start_date.strftime("%d-%m-%Y")} - ${end_date.strftime("%d-%m-%Y")})
+					(${start_date.strftime("%d-%m-%y")} - ${end_date.strftime("%d-%m-%y")})
 					%else:
 					(${end_date.strftime("%d-%m-%Y")})
 					%endif
@@ -181,7 +181,7 @@
 				<div class="panel-heading">
 					Проблемы по сотрудникам
 					%if start_date:
-					(${start_date.strftime("%d-%m-%Y")} - ${end_date.strftime("%d-%m-%Y")})
+					(${start_date.strftime("%d-%m-%y")} - ${end_date.strftime("%d-%m-%y")})
 					%else:
 					(${end_date.strftime("%d-%m-%Y")})
 					%endif
@@ -200,7 +200,7 @@
 				<div class="panel-heading">
 					Проблемы по клиентам
 					%if start_date:
-					(${start_date.strftime("%d-%m-%Y")} - ${end_date.strftime("%d-%m-%Y")})
+					(${start_date.strftime("%d-%m-%y")} - ${end_date.strftime("%d-%m-%y")})
 					%else:
 					(${end_date.strftime("%d-%m-%Y")})
 					%endif

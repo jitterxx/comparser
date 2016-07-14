@@ -906,7 +906,7 @@ class Statistics(object):
                 users = CPO.get_all_users_dict()
                 members = CPO.get_all_dialog_members()
                 tags = CPO.get_tags()
-                stat = CPO.get_stat_for_management(start=start_date, end=start_date,
+                stat = CPO.get_stat_for_management(start=start_date, end=end_date,
                                                    tags=tags, members=members, users=users)
                 non_checked_by_users = stat[0]
                 confirmed_problem = stat[1]
