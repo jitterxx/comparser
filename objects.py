@@ -3436,7 +3436,8 @@ def get_stat_for_management(start=None, end=None, users=None, members=None, tags
         for st in range(0, len(TASK_STATUS)):
             tasks_by_empl[st] = list()
             for t in members.keys():
-                tasks_by_empl[st].append([t, 0])
+                if members[t].type == 0:
+                    tasks_by_empl[st].append([t, 0])
 
         print "Кол-во задач по диалогам с участием сотрудников с разбивкой по статусу :", resp
         for status, tagid, count in resp:
@@ -3467,7 +3468,8 @@ def get_stat_for_management(start=None, end=None, users=None, members=None, tags
         for st in range(0, len(TASK_STATUS)):
             tasks_by_client[st] = list()
             for t in members.keys():
-                tasks_by_client[st].append([t, 0])
+                if members[t].type == 1:
+                    tasks_by_client[st].append([t, 0])
 
         print "Кол-во задач по диалогам с участием клиентов с разбивкой по статусу :", resp
         for status, tagid, count in resp:
