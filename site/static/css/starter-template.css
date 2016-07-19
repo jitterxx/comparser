@@ -66,6 +66,26 @@ hr {
     color: #27384b;
     font-size: 1.8em;
 }
+.conversation-word-2 {
+    color: #0083dd;
+    position: relative;
+    # margin-top: 2em;
+    text-shadow: 2px 2px 3px #cccccc;
+    font-size: 1.2em;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.parser-word-2 {
+    color: #27384b;
+    font-weight: 600;
+    font-size: 1.2em;
+    text-shadow: 2px 2px 3px #cccccc;
+}
+
+.subheader-phrase-2 {
+    color: #27384b;
+}
 
 .section-header {
     color: #27384b;
