@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="CONVERSATION PARSER. Контроль качества коммуникаций с клиентами в реальном времени.">
+    <meta name="description"
+          content="CONVERSATION PARSER. Контроль качества коммуникаций с клиентами в реальном времени.">
     <meta name="author" content="Sergey Fomin">
     <link rel="icon" href="/static/img/favicon.ico">
 
-    <title>Мониторинг коммуникаций</title>
+    <title>Контроль качества в реальном времени</title>
 
     <!-- Bootstrap core CSS -->
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
@@ -26,95 +27,156 @@
 
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
-    <!--[if lt IE 9]><script src="/static/ie8-responsive-file-warning.js"></script><![endif]-->
+    <!--[if lt IE 9]>
+    <script src="/static/ie8-responsive-file-warning.js"></script><![endif]-->
     <script src="/static/js/ie-emulation-modes-warning.js"></script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-  </head>
+</head>
 
-  <body>
+<body>
 
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container">
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <!--
-            <a class="navbar-brand" href="#">Project name</a>
-            -->
-          <a class="navbar-brand" href="/">
-              <i class="fa fa-rocket fa-lg" aria-hidden="true" style="color: #0083dd;"></i>
-          </a>
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!--
+              <a class="navbar-brand" href="#">Project name</a>
+              -->
+            <a class="navbar-brand" href="/">
+                <i class="fa fa-rocket fa-lg" aria-hidden="true" style="color: #0083dd;"></i>
+            </a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <!--<li><a href="#problems">Кейсы</a></li>-->
-            <li><a href="#product">Решение</a></li>
-            <li><a href="#howto">Как все устроено</a></li>
-            <!-- <li><a href="#security">Безопасность</a></li> -->
-            <li><a href="#price">Цена</a></li>
-            <li><a href="#demo">Демо</a></li>
-          </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <!--<li><a href="#problems">Кейсы</a></li>-->
+                <li><a href="#product">Решение</a></li>
+                <li><a href="#howto">Как все устроено</a></li>
+                <!-- <li><a href="#security">Безопасность</a></li> -->
+                <li><a href="#price">Цена</a></li>
+                <li><a href="#demo">Демо</a></li>
+            </ul>
         </div><!--/.nav-collapse -->
-      </div>
-    </nav>
-    <div class="header">
-      <div class="container">
-        <div class="starter-template">
-          <h1 class="header-phrase">CONVERSATION <span class="parser-word">PARSER</span></h1>
-          <p class="lead subheader-phrase">контроль качества коммуникаций с клиентами в реальном времени</p>
-        </div>
-
-      </div><!-- /.container -->
     </div>
+</nav>
+<div class="header">
+    <div class="container">
+        <div class="starter-template">
+            <h1 class="header-phrase">CONVERSATION <span class="parser-word">PARSER</span></h1>
+            <p class="lead subheader-phrase">контроль качества в реальном времени</p>
+        </div>
 
-    <a name="problems"></a>
-    <div class="section-a"> <!-- light -->
-      <div class="container">
+    </div><!-- /.container -->
+</div>
+
+<a name="problems"></a>
+<div class="section-a"> <!-- light -->
+    <div class="container">
         <div class="row">
-          <div class="col-md-12" align="center">
-              <div style="margin-top: 4em;"></div>
-            <!--<h1 class="section-header">КЕЙС</h1>-->
-          </div>
+            <div class="col-md-12" align="center">
+                <div style="margin-top: 4em;"></div>
+                <!--<h1 class="section-header">КЕЙС</h1>-->
+            </div>
         </div>
         <div class="row">
-          <div class="col-md-12">
-              <p class="section-subheader">
-                  Причины недовольства клиентов
-              </p>
-              <p>
-                  Сервис - это коммуникация с клиентом.
-                  При обслуживании клиентов сотрудники общаются
-                  не всегда корректно, могут неверно оценивать ситуацию, скрывать проблемы или не реагировать вообще.
-              </p>
-              <p>
-                Все это приводит к <span class="attention">недовольству</span> клиентов.
-              </p>
-              <p>
-                  По статистике из <span class="attention">100</span> недовольных
-                  клиентов жалуются от <span class="attention">4% до 10%</span>.
-                  Оставшиеся 90% - это тоже
-                  <span class="attention">недовольные клиенты</span>, но они молчат.
-                  Даже если такие клиенты не уходят сразу, то
-                  <span class="attention">снижается их лояльность,
-                  вероятность повторной покупки</span> стремится к нулю и они
-                  <span class="attention">уходят при первой возможности</span>.
-              </p>
-              <p>
-                  Компания <span class="attention">не знает по какой причине</span> это случилось и
-                  <span class="attention">не может решить проблему</span>,
-                  из-за которой <span class="attention">могут уйти и другие клиенты</span>.
-              </p>
+            <div class="col-md-12">
+                <p class="section-subheader">
+                    Сервис - это коммуникации с клиентами
+                </p>
+                <p>
+                     Контролируя общение с клиентами - вы контролируете качество сервиса.
+                </p>
+                <p class="section-subheader">
+                    Маркеры некачественного сервиса
+                </p>
+                    <div style="margin-left: 1em;">
+                        <p>
+                            <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            скрытые конфликты в результате ошибок совершенных сотрудниками
+                        </p>
+                        <p>
+                            <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            сложные ситуации, когда сотрудник не может решить их, несмотря на отработанные скрипты
+                        </p>
+                        <p>
+                            <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            ошибки в общении, выражающиеся в большом времени ответа или
+                            в его отсутствии
+                        </p>
+                    </div>
+                <div style="height: 2em;"></div>
 
-          </div>
+                <p style="font-size: 1.5em; font-weight: 700; text-transform: uppercase;" align="center">
+                    В 80% СЛУЧАЕВ ОНИ ЯВЛЯЮТСЯ ПРИЧИНОЙ <br><span class="attention">НЕДОВОЛЬСТВА КЛИЕНТОВ</span>
+                </p>
+
+                <p class="section-subheader">
+
+                </p>
+                <div class="table-responsive">
+                    <table border="0" class="table-1-padding" align="left">
+                        <tbody>
+                        <tr>
+                            <td align="center">
+                                <i class="fa fa-frown-o fa-5x" aria-hidden="true" style="color: #0083dd;"></i>
+                            </td>
+                            <td align="left" class="table-td-padding">
+                                <p>
+                                    По статистике из <span class="attention">100</span> недовольных
+                                    клиентов жалуются от <span class="attention">4% до 10%</span>.
+                                </p>
+                                <p>
+                                    Оставшиеся 90% - это тоже
+                                    <span class="attention">недовольные клиенты</span>, но они молчат.
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center">
+                                <i class="fa fa-usd fa-5x" aria-hidden="true" style="color: #0083dd;"></i>
+
+                            </td>
+                            <td align="left" class="table-td-padding">
+                                <p>
+                                    Даже если такие клиенты не уходят сразу, то
+                                    <span class="attention">снижается их лояльность, <br>
+                                        вероятность повторной покупки</span>
+                                    стремится к нулю <br>
+                                    и они <span class="attention">уходят при первой возможности</span>
+                                </p>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center">
+                                <i class="fa fa-question fa-5x" aria-hidden="true" style="color: #0083dd;"></i>
+                            </td>
+                            <td align="left" class="table-td-padding">
+                                <p>
+                                    Компания <span class="attention">не знает по какой причине</span> это случилось <br>
+                                    и <span class="attention">не может решить проблему</span>,
+                                    из-за которой <span class="attention">могут уйти и другие клиенты</span>
+                                </p>
+                            </td>
+                        </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+
+
+
+            </div>
         </div>
         <div class="row">
             <div class="col-md-12">
@@ -122,18 +184,21 @@
                     Проблема
                 </p>
                 <p>
-                    Как выделить из потока недовольных клиентов и их ситуации, требующие контроля и обработки в особом порядке?
+                    Как выделить из потока недовольных клиентов и их ситуации, требующие контроля и обработки в особом
+                    порядке?
                 </p>
                 <p>
                     Можно решать ее разными способами, ввести ручной контроль - полный или выборочный.
                 </p>
                 <div style="margin-bottom: 3em;">&nbsp;</div>
+
+
                 <table class="table-padding" border="0" align="center">
                     <tbody>
                     <tr>
                         <td width="45%" align="center">
                             <p style="font-size: 2em; font-weight: 700; text-transform: uppercase;">
-                                Конфликты<br>
+                                Скрытые конфликты<br>
                                 Сложные ситуации<br>
                                 Проблемы в общении
                             </p>
@@ -145,8 +210,8 @@
                         </td>
                         <td width="45%" align="left">
                             <p style="font-size: 2em; font-weight: 700; color: #0083dd; text-transform: uppercase;">
-                                десятки сотрудников<br>
                                 сотни контактов
+                                десятки&nbsp;сотрудников<br>
                             </p>
                         </td>
                     </tr>
@@ -184,19 +249,29 @@
                 </p>
             </div>
         </div>
-          <div style="margin-bottom: 3em;">&nbsp;</div>
-      </div>
+        <div style="margin-bottom: 3em;">&nbsp;</div>
     </div>
+</div>
 
-    <a name="product"></a>
-    <div class="section-b"> <!-- stripe -->
-      <div class="container">
+<a name="product"></a>
+<div class="section-b"> <!-- stripe -->
+    <div class="container">
         <div class="row">
-          <div class="col-md-12" align="center">
-            <h1 class="section-header">РЕШЕНИЕ</h1>
-          </div>
+            <div class="col-md-12" align="center">
+                <h1 class="section-header">РЕШЕНИЕ</h1>
+            </div>
         </div>
+        <div class="row">
+            <div class="col-md-12" align="center">
+                <p style="font-size: 2em; font-weight: 700; text-transform: uppercase;">
+                    Conversation parser
+                    автоматический контроль
+                    качества коммуникаций с клиентами
+                    в реальном времени
 
+                </p>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="table-responsive">
@@ -204,7 +279,7 @@
                         <tbody>
                         <tr>
                             <td align="center">
-                                <i class="fa fa-rocket fa-5x" aria-hidden="true"  style="color: #0083dd;"></i>
+                                <i class="fa fa-rocket fa-5x" aria-hidden="true" style="color: #0083dd;"></i>
                             </td>
                             <td align="left" class="table-td-padding">
                                 <p class="solve-section-header">
@@ -214,13 +289,14 @@
                                     Conversation parser контролирует качество всех коммуникаций компании с клиентами.
                                 </p>
                                 <p>
-                                    Проверяем телефонные разговоры, письма электронной почты, сообщения социальных сетей и мессенджеров.
+                                    Проверяем телефонные разговоры, письма электронной почты, сообщения социальных сетей
+                                    и мессенджеров.
                                 </p>
                             </td>
                         </tr>
                         <tr>
-                            <td  align="center">
-                                <i class="fa fa-heartbeat fa-5x" aria-hidden="true"  style="color: #0083dd;"></i>
+                            <td align="center">
+                                <i class="fa fa-heartbeat fa-5x" aria-hidden="true" style="color: #0083dd;"></i>
                             </td>
                             <td class="table-td-padding">
                                 <p class="solve-section-header">
@@ -237,8 +313,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td  align="center">
-                                <i class="fa fa-arrows fa-5x" aria-hidden="true"  style="color: #0083dd;"></i>
+                            <td align="center">
+                                <i class="fa fa-arrows fa-5x" aria-hidden="true" style="color: #0083dd;"></i>
                             </td>
                             <td class="table-td-padding">
                                 <p class="solve-section-header">
@@ -258,280 +334,282 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-12">
+                <p class="section-subheader">
+                    В результате использования вы:
+                </p>
+                <div style="margin-left: 1em;">
+                    <p>
+                        <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                        обнаружите и обработаете больше 80% всех проблемных ситуаций
+                    </p>
+                    <p>
+                        <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                        снизите среднее время обработки обращения до одной минуты
+                    </p>
+                    <p>
+                        <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                        снизите на 30% общее количество недовольных клиентов за счет быстрой реакции
+                    </p>
+                    <p>
+                        <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                        увидите картину качества в реальном времени​, а не по отчетам за прошедший месяц
+                    </p>
+                    <p>
+                        <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                        точно определите причины недовольства клиентов и сможете решать их системно
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div style="margin-bottom: 3em;">&nbsp;</div>
+    </div>
+</div>
+
+
+<a name="howto"></a>
+<div class="section-a"> <!-- white -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12" align="center">
+                <h1 class="section-header">Как все устроено</h1>
+                <div style="margin-bottom: 2em;">
+                </div>
+
+            </div>
+
+            <link href="/static/css/timeline.css" rel="stylesheet">
+            <div class="row">
+                <div class="col-lg-12">
+                    <ul class="timeline">
+                        <li>
+                            <div class="timeline-image" align="center">
+                                <span style="font-size: 2em;"><br>Шаг 1</span>
+                            </div>
+                            <div class="timeline-panel">
+                                <div class="timeline-heading">
+
+                                </div>
+                                <div class="timeline-body">
+                                    <p>
+                                        Обучаем инструмент, <br>
+                                        чтобы он учитывал особенности вашего <br>
+                                        общения с клиентами (сленг, термины, общий стиль общения).
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="timeline-inverted">
+                            <div class="timeline-image" align="center">
+                                <span style="font-size: 2em;"><br>Шаг 2</span>
+                            </div>
+                            <div class="timeline-panel">
+                                <div class="timeline-heading">
+                                    <br>
+                                </div>
+                                <div class="timeline-body">
+                                    <p>
+                                        Интегрируем с телефонией, электронной почтой и другими инструментами
+                                        коммуникаций.
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="timeline-image" align="center">
+                                <span style="font-size: 2em;"><br>Шаг 3</span>
+                            </div>
+                            <div class="timeline-panel">
+                                <div class="timeline-heading">
+
+                                </div>
+                                <div class="timeline-body">
+                                    <p>
+                                        Система анализирует звонки, электронные письма, сообщения
+                                        и если была обнаружена проблема,
+                                        уведомляет ответственных.
+                                    </p>
+                                    <p>
+                                        В уведомление включается описание ситуации и описание дальнейших действий.
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="timeline-inverted">
+                            <div class="timeline-image" align="center">
+                                <span style="font-size: 2em;"><br>Шаг 4</span>
+                            </div>
+
+                            <div class="timeline-panel">
+                                <div class="timeline-heading">
+                                </div>
+                                <div class="timeline-body">
+                                    <p>
+                                        Ответственный сотрудник разбирается в ситуации, указывает,
+                                        что было сделано для решения проблемы и какие причины ее вызвали.
+                                    </p>
+                                    <p>
+                                        Дает обратную связь для повышения точности.
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-12">
+                    <p class="section-subheader">
+                        Вы увидите в панели управления
+                    </p>
+                    <div style="margin-left: 1em;">
+                        <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            Количество подозрительных ситуаций
+                        </p>
+                        <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            Количество активных проблем
+                        </p>
+                        <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            Количество решенных проблем
+                        </p>
+                        <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            Ответственных за решение и объем проблем в их зоне ответственности
+                        </p>
+                        <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            Причины возникновения и какой результат
+                        </p>
+                        <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            Среднее время разрешения
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+
             <div class="row">
                 <div class="col-md-12">
                     <p class="section-subheader">
-                        В результате использования вы:
+                        ВАЖНЫЕ ОСОБЕННОСТИ
                     </p>
                     <div style="margin-left: 1em;">
-                        <p>
-                            <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                            обнаружите и обработаете больше 80% всех проблемных ситуаций
+                        <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            <span class="attention">Не используется</span> фильтрация по конкретным словам
                         </p>
-                        <p>
-                            <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                            снизите  среднее время обработки обращения до одной минуты
+                        <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            В основе лежат алгоритмы <span class="attention">искусственного интеллекта и машинного обучения</span>
                         </p>
-                        <p>
-                            <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                            снизите на 30% общее количество недовольных клиентов за счет быстрой реакции
+                        <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            Система учится в процессе работы и повышает точность
                         </p>
-                        <p>
-                            <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                            увидите картину качества в реальном времени​, а не по отчетам за прошедший месяц
+                        <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            Время на обучение персонала <span class="attention">не требуется</span>, сотрудники
+                            работают, как и раньше
                         </p>
-                        <p>
-                            <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                            точно определите причины недовольства клиентов и сможете решать их системно
+                        <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            Не нарушает рабочие процессы сотрудников, работает в фоне
                         </p>
                     </div>
                 </div>
             </div>
-          <div style="margin-bottom: 3em;">&nbsp;</div>
-      </div>
-    </div>
-
-
-    <a name="howto"></a>
-    <div class="section-a"> <!-- white -->
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12" align="center">
-              <h1 class="section-header">Как все устроено</h1>
-              <div style="margin-bottom: 2em;">
-          </div>
+            <br>
+            <br>
 
         </div>
-
-        <link href="/static/css/timeline.css" rel="stylesheet">
-        <div class="row">
-            <div class="col-lg-12">
-                <ul class="timeline">
-                    <li>
-                        <div class="timeline-image" align="center">
-                            <span style="font-size: 2em;"><br>Шаг 1</span>
-                        </div>
-                        <div class="timeline-panel">
-                            <div class="timeline-heading">
-
-                            </div>
-                            <div class="timeline-body" >
-                                <p>
-                                    Обучаем инструмент, <br>
-                                    чтобы он учитывал особенности вашего <br>
-                                    общения с клиентами (сленг, термины, общий стиль общения).
-                                </p>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="timeline-inverted">
-                        <div class="timeline-image" align="center">
-                            <span style="font-size: 2em;"><br>Шаг 2</span>
-                        </div>
-                        <div class="timeline-panel">
-                            <div class="timeline-heading">
-                                <br>
-                            </div>
-                            <div class="timeline-body">
-                                <p>
-                                    Интегрируем с телефонией, электронной почтой и другими инструментами коммуникаций.
-                                </p>
-                            </div>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="timeline-image" align="center">
-                            <span style="font-size: 2em;"><br>Шаг 3</span>
-                        </div>
-                        <div class="timeline-panel">
-                            <div class="timeline-heading">
-
-                            </div>
-                            <div class="timeline-body">
-                                <p>
-                                    Система анализирует звонки, электронные письма, сообщения
-                                    и если была обнаружена проблема,
-                                    уведомляет ответственных.
-                                </p>
-                                <p>
-                                    В уведомление включается описание ситуации и описание дальнейших действий.
-                                </p>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="timeline-inverted">
-                        <div class="timeline-image" align="center">
-                            <span style="font-size: 2em;"><br>Шаг 4</span>
-                        </div>
-
-                        <div class="timeline-panel">
-                            <div class="timeline-heading">
-                            </div>
-                            <div class="timeline-body">
-                                <p>
-                                    Ответственный сотрудник разбирается в ситуации, указывает,
-                                    что было сделано для решения проблемы и какие причины ее вызвали.
-                                </p>
-                                <p>
-                                    Дает обратную связь для повышения точности.
-                                </p>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            <div class="col-md-12">
-                <p class="section-subheader">
-                    Вы увидите в панели управления
-                </p>
-                <div style="margin-left: 1em;">
-                    <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                        Количество подозрительных ситуаций
-                    </p>
-                    <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                        Количество активных проблем
-                    </p>
-                    <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                        Количество решенных проблем
-                    </p>
-                    <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                        Ответственных за решение и объем проблем в их зоне ответственности
-                    </p>
-                    <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                        Причины возникновения и какой результат
-                    </p>
-                    <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                        Среднее время разрешения
-                    </p>
-                </div>
-
-            </div>
-        </div>
-
-
-
-        <div class="row">
-          <div class="col-md-12">
-              <p class="section-subheader">
-                  ВАЖНЫЕ ОСОБЕННОСТИ
-              </p>
-              <div style="margin-left: 1em;">
-                  <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                        <span class="attention">Не используется</span> фильтрация по конкретным словам
-                  </p>
-                  <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                      В основе лежат алгоритмы <span class="attention">искусственного интеллекта и машинного обучения</span>
-                  </p>
-                  <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                      Система учится в процессе работы и повышает точность
-                  </p>
-                  <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                      Время на обучение персонала <span class="attention">не требуется</span>, сотрудники работают, как и раньше
-                  </p>
-                  <p><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                      Не нарушает рабочие процессы сотрудников, работает в фоне
-                  </p>
-              </div>
-          </div>
-        </div>
-          <br>
-          <br>
-
-      </div>
     </div>
 
     <a name="price"></a>
     <div class="section-b">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12" align="center">
-            <h1 class="section-header">Цена</h1>
-          </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12" align="center">
+                    <h1 class="section-header">Цена</h1>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <p>
+                        Услуги оплачиваются ежемесячно.
+                    </p>
+                    <p>
+                        Стоимость использования складывается из двух частей <span class="attention">фиксированной и переменной</span>.
+                    </p>
+                    <p>
+                        Фиксированный платеж - <span class="attention">20 000</span> рублей в месяц.
+                    </p>
+                    <div style="margin-bottom: 2em;"></div>
+                    <p>
+                        Переменный платеж, рассчитывается на основе количества сообщений и длительности
+                        телефонных звонков проверенных системой.
+                    </p>
+                    <p>
+                        Стоимость анализа сообщений электронной почты, социальных сетей и мессенджеров:
+                    </p>
+                    <ul class="fa-ul">
+                        <li><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            70 копеек, до 20 000 сообщений в месяц;
+                        </li>
+                        <li><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            60 копеек, до 50 000 сообщений в месяц;
+                        </li>
+                        <li><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            50 копеек, свыше 50 000 сообщений в месяц.
+                        </li>
+                    </ul>
+                    <div style="margin-bottom: 2em;"></div>
+                    <p>
+                        Стоимость анализа телефонных звонков:
+                    </p>
+                    <ul class="fa-ul">
+                        <li><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                            3 рубля за 1 минуту.
+                        </li>
+                    </ul>
+
+
+                </div>
+            </div>
+            <hr>
         </div>
-
-        <div class="row">
-          <div class="col-md-12">
-              <p>
-                  Услуги оплачиваются ежемесячно.
-              </p>
-              <p>
-                  Стоимость использования складывается из двух частей <span class="attention">фиксированной и переменной</span>.
-              </p>
-              <p>
-                  Фиксированный платеж - <span class="attention">20 000</span> рублей в месяц.
-              </p>
-              <div style="margin-bottom: 2em;"></div>
-              <p>
-                  Переменный платеж, рассчитывается на основе количества сообщений и длительности
-                  телефонных звонков проверенных системой.
-              </p>
-              <p>
-                  Стоимость анализа сообщений электронной почты, социальных сетей и мессенджеров:
-              </p>
-              <ul class="fa-ul">
-                  <li><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                      70 копеек, до 20 000 сообщений в месяц;
-                  </li>
-                  <li><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                      60 копеек, до 50 000 сообщений в месяц;
-                  </li>
-                  <li><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                      50 копеек, свыше 50 000 сообщений в месяц.
-                  </li>
-              </ul>
-              <div style="margin-bottom: 2em;"></div>
-              <p>
-                  Стоимость анализа телефонных звонков:
-              </p>
-              <ul class="fa-ul">
-                  <li><i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
-                      3 рубля за 1 минуту.
-                  </li>
-              </ul>
-
-
-          </div>
-        </div>
-          <hr>
-      </div>
     </div>
 
     <a name="demo"></a>
     <div class="section-a">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12" align="center">
-            <h1 class="section-header">Демо-версия</h1>
-          </div>
-        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12" align="center">
+                    <h1 class="section-header">Демо-версия</h1>
+                </div>
+            </div>
 
-        <div class="row">
-          <div class="col-md-12">
-              <p>
-                  Мы подготовили для демонстрации возможностей специальную Демо-версию.
-              </p>
-              <p>
-                  Все реальные адреса и диалоги мы заменили на художественный текст, но фактические данные по категориям,
-                  времени решения и количеству проблем соответствуют действительности.
-              </p>
-          </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <p>
+                        Мы подготовили для демонстрации возможностей специальную Демо-версию.
+                    </p>
+                    <p>
+                        Все реальные адреса и диалоги мы заменили на художественный текст, но фактические данные по
+                        категориям,
+                        времени решения и количеству проблем соответствуют действительности.
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" align="center">
+                    <div style="margin-top: 3em; margin-bottom: 5em;">
+                        <form class="form-inline" action="/demo_request" method="post">
+                            <input type="text" class="form-control input-lg" placeholder="Ваше имя"
+                                   name="customer_name" width="40%">
+                            <input type="text" class="form-control input-lg" placeholder="Телефон"
+                                   name="customer_phone">
+                            <input type="text" class="form-control input-lg" placeholder="Email"
+                                   name="customer_email">
+                            <button class="btn btn-success btn-lg">Запросить доступ к демо-версии</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="row">
-          <div class="col-md-12" align="center">
-              <div style="margin-top: 3em; margin-bottom: 5em;">
-                  <form class="form-inline" action="/demo_request" method="post">
-                      <input type="text" class="form-control input-lg" placeholder="Ваше имя"
-                             name="customer_name"  width="40%">
-                      <input type="text" class="form-control input-lg" placeholder="Телефон"
-                             name="customer_phone" >
-                      <input type="text" class="form-control input-lg" placeholder="Email"
-                             name="customer_email" >
-                      <button class="btn btn-success btn-lg">Запросить доступ к демо-версии</button>
-                  </form>
-              </div>
-          </div>
-        </div>
-      </div>
     </div>
 
 
@@ -540,24 +618,24 @@
         <br>
         <br>
         <div class="container">
-        <div class="row">
-            <div class="col-md-3">
-                <p class="text-muted small">Email: <a href="mailto:info@conparser.ru">info@conparser.ru</a></p>
-                <p class="text-muted small">Телефон: +79117801258</p>
+            <div class="row">
+                <div class="col-md-3">
+                    <p class="text-muted small">Email: <a href="mailto:info@conparser.ru">info@conparser.ru</a></p>
+                    <p class="text-muted small">Телефон: +79117801258</p>
+                </div>
+                <div class="col-md-4">
+                    <br>
+                </div>
+                <div class="col-md-5">
+                    <a href="/static/docs/conversation_parser_confident_policy.pdf">
+                        <p class="text-muted small">Политика конфиденциальности</p>
+                    </a>
+                    <p class="text-muted small">ООО "Парсер"</p>
+                    <p class="text-muted small">ИНН 1660263520 ОГРН 1161690064953
+                    <p class="text-muted small">191036, г. Санкт-Петербург, ул. 5-я Советская, 31-33</p>
+                    <p class="text-muted small">&copy; Conversation parser 2016</p>
+                </div>
             </div>
-            <div class="col-md-4">
-                <br>
-            </div>
-            <div class="col-md-5">
-                <a href="/static/docs/conversation_parser_confident_policy.pdf">
-                    <p class="text-muted small">Политика конфиденциальности</p>
-                </a>
-                <p class="text-muted small">ООО "Парсер"</p>
-                <p class="text-muted small">ИНН 1660263520 ОГРН 1161690064953
-                <p class="text-muted small">191036, г. Санкт-Петербург, ул. 5-я Советская, 31-33</p>
-                <p class="text-muted small">&copy; Conversation parser 2016</p>
-            </div>
-        </div>
             <div class="row">
                 <div class="col-md-12">
                     <a href="http://www.freepik.com/free-vector/colorful-wave-background_779764.htm">
@@ -605,8 +683,11 @@
                 d.addEventListener("DOMContentLoaded", f, false);
             } else { f(); }
         })(document, window, "yandex_metrika_callbacks");
+
     </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/38358350" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <noscript>
+        <div><img src="https://mc.yandex.ru/watch/38358350" style="position:absolute; left:-9999px;" alt=""/></div>
+    </noscript>
     <!-- /Yandex.Metrika counter -->
 
 
@@ -620,6 +701,7 @@
           ga('create', 'UA-70644861-1', 'auto');
           ga('send', 'pageview');
 
+
     </script>
 
     <!-- Facebook Pixel Code -->
@@ -631,6 +713,7 @@
         document,'script','//connect.facebook.net/en_US/fbevents.js');
         fbq('init', '959952434112254');
         fbq('track', "PageView");
+
     </script>
     <noscript>
         <img height="1" width="1" style="display:none"
@@ -638,5 +721,5 @@
     </noscript>
     <!-- End Facebook Pixel Code -->
 
-  </body>
+</body>
 </html>
