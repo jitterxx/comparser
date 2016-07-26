@@ -6,6 +6,11 @@
 
 """
 
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
+sys.path.append("..")
+
 import xlrd
 import re
 import datetime
@@ -15,12 +20,6 @@ import sqlalchemy
 from sqlalchemy import Table, Column, Integer, ForeignKey, and_
 from sqlalchemy.ext.declarative import declarative_base
 import uuid
-
-
-import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
-
 
 
 if __name__ == "__main__":
