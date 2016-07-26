@@ -3158,7 +3158,7 @@ def create_dialog_member(name=None, surname=None, m_type=None, emails=None, phon
         session.add(new)
         session.commit()
     except Exception as e:
-        print ""
+        print str(e)
         raise e
     finally:
         session.close()
