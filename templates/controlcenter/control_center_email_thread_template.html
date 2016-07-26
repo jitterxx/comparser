@@ -8,7 +8,7 @@
     <meta name="description" content="Conversation parser email notification">
     <meta name="author" content="Sergey Fomin, Ramil Galiullin">
 
-    <title>${messages[orig_msg].message_title}</title>
+    <title>Полная переписка</title>
 
 </head>
 
@@ -58,7 +58,7 @@
                         <td height="20"></td>
                     </tr>
 
-                    % for one in messages.values():
+                    % for one in messages:
                     %if one:
                     <tr>
                         <td align="center">

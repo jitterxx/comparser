@@ -47,6 +47,19 @@ if __name__ == "__main__":
     session.add(user)
     session.commit()
 
+    # Добавляем категории
+    category = CPO.Category()
+    category.code = "conflict"
+    category.category = "Обратить внимание"
+    session.add(category)
+    session.commit()
+
+    category = CPO.Category()
+    category.code = "normal"
+    category.category = "Нейтральное"
+    session.add(category)
+    session.commit()
+
     sheet = rb.sheet_by_index(0)
     for rownum in range(1, sheet.nrows):
         # Если это сотрудник
@@ -139,7 +152,7 @@ if __name__ == "__main__":
                     clear.create_date = dialog_date
                     clear.orig_date = dialog_date
                     clear.isclassified = 1
-                    clear.category = sheet.cell_value(rowx=rownum, colx=10)
+                    clear.category = str(sheet.cell_value(rowx=rownum, colx=10)) + "-1.0:default-0"
                     clear.notified = 1
                     clear.references = sheet.cell_value(rowx=rownum, colx=8)
                     clear.in_reply_to = sheet.cell_value(rowx=rownum, colx=9)
@@ -154,7 +167,7 @@ if __name__ == "__main__":
                     train.date = dialog_date
                     train.user_action = 0
                     train.user_answer = ""
-                    train.category = sheet.cell_value(rowx=rownum, colx=10)
+                    train.category = str(sheet.cell_value(rowx=rownum, colx=10)) + "-1.0:default-0"
 
                     session.add(train)
 
