@@ -36,6 +36,18 @@ if __name__ == "__main__":
     session = CPO.Session()
 
     # Добавляем вспомогательные данные (пользователи, наблюдатели и тд)
+    user = CPO.User()
+    user.name = "Елена"
+    user.surname = "(контроль качества)"
+    user.login = "elena"
+    user.password = "demopass"
+    user.email = "info@conparser.ru"
+    user.access_groups = "admin,users"
+    user.status = 0
+    user.uuid = "demo-service-uuid"
+    session.add(user)
+    session.commit()
+
     sheet = rb.sheet_by_index(0)
     for rownum in range(1, sheet.nrows):
         # Если это сотрудник
