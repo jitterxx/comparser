@@ -1314,10 +1314,10 @@ def get_thread_messages(message_id=None, thread_uuid=None):
             resp = session.query(MsgThread).filter(MsgThread.message_id == message_id).one()
         except sqlalchemy.orm.exc.NoResultFound:
             print "get_thread_messages. Сообщение не входит ни в один тред. MSGID: %s" % message_id
-            return None
+            return None, None
         except sqlalchemy.orm.exc.MultipleResultsFound:
             print "get_thread_messages. Найдено много тредов с этим сообщением. MSGID: %s" % message_id
-            return None
+            return None, None
         except Exception as e:
             print "get_thread_messages. Ошибка при получении сообщения. %s" % str(e)
             raise e
@@ -1325,13 +1325,15 @@ def get_thread_messages(message_id=None, thread_uuid=None):
 
             # получаем список MSGID сообщений в треде
             try:
-                resp2 = session.query(MsgThread).filter(MsgThread.thread_uuid == resp.thread_uuid).all()
+                resp2 = session.query(MsgThread).filter(MsgThread.thread_uuid == resp.thread_uuid).\
+                    order_by(MsgThread.orig_date_utc.asc()).all()
             except Exception as e:
                 print "get_thread_messages. Ошибка при получении треда. %s" % str(e)
                 raise e
             else:
 
                 messages = dict()
+                messages_list = list()
                 # Получаем сами сообщения
                 for one in resp2:
                     try:
@@ -1341,8 +1343,9 @@ def get_thread_messages(message_id=None, thread_uuid=None):
                         resp3 = None
                     else:
                         messages[one.message_id] = resp3
+                        messages_list.append(resp3)
 
-                return messages
+                return messages, messages_list
 
         finally:
             session.close()
@@ -1535,7 +1538,7 @@ def create_full_thread_html_document(msg_id=None):
                             input_encoding="utf-8", encoding_errors="replace")
 
     try:
-        messages = get_thread_messages(message_id=msg_id)
+        messages, messages_list = get_thread_messages(message_id=msg_id)
     except Exception as e:
         print "notificater. create_attach(). Ошибка: ", str(e)
         raise e
@@ -1563,15 +1566,15 @@ def control_center_full_thread_html_document(msg_id=None):
                             input_encoding="utf-8", encoding_errors="replace")
 
     try:
-        messages = get_thread_messages(message_id=msg_id)
+        messages, messages_list = get_thread_messages(message_id=msg_id)
     except Exception as e:
         print "CPO.control_center_full_thread_html_document(). Ошибка: ", str(e)
         raise e
     else:
-        if messages:
+        if messages_list:
             # HTML приложение с тредом
             tmpl = lookup.get_template("control_center_email_thread_template.html")
-            attach_in_html = tmpl.render(orig_msg=msg_id, messages=messages)
+            attach_in_html = tmpl.render(orig_msg=msg_id, messages=messages_list)
 
             return attach_in_html
         else:
