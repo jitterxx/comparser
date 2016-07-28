@@ -559,6 +559,9 @@ class Dialogs(object):
     @cherrypy.expose
     @require(member_of("users"))
     def warning(self, day=None):
+        # Demo данные третий день
+        if not day:
+            day = "22-07-2016"
         print "day", day
 
         # Формируем сегодняшнее число или получаем указанную дату
@@ -673,6 +676,7 @@ class Tasks(object):
         is_admin = member_of("admin")()
 
         try:
+            demo_day = datetime.datetime.strptime("22-07-2016", "%d-%m-%Y")
             session_context = cherrypy.session['session_context']
             users = CPO.get_all_users_dict(disabled=True)
             if is_admin:
@@ -694,7 +698,7 @@ class Tasks(object):
             tmpl = self.lookup.get_template("control_center_tasks_all.html")
             return tmpl.render(session_context=session_context, task_list=tasks,
                                task_status=CPO.TASK_STATUS, task_closed_status=CPO.TASK_CLOSED_STATUS,
-                               users=users, msg_list=msg_list, cur_day=datetime.datetime.now(), message=message)
+                               users=users, msg_list=msg_list, cur_day=demo_day, message=message)
 
     @cherrypy.expose
     @require(member_of("users"))
@@ -855,6 +859,10 @@ class Statistics(object):
     @cherrypy.expose
     @require(member_of("users"))
     def management(self, start_date=None, end_date=None):
+        # Demo данные
+        start_date = "18-07-2016"
+        end_date = "22-07-2016"
+
         tmpl = self.lookup.get_template("control_center_stat_management2.html")
         context = cherrypy.session['session_context']
 

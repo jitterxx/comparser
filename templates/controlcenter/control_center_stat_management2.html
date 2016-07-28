@@ -160,12 +160,16 @@
 		<div class="col-xs-12 col-md-6 col-lg-4">
 			<div class="panel panel-default">
 				<div class="panel-heading">
+					<span class="panel-heading-text">
 					Проблемы по причинам
+                        <!--
 					%if start_date:
 					(${start_date.strftime("%d-%m-%y")} - ${end_date.strftime("%d-%m-%y")})
 					%else:
 					(${end_date.strftime("%d-%m-%Y")})
 					%endif
+					-->
+                    </span>
 				</div>
 				<div class="panel-body">
 					<div class="canvas-wrapper">
@@ -180,11 +184,13 @@
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					Проблемы по сотрудникам
+                    <!--
 					%if start_date:
 					(${start_date.strftime("%d-%m-%y")} - ${end_date.strftime("%d-%m-%y")})
 					%else:
 					(${end_date.strftime("%d-%m-%Y")})
 					%endif
+					-->
 				</div>
 				<div class="panel-body">
 					<div class="canvas-wrapper">
@@ -199,11 +205,13 @@
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					Проблемы по клиентам
+                    <!--
 					%if start_date:
 					(${start_date.strftime("%d-%m-%y")} - ${end_date.strftime("%d-%m-%y")})
 					%else:
 					(${end_date.strftime("%d-%m-%Y")})
 					%endif
+					-->
 				</div>
 				<div class="panel-body">
 					<div class="canvas-wrapper">

@@ -2544,8 +2544,9 @@ def pred_stat_compute(for_day=None):
     global CURRENT_TRAIN_EPOCH
     CURRENT_TRAIN_EPOCH = read_epoch()
 
-    if not for_day or not CURRENT_TRAIN_EPOCH:
-        exc = ValueError("Не указаны параметры.")
+    if not for_day or CURRENT_TRAIN_EPOCH is None:
+        exc = ValueError("Не указаны параметры. for_day = %s, CURRENT_TRAIN_EPOCH = %s" %
+                         (for_day, CURRENT_TRAIN_EPOCH))
         raise exc
     else:
         # правильные даты

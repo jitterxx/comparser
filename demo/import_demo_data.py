@@ -60,10 +60,18 @@ if __name__ == "__main__":
     session.add(category)
     session.commit()
 
+    # ФИО участников переписки
+    names = dict()
+
     sheet = rb.sheet_by_index(0)
     for rownum in range(1, sheet.nrows):
         # Если это сотрудник
         if sheet.cell_value(rowx=rownum, colx=0) == "employee":
+            names[str(sheet.cell_value(rowx=rownum, colx=2))] = str(sheet.cell_value(rowx=rownum, colx=3)) + \
+                                                                str(sheet.cell_value(rowx=rownum, colx=4))
+            names[str(sheet.cell_value(rowx=rownum, colx=1))] = str(sheet.cell_value(rowx=rownum, colx=3)) + \
+                                                                str(sheet.cell_value(rowx=rownum, colx=4))
+
             CPO.create_dialog_member(name=sheet.cell_value(rowx=rownum, colx=3),
                                      surname=sheet.cell_value(rowx=rownum, colx=4),
                                      m_type=0,
@@ -71,7 +79,10 @@ if __name__ == "__main__":
                                      phone=str(sheet.cell_value(rowx=rownum, colx=1)))
         # это клиент
         elif sheet.cell_value(rowx=rownum, colx=0) == "client":
-            CPO.create_dialog_member(name="client-" + uuid.uuid4().__str__()[0:3],
+            cli_name = "Клиент " + str(rownum)
+            names[str(sheet.cell_value(rowx=rownum, colx=2))] = cli_name
+            names[str(sheet.cell_value(rowx=rownum, colx=1))] = cli_name
+            CPO.create_dialog_member(name=cli_name,
                                      surname="",
                                      m_type=1,
                                      emails=str(sheet.cell_value(rowx=rownum, colx=2)),
@@ -102,6 +113,7 @@ if __name__ == "__main__":
         else:
                 pass
 
+    print names
     print "Вспомогательные данные загружены."
     raw_input()
 
@@ -142,9 +154,9 @@ if __name__ == "__main__":
 
                     clear.message_id = sheet.cell_value(rowx=rownum, colx=7)
                     clear.sender = sheet.cell_value(rowx=rownum, colx=1)
-                    clear.sender_name = sheet.cell_value(rowx=rownum, colx=2)
+                    clear.sender_name = names.get(sheet.cell_value(rowx=rownum, colx=1))
                     clear.recipients = sheet.cell_value(rowx=rownum, colx=3)
-                    clear.recipients_name = sheet.cell_value(rowx=rownum, colx=4)
+                    clear.recipients_name = names.get(sheet.cell_value(rowx=rownum, colx=3))
                     clear.cc_recipients = "empty"
                     clear.cc_recipients_name = ""
                     clear.message_title = sheet.cell_value(rowx=rownum, colx=5)
@@ -179,5 +191,7 @@ if __name__ == "__main__":
                 except Exception as e:
                     print str(e)
                     raise e
+        print "День %s записан." % (17 + i)
+        raw_input()
 
     session.close()

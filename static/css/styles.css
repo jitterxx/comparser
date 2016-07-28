@@ -6,11 +6,35 @@ Version 1.0
 
 /*Global Styles*/
 
+@media (min-width: 1400px) {
+}
+
+@media (max-width: 1400px) {
+    .lead {
+        font-size: 1.2em;
+    }
+}
+
+.panel-heading-text {
+}
+
+@media (max-width: 1400px) {
+    .panel-heading-text {
+
+    }
+}
+
+@media (max-width: 768px) {
+    .lead {
+        font-size: 1em;
+    }
+}
+
 body {
 	background: #f1f4f7;
 	padding-top: 50px;
 	color: #5f6468;
-	font-size: 12pt;
+	font-size: 1.2em;
 }
 
 p {
