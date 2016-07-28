@@ -3,6 +3,29 @@ Lumino Admin Bootstrap Template
 Version 1.0
 */
 
+@media (min-width: 1400px) {
+}
+
+@media (max-width: 1400px) {
+    .lead {
+        font-size: 1.2em;
+    }
+}
+
+.panel-heading-text {
+}
+
+@media (max-width: 1400px) {
+    .panel-heading-text {
+
+    }
+}
+
+@media (max-width: 768px) {
+    .lead {
+        font-size: 1em;
+    }
+}
 
 /*Global Styles*/
 
