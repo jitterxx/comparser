@@ -155,21 +155,40 @@ function GetChartData(chart_id, start_date, end_date) {
 
 function DrawPieChart(chart_id, pieData){
 
+    Chart.defaults.global.defaultFontSize = 6;
+
 	var chart = document.getElementById(chart_id).getContext("2d");
-	window.myPie = new Chart(chart).Pie(pieData, {responsive : true
-	});
+	window.myPie = new Chart(chart).Pie(pieData, {
+	    responsive : true,
+	    defaultFontSize : 6
+	    }
+	);
 	//console.log(window.myPie.options.legendTemplate);
-	document.getElementById("legend_" + chart_id).innerHTML = window.myPie.generateLegend();
+
+	document.getElementById("legend_" + chart_id).innerHTML = GenerateLegend(pieData);
 }
 
 function DrawLineChart(chart_id, lineChartData){
 
 	var chart = document.getElementById(chart_id).getContext("2d");
-	window.myLine = new Chart(chart).Line(lineChartData, { responsive: true
+	window.myLine = new Chart(chart).Line(lineChartData, {
+	    responsive: true
 	});
     //document.getElementById("legend_" + chart_id).innerHTML = window.myPie.generateLegend();
 }
 
+function GenerateLegend (data) {
+    var text = "<div>";
+
+    for (var i=0; i<data.length; i++) {
+        text = text + '<div>' + data[i].label + ' - ' + '<span style="color:' + data[i].color + ';">'
+                    + data[i].value
+                    + '</span></div>';
+    }
+
+    text = text + "</div>"
+    return text;
+}
 
 window.onload = Load_charts();
 

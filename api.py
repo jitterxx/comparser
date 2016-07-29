@@ -934,6 +934,7 @@ class Statistics(object):
         data = list()
         if chart_id == "problem_by_cause":
             i = 0
+            tasks_by_cause[0] = sorted(tasks_by_cause[0], key=lambda x: x[1], reverse=True)
             print "tasks_by_cause: ",tasks_by_cause
             for one in tasks_by_cause[0]:
                 part = {
@@ -949,6 +950,7 @@ class Statistics(object):
 
         elif chart_id == "problem_by_employee":
             i = 0
+            tasks_by_empl[0] = sorted(tasks_by_empl[0], key=lambda x: x[1], reverse=True)
             for one in tasks_by_empl[0]:
                 part = {
                     "value": one[1],
@@ -963,6 +965,7 @@ class Statistics(object):
 
         elif chart_id == "problem_by_client":
             i = 0
+            tasks_by_client[0] = sorted(tasks_by_client[0], key=lambda x: x[1], reverse=True)
             for one in tasks_by_client[0]:
                 part = {
                     "value": one[1],
