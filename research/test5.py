@@ -4,7 +4,7 @@
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
-sys.path.extend(['~/dev/conflict analyser/'])
+sys.path.extend(['..'])
 
 import datetime
 from configuration import *
@@ -17,10 +17,6 @@ import uuid
 
 #CPO.create_tables()
 
-#CPO.get_stat_for_management(start=datetime.datetime.strptime("03-03-2016", "%d-%m-%Y"),
-#                            end=datetime.datetime.strptime("10-03-2016", "%d-%m-%Y"))
+CPO.get_stat_for_management(start=datetime.datetime.strptime("18-07-2016", "%d-%m-%Y"),
+                            end=datetime.datetime.strptime("22-07-2016", "%d-%m-%Y"))
 
-# CPO.violation_stat_daily(for_day="02-07-2016")
-
-CPO.create_dialog_member(name="sd", surname="", emails="ascaqc@sgvfweg.ri, wdfwf@DSFVBSDEGV.RU\r\ndwfwe@ffff.ruu\r\n",
-                         phone="+79117801258 88128878766, 776-88-00\r\n978968\r\n886(777)00000")

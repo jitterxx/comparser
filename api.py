@@ -920,7 +920,7 @@ class Statistics(object):
 
         colors = [
             ["#CC0033", "#FFCCCC"],
-            ["#996600", "#FFCC66"],
+            ["#FF9933", "#FFCC66"],
             ["#CCCC00", "#FFFFCC"],
             ["#990066", "#FF66CC"],
             ["#660066", "#CC66FF"],
