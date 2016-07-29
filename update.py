@@ -110,6 +110,13 @@ sql_update_15 = "ALTER TABLE `train_api` ADD COLUMN `check_date` DATETIME NULL D
 # 16
 sql_update_16 = "ALTER TABLE `tasks` ADD COLUMN `last_status_change` DATETIME NULL AFTER `status`;"
 
+#17
+sql_update_17 = "ALTER TABLE `email_cleared_data` ADD COLUMN `channel_type` INT(11) NULL AFTER `id`;"
+
+#18
+sql_update_18 = "UPDATE `email_cleared_data` SET `channel_type` = 0 WHERE `id` > 0 and message_id like 'message%';"
+
+
 # Создаем новые таблицы
 CPO.create_tables()
 
@@ -246,6 +253,21 @@ except Exception as e:
     print e.message, e.args
 else:
     print result
+
+try:
+    result = connection.execute(sql_update_17)
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
+
+try:
+    result = connection.execute(sql_update_18)
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
+
 
 connection.close()
 

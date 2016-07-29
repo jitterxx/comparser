@@ -243,7 +243,7 @@
             %endif
                 <div class="panel-heading" align="left">
                     <div class="row">
-                        <div class="col-sm-12 col-md-12">
+                        <div class="col-sm-6 col-md-6">
                             <a href="/control_center/show_full_thread?msg_id=${one.message_id}" target="_blank"
                                title="Полная переписка">
                                 <i class="fa fa-list-alt fa-2x"></i>
@@ -267,6 +267,15 @@
                                     <i class="fa fa-exclamation-circle fa-2x text-danger"></i>
                                 </a>
                                 -->
+                            %endif
+                        </div>
+                        <div class="col-sm-6 col-md-6" align="right">
+                            %if one.channel_type == 0:
+                            <i class="fa fa-envelope-o fa-2x"></i>
+                            %elif one.channel_type == 1:
+                            <i class="fa fa-phone fa-2x"></i>
+                            %else:
+                            <i class="fa fa-comments fa-2x"></i>
                             %endif
                         </div>
                     </div>

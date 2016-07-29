@@ -956,7 +956,7 @@ class Statistics(object):
                     "value": one[1],
                     "color": colors[i][0],
                     "highlight": colors[i][1],
-                    "label": members.get(one[0]).name
+                    "label": " ".join([members.get(one[0]).name, members.get(one[0]).surname])
                 }
                 data.append(part)
                 i += 1
@@ -971,7 +971,7 @@ class Statistics(object):
                     "value": one[1],
                     "color": colors[i][0],
                     "highlight": colors[i][1],
-                    "label": members.get(one[0]).name
+                    "label": " ".join([members.get(one[0]).name, members.get(one[0]).surname])
                 }
                 data.append(part)
                 i += 1

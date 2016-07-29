@@ -461,6 +461,7 @@ class Msg(Base):
     __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
+    channel_type = Column(sqlalchemy.Integer)
     message_id = Column(sqlalchemy.String(256))
     sender = Column(sqlalchemy.String(256))
     sender_name = Column(sqlalchemy.String(256))
