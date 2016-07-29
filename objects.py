@@ -3391,7 +3391,8 @@ def get_stat_for_management(start=None, end=None, users=None, members=None, tags
             else:
                 tasks_by_responsible[status].append([str(uuid), count])
 
-    # Количество задач с разбивкой по статусу и причинам
+    """
+    # Количество задач с разбивкой по статусу и причинам (старый вариант - учитывает статусы задач)
     try:
         resp = session.query(Task.status, TaskCauseTag.tag_id, func.count(TaskCauseTag.tag_id)).\
             outerjoin(TaskCauseTag, TaskCauseTag.task_uuid == Task.uuid).\
@@ -3419,7 +3420,32 @@ def get_stat_for_management(start=None, end=None, users=None, members=None, tags
                     tasks_by_cause[status].append([tagid, count])
                 else:
                     tasks_by_cause[status].append([tagid, count])
+    """
 
+    # Количество задач с разбивкой по статусу и причинам (новый вариант - НЕ учитывает статусы задач)
+    try:
+        resp = session.query(TaskCauseTag.tag_id, func.count(TaskCauseTag.tag_id)).\
+            join(Task, Task.uuid == TaskCauseTag.task_uuid).\
+            join(TrainAPIRecords, TrainAPIRecords.message_id == Task.message_id). \
+            filter(and_(TrainAPIRecords.date >= start_date,
+                        TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.user_action == 1,
+                        TrainAPIRecords.user_answer.in_(WARNING_CATEGORY))). \
+            group_by(TaskCauseTag.tag_id).all()
+
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        tasks_by_cause = dict()
+        tasks_by_cause[0] = list()
+
+        print "Задачи с разбивкой по причинам :", resp
+        for tagid, count in resp:
+            if tagid:
+                tasks_by_cause[0].append([tagid, count])
+
+    """
     # Кол-во задач по диалогам с участием сотрудников с разбивкой по статусу
     try:
         resp = session.query(Task.status, MsgMembers.member_uuid, func.count(MsgMembers.member_uuid)).\
@@ -3451,8 +3477,33 @@ def get_stat_for_management(start=None, end=None, users=None, members=None, tags
                     tasks_by_empl[status].append([tagid, count])
                 else:
                     tasks_by_empl[status].append([tagid, count])
+    """
+    # Кол-во задач по диалогам с участием сотрудников (новый вариант - НЕ учитывается статус задачи)
+    try:
+        resp = session.query(MsgMembers.member_uuid, func.count(MsgMembers.member_uuid)).\
+            join(TrainAPIRecords, TrainAPIRecords.message_id == MsgMembers.msg_id).\
+            join(DialogMember, DialogMember.uuid == MsgMembers.member_uuid).\
+            filter(and_(TrainAPIRecords.date >= start_date,
+                        TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.user_action == 1,
+                        TrainAPIRecords.user_answer.in_(WARNING_CATEGORY),
+                        DialogMember.type == 0)).\
+            group_by(MsgMembers.member_uuid).all()
 
-    # Кол-во задач по диалогам с участием клиентов с разбивкой по статусу
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        tasks_by_empl = dict()
+        tasks_by_empl[0] = list()
+
+        print "Кол-во задач по диалогам с участием сотрудников с разбивкой по статусу :", resp
+        for tagid, count in resp:
+            if tagid:
+                tasks_by_empl[0].append([tagid, count])
+
+    """
+    # Кол-во задач по диалогам с участием клиентов с разбивкой по статусу (старый вариант - учитывает статус задач)
     try:
         resp = session.query(Task.status, MsgMembers.member_uuid, func.count(MsgMembers.member_uuid)).\
             outerjoin(TrainAPIRecords, TrainAPIRecords.message_id == Task.message_id).\
@@ -3483,6 +3534,30 @@ def get_stat_for_management(start=None, end=None, users=None, members=None, tags
                     tasks_by_client[status].append([tagid, count])
                 else:
                     tasks_by_client[status].append([tagid, count])
+    """
+
+    # Кол-во задач по диалогам с участием клиентов (новый вариант - НЕ учитывает статус задач)
+    try:
+        resp = session.query(MsgMembers.member_uuid, func.count(MsgMembers.member_uuid)).\
+            join(TrainAPIRecords, TrainAPIRecords.message_id == MsgMembers.msg_id).\
+            join(DialogMember, DialogMember.uuid == MsgMembers.member_uuid).\
+            filter(and_(TrainAPIRecords.date >= start_date,
+                        TrainAPIRecords.date <= end_date,
+                        TrainAPIRecords.user_action == 1,
+                        TrainAPIRecords.user_answer.in_(WARNING_CATEGORY),
+                        DialogMember.type == 1)).\
+            group_by(MsgMembers.member_uuid).all()
+    except Exception as e:
+        print str(e)
+        raise e
+    else:
+        tasks_by_client = dict()
+        tasks_by_client[0] = list()
+
+        print "Кол-во задач по диалогам с участием клиентов с разбивкой по статусу :", resp
+        for tagid, count in resp:
+            if tagid:
+                tasks_by_client[0].append([tagid, count])
 
     return (non_checked_by_users,
             confirmed_problem,
