@@ -3,6 +3,11 @@ body {
   font-size: 1.8em;
 }
 
+.story-header {
+    text-decoration-style: dashed;
+    text-decoration: underline;
+}
+
 .table-padding {
     margin-top: 50px;
 }
