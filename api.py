@@ -928,7 +928,7 @@ class Statistics(object):
 
         colors = [
             ["#CC0033", "#FFCCCC"],
-            ["#996600", "#FFCC66"],
+            ["#FF9933", "#FFCC66"],
             ["#CCCC00", "#FFFFCC"],
             ["#990066", "#FF66CC"],
             ["#660066", "#CC66FF"],
@@ -942,6 +942,7 @@ class Statistics(object):
         data = list()
         if chart_id == "problem_by_cause":
             i = 0
+            tasks_by_cause[0] = sorted(tasks_by_cause[0], key=lambda x: x[1], reverse=True)
             print "tasks_by_cause: ",tasks_by_cause
             for one in tasks_by_cause[0]:
                 part = {
@@ -957,12 +958,13 @@ class Statistics(object):
 
         elif chart_id == "problem_by_employee":
             i = 0
+            tasks_by_empl[0] = sorted(tasks_by_empl[0], key=lambda x: x[1], reverse=True)
             for one in tasks_by_empl[0]:
                 part = {
                     "value": one[1],
                     "color": colors[i][0],
                     "highlight": colors[i][1],
-                    "label": members.get(one[0]).name
+                    "label": " ".join([members.get(one[0]).name, members.get(one[0]).surname])
                 }
                 data.append(part)
                 i += 1
@@ -971,12 +973,13 @@ class Statistics(object):
 
         elif chart_id == "problem_by_client":
             i = 0
+            tasks_by_client[0] = sorted(tasks_by_client[0], key=lambda x: x[1], reverse=True)
             for one in tasks_by_client[0]:
                 part = {
                     "value": one[1],
                     "color": colors[i][0],
                     "highlight": colors[i][1],
-                    "label": members.get(one[0]).name
+                    "label": " ".join([members.get(one[0]).name, members.get(one[0]).surname])
                 }
                 data.append(part)
                 i += 1
