@@ -879,7 +879,7 @@ class Statistics(object):
             end_date = datetime.datetime.now()
 
         try:
-            cur_day = datetime.datetime.now()
+            cur_day = datetime.datetime.strptime("20-07-2016", "%d-%m-%Y")
             users = CPO.get_all_users_dict()
             members = CPO.get_all_dialog_members()
             tags = CPO.get_tags()
