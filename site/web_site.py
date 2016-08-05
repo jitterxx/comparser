@@ -157,7 +157,7 @@ class Root(object):
     """
 
     @cherrypy.expose
-    def demo_request(self, customer_email=None, customer_name=None, customer_phone=None):
+    def demo_request(self, customer_email=None, customer_name=None, customer_phone=None, ads_code=None):
 
         if not customer_email and not customer_phone:
             text = "К сожалению, вы не указали ни email, ни телефон. <br>" \
@@ -170,11 +170,13 @@ class Root(object):
             customer_name = "не указано"
         if not customer_phone:
             customer_phone = "не указано"
+        if not ads_code:
+            ads_code = "Запрос подробностей с сайта"
 
         try:
             WSO.landing_customer_contacts(customer_email=customer_email, customer_name=customer_name,
                                           customer_session=cherrypy.request.headers, customer_phone=customer_phone,
-                                          ads_code="Запрос подробностей с сайта")
+                                          ads_code=ads_code)
         except Exception as e:
             print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
 
