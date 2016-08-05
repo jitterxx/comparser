@@ -162,7 +162,7 @@ class Root(object):
         if not customer_email and not customer_phone:
             text = "К сожалению, вы не указали ни email, ни телефон. <br>" \
                    "Сейчас я верну вас обратно, укажите пожалуйста ваши контакты."
-            return ShowNotification().index(error=text, url="/#demo")
+            return ShowNotification().index(error=text, url="/#price")
 
         if not customer_email:
             customer_email = "не указан"
@@ -174,7 +174,7 @@ class Root(object):
         try:
             WSO.landing_customer_contacts(customer_email=customer_email, customer_name=customer_name,
                                           customer_session=cherrypy.request.headers, customer_phone=customer_phone,
-                                          ads_code="Запрос демо с сайта")
+                                          ads_code="Запрос подробностей с сайта")
         except Exception as e:
             print "Ошибка при попытке отправить контакты с лендинга. %s " % str(e)
 
