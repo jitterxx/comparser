@@ -7,6 +7,7 @@ sys.setdefaultencoding("utf-8")
 sys.path.extend(['..'])
 
 import datetime
+import time
 from configuration import *
 import objects as CPO
 import uuid
@@ -91,10 +92,12 @@ def prepare_audio_file(file=None, path=None, file_format=None):
 
 if __name__ == '__main__':
 
-    parts_list = prepare_audio_file(file=AUDIO_FILE, path=AUDIO_PATH, file_format="mp3")
+    #parts_list = prepare_audio_file(file=AUDIO_FILE, path=AUDIO_PATH, file_format="mp3")
+    parts_list = ["/home/sergey/test-20sec-16pcm.pcm"]
 
     # готовим к отправке файл
     print "# готовим к отправке файл: %s" % parts_list[0]
+
     if len(parts_list) == 1:
         """
         content_file = open(parts_list[0], 'r')
@@ -117,24 +120,39 @@ if __name__ == '__main__':
         content_file.close()
         """
 
-        def body_data_gen():
+        def body_data_gen(content_file_name=None):
             content_file = open("audio_temp/6a5cba.pcm", 'r')
             content = content_file.read()
 
-            post_body = b""
-            chunk_size = 500000
+            chunk_size = 100000
 
             while len(content) > 0:
+                post_body = b""
                 size = min(len(content), chunk_size)
                 post_body += b"%s\r\n" % hex(size)[2:]
                 post_body += b"%s\r\n" % content[:size]
-                yield post_body
                 content = content[size:]
-                post_body = b""
+                yield post_body
 
-            post_body += b"0\r\n\r\n"
             content_file.close()
+            post_body = b"0\r\n\r\n"
             yield post_body
+
+        def body_data_gen4(content_file_name=None):
+            content_file = open("audio_temp/6a5cba.pcm", 'rb')
+            content = content_file.read()
+            content_file.close()
+
+            chunk_size = 500000
+
+            while len(content) > 0:
+                print "Отправляю часть..."
+                size = min(len(content), chunk_size)
+                content = content[size:]
+                yield "%s\r\n%s\r\n" % (hex(size)[2:], content[:size])
+
+            print "Отправляю завершающую часть..."
+            yield "0\r\n\r\n"
 
         def body_data_gen3(content_file_name=None):
             content_file = open(content_file_name, 'r')
@@ -163,6 +181,28 @@ if __name__ == '__main__':
                     chunk = f.read(chunksize)
                 f.close()
 
+        def read_chunks(content_file_name, chunksize=500000):
+            print "Открываю файл: %s" % content_file_name
+            result = list()
+            for f in [open(content_file_name, 'rb')]:
+                chunk = f.read(chunksize)
+                while chunk:
+                    print "Читаем часть длинной %s" % len(chunk)
+                    result.append(chunk)
+                    chunk = f.read(chunksize)
+                f.close()
+
+            return result
+
+        def body_data_gen5(chunks=None):
+
+            for one in chunks:
+                print "Отправляю часть (%s)..." % len(one)
+                yield "%s\r\n%s\r\n" % (hex(len(one))[2:], one)
+                time.sleep(1)
+
+            print "Завершаю передачу..."
+            yield "0\r\n\r\n"
 
         # формируем запрос
         print "# формируем запрос"
@@ -173,10 +213,11 @@ if __name__ == '__main__':
         headers = {"Content-Type": "audio/x-pcm;bit=16;rate=16000", "Transfer-Encoding": "chunked"}
         # headers = {"Content-Type": "audio/x-pcm;bit=16;rate=16000", "Content-Length": len("0")}
         parameters = {"uuid": REQ_UUID, "key": REQ_KEY, "topic": REQ_TOPIC, "lang": REQ_LANG}
-        data = "0\r\n\r\n"
+
+        chunks = read_chunks(parts_list[0])
 
         req = requests.post(url="https://asr.yandex.net/asr_xml", params=parameters, headers=headers,
-                            data=body_data_gen3(parts_list[0]))
+                            data=body_data_gen5(chunks))
 
         while True:
             if req.status_code == 200:
@@ -188,5 +229,41 @@ if __name__ == '__main__':
 
 
         print req.headers
+        print req.content
         print req.text
-        print req.status_code
+        print req.raw.read(decode_content=True)
+
+        """
+
+        import httplib
+
+        def write_chunk(conn, data):
+            print "Отправляем данные (%s)..." % len(data)
+            conn.send("%s\r\n" % hex(len(data))[2:])
+            conn.send("%s\r\n" % data)
+
+        def dynamically_generate_data(content_file_name, chunksize=600000):
+            for f in [open(content_file_name, 'rb')]:
+                chunk = f.read(chunksize)
+                while chunk:
+                    print "Читаем часть длинной %s" % len(chunk)
+                    yield chunk
+                    chunk = f.read(chunksize)
+                f.close()
+
+
+        conn = httplib.HTTPSConnection(host="asr.yandex.net", port=443)
+        url = "asr_xml?key=%s&uuid=%s&topic=%s&lang=%s" % (REQ_KEY, REQ_UUID, REQ_TOPIC, REQ_LANG)
+        conn.putrequest('POST', url)
+        conn.putheader('Content-Type', 'audio/x-pcm;bit=16;rate=16000')
+        conn.putheader('Transfer-Encoding', 'chunked')
+        conn.endheaders()
+
+        for new_chunk in read_chunks(parts_list[0]):
+            write_chunk(conn, new_chunk)
+        conn.send('0\r\n')
+
+        resp = conn.getresponse()
+        print(resp.status, resp.reason)
+        conn.close()
+        """
