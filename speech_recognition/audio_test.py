@@ -85,21 +85,127 @@ def prepare_audio_file(file=None, path=None, file_format=None):
         # конвертируем в PCM
         print "# конвертируем в PCM"
         tmp_filename = uuid.uuid4().__str__()[:6]
-        fname = TEMP_PATH + tmp_filename + ".pcm"
-        track.export(out_f=fname, format="u16le", parameters=["-acodec", "pcm_s16le"])
-        return [fname]
+        track.export(out_f=TEMP_PATH + tmp_filename + ".pcm", format="u16le", parameters=["-acodec", "pcm_s16le"])
+        return [tmp_filename + ".pcm"]
 
 
 if __name__ == '__main__':
 
-    #parts_list = prepare_audio_file(file=AUDIO_FILE, path=AUDIO_PATH, file_format="mp3")
-    parts_list = ["/home/sergey/test-20sec-16pcm.pcm"]
+    file_name = prepare_audio_file(file=AUDIO_FILE, path=AUDIO_PATH, file_format="mp3")[0]
+
+    TEMP_PATH = "/home/sergey/"
+    file_name ="test-20sec-16pcm.pcm"
+
+    #TEMP_PATH = "/home/sergey/Downloads/"
+    #file_name = "2015_12_21+10-45-34+zavladenie+Outgoing+to+sergey.spevak+.mp3"
 
     # готовим к отправке файл
-    print "# готовим к отправке файл: %s" % parts_list[0]
+    print "# готовим к отправке файл: %s" % TEMP_PATH + file_name
+    raw_input()
 
-    if len(parts_list) == 1:
+    if file_name:
+
+        # Google speech api
+
+        from googleapiclient import discovery
+        import httplib2
+        from oauth2client.client import GoogleCredentials
+        import base64
+        import json
+        from gcloud import storage
+        import os
+
+
+        # Application default credentials provided by env variable
+        # GOOGLE_APPLICATION_CREDENTIALS
+        credentials = GoogleCredentials.get_application_default().create_scoped(
+            ['https://www.googleapis.com/auth/cloud-platform'])
+        http = httplib2.Http()
+        credentials.authorize(http)
+
+        file_size = os.path.getsize(TEMP_PATH + file_name)
+        if file_size*1.4 > 1024*1024:
+            print "Файл больше 1Мб, отправляем через Google Cloud Store..."
+            store_service = discovery.build("storage", 'v1', credentials=credentials)
+            BUCKET = "conversation-parser-speech.appspot.com"
+
+            client = storage.Client()
+            bucket = client.get_bucket(BUCKET)
+            blob = bucket.blob(file_name)
+            blob.upload_from_filename(TEMP_PATH + file_name, content_type="binary/octet-stream")
+            print "Файл загружен в Cloud store (%s)" % blob.public_url
+            req_content = {"uri": "gs://{0}/{1}".format(BUCKET,file_name)}
+
+        else:
+            print "Файл меньше 1Мб, отправляем прямой запрос..."
+            file_content = open(TEMP_PATH + file_name, 'rb').read()
+            # Base64 encode the binary audio file for inclusion in the request.
+            speech_content = base64.b64encode(file_content)
+            req_content = {"content": speech_content.decode('UTF-8')}
+
+
+        """Transcribe the given audio file asynchronously.
+            speech_file: the name of the audio file.
         """
+        raw_input()
+
+        # [START construct_request]
+        speech_service = discovery.build('speech', 'v1beta1', http=http)
+        service_request = speech_service.speech().asyncrecognize(
+            body={
+                'config': {
+                    # There are a bunch of config options you can specify. See
+                    # https://goo.gl/EPjAup for the full list.
+                    'encoding': 'LINEAR16',  # raw 16-bit signed LE samples
+                    'sampleRate': 16000,  # 16 khz
+                    # See https://goo.gl/DPeVFW for a list of supported languages.
+                    'languageCode': 'ru-RU',  # a BCP-47 language tag
+                },
+                'audio': req_content
+                })
+        # [END construct_request]
+        # [START send_request]
+        response = service_request.execute()
+        print(json.dumps(response))
+
+        # [END send_request]
+
+        # запоминаем идентификатор запроса на распознавание
+        name = response['name']
+        # Создаем запрос для проверкаи результата по идентификатору запроса
+        service_request = speech_service.operations().get(name=name)
+
+        sleep_period = file_size // 5*1024*1024  # 5 мб одна минута
+        sleep_period = 60  # 60 секунд, вычисляется из размера файла (распознавание 1 минуты занимает около 1 минуты)
+
+        while True:
+            # Give the server a few seconds to process.
+            print('Waiting for server processing...')
+            print "Проверка будет сделана через {0} секунд".format(sleep_period)
+            time.sleep(sleep_period)
+            sleep_period = 60  # проверяем каждую минуту
+
+            # Get the long running operation with response.
+            response = service_request.execute()
+
+            if 'done' in response and response['done']:
+                print "Получен ответ."
+                break
+
+        print(json.dumps(response['response']['results']))
+        print "Формитируем ответ..."
+
+        a = response['response']['results']
+        for alt in a:
+            print '["alternatives"]', len(alt["alternatives"])
+            print alt["alternatives"][0]["confidence"]
+            print unicode(str(alt["alternatives"][0]["transcript"]), "unicode-escape")
+
+
+
+
+        """
+        # Yandex speechkit
         content_file = open(parts_list[0], 'r')
         content = content_file.read()
 
@@ -118,7 +224,7 @@ if __name__ == '__main__':
         post_body += '0\r\n\r\n'
 
         content_file.close()
-        """
+
 
         def body_data_gen(content_file_name=None):
             content_file = open("audio_temp/6a5cba.pcm", 'r')
@@ -232,8 +338,6 @@ if __name__ == '__main__':
         print req.content
         print req.text
         print req.raw.read(decode_content=True)
-
-        """
 
         import httplib
 

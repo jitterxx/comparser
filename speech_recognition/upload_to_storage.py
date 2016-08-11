@@ -33,14 +33,21 @@ from gcloud import storage
 from oauth2client.client import GoogleCredentials
 from googleapiclient.discovery import build
 
+#credentials = GoogleCredentials.get_application_default().create_scoped(
+#    ["https://www.googleapis.com/auth/devstorage.read_write"])
+#service = build("storage", 'v1', credentials=credentials)
+
 credentials = GoogleCredentials.get_application_default().create_scoped(
-    ["https://www.googleapis.com/auth/devstorage.read_write"])
-service = build("storage", 'v1', credentials=credentials)
+    ['https://www.googleapis.com/auth/cloud-platform'])
+http = httplib2.Http()
+credentials.authorize(http)
+service = discovery.build('storage', 'v1', http=http)
+
 BUCKET = "conversation-parser-speech.appspot.com"
 
 client = storage.Client()
 bucket = client.get_bucket(BUCKET)
-blob = bucket.blob("new_test.pcm")
+blob = bucket.blob("new_test1.pcm")
 # blob.upload_from_file(file("/home/sergey/test-16bit16khz-pcm-s16le.pcm"), content_type="binary/octet-stream")
 print blob.public_url
 
