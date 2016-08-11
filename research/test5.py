@@ -9,13 +9,38 @@ sys.path.extend(['..'])
 import datetime
 from configuration import *
 import objects as CPO
+import pydub
+from pydub import silence, playback
+
+AUDIO_PATH = "/home/sergey/Downloads/"
+AUDIO_FILE = "2015_12_21+10-45-34+zavladenie+Outgoing+to+sergey.spevak+.mp3"
+
+track = pydub.AudioSegment.from_file(file=AUDIO_PATH + AUDIO_FILE, format="mp3")
+
+mono_channels = track.split_to_mono()
+
+# Выравниваем громкость на каналах
+for i in range(0, len(mono_channels)):
+    print mono_channels[i].max_dBFS
+    print mono_channels[i].rms
+    mono_channels[i] = mono_channels[i].apply_gain(-mono_channels[i].max_dBFS)
+
+track = mono_channels[0].overlay(mono_channels[1])
 
 
-a = [{"alternatives": [{"confidence": 0.67582452, "transcript": "\u0414\u0430 \u0421\u0435\u0440\u0433\u0435\u0439 \u0437\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435 \u0412\u043b\u0430\u0434\u0438\u0441\u043b\u0430\u0432 \u0414\u0430 \u043d\u0438\u0447\u0435\u0433\u043e \u043f\u0440\u043e\u0441\u0442\u043e"}]}, {"alternatives": [{"confidence": 0.70359045, "transcript": "\u0432\u043e\u043f\u0440\u043e\u0441 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0430"}]}, {"alternatives": [{"confidence": 0.62338775, "transcript": "\u043d\u0443 \u0442\u043e \u0447\u0442\u043e \u043e\u043d\u0430 \u043f\u043e\u0441\u0442\u0443\u043f\u0430\u0435\u0442 3 \u0427\u0430\u0441 \u0440\u0430\u0441\u043f\u043b\u0430\u0442\u044b \u0441\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0438\u0437 \u0440\u0430\u0437\u043d\u044b\u0445 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u043e\u0432 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u043e\u0432 \u043a\u0430\u043a\u0438\u0435-\u0442\u043e \u043c\u043e\u0436\u043d\u043e \u0432\u044b\u0434\u0435\u043b\u0438\u0442\u044c \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u044b"}]}, {"alternatives": [{"confidence": 0.59241861, "transcript": "\u0432\u0441\u043f\u043e\u043c\u043d\u0438\u0442\u044c \u043a\u0430\u043a\u043e\u0439-\u043d\u0438\u0431\u0443\u0434\u044c \u0447\u0430\u0441 \u0431\u044b\u0432\u0430\u0435\u0442 \u043d\u0435\u0445\u0432\u0430\u0442\u043a\u0430 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u043e\u0432"}]}, {"alternatives": [{"confidence": 0.80248708, "transcript": "\u041c\u0430\u0442\u0440\u043e\u0441\u043e\u0432\u0430 \u0435\u0441\u0442\u044c \u0442\u0430\u043a \u043a\u0430\u043a \u0432\u044b \u0440\u0435\u0448\u0430\u0435\u0442\u0435 \u0440\u0435\u0448\u0430\u043b\u0438 \u043f\u043e\u043c\u0435\u0448\u0430\u043b\u0438 \u044d\u0442\u0438 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u044b"}]}, {"alternatives": [{"confidence": 0.71014631, "transcript": "\u0441\u043c\u043e\u0442\u0440\u0435\u0442\u044c \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0432\u044b\u0448\u0435 5 5 5 1 \u0427\u0442\u043e \u0441\u0434\u0435\u043b\u0430\u0442\u044c \u0447\u0442\u043e \u0434\u0435\u043b\u0430\u043b\u0438 \u0441\u0442\u0430\u0440\u0430\u0435\u043c\u0441\u044f \u0432\u0441\u0435-\u0442\u0430\u043a\u0438 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044e \u0441\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432\u044b\u0441\u0442\u0443\u043f\u0430\u044e\u0449\u0438\u0439 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u044c\u043d\u043e\u0435 \u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u043d\u043e\u0435 \u043e\u0431\u0435\u0441\u043f\u0435\u0447\u0435\u043d\u0438\u0435"}]}, {"alternatives": [{"confidence": 0.72779381, "transcript": "\u043e\u043d \u043a\u0430\u043a\u0438\u043c-\u0442\u043e \u043e\u0431\u0440\u0430\u0437\u043e\u043c \u043e\u0431\u0440\u0430\u0431\u0430\u0442\u044b\u0432\u0430\u043b \u0438\u0441\u0445\u043e\u0434\u044f\u0449\u0435\u0439 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0435\u0439 \u0437\u0430\u0434\u0430\u0432\u0430\u043b \u043d\u0443\u0436\u043d\u044b \u0442\u0430\u043c \u043d\u0435\u0442 \u043e\u043d \u0441\u0430\u043c \u0438\u0437\u043d\u0430\u0447\u0430\u043b\u044c\u043d\u043e \u0443\u0436\u0435 \u044d\u0442\u043e\u0442 \u041a\u043e\u043d\u0435\u0447\u043d\u043e \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044e \u0444\u043e\u0440\u043c\u0438\u0440\u0443\u0435\u0442\u0441\u044f \u0432 \u0432\u0438\u0434\u0435 \u0432 \u043a\u043e\u0442\u043e\u0440\u043e\u043c \u043d\u0430\u0434\u043e \u043d\u0430\u0439\u0442\u0438 \u044d\u0442\u043e \u0441\u0432\u044f\u0437\u0430\u043d\u043e \u043f\u043e\u0436\u0430\u043b\u0443\u0439\u0441\u0442\u0430"}]}]
+chunks = silence.split_on_silence(track,
+                                        # must be silent for at least half a second
+                                        min_silence_len=450,
+                                        # consider it silent if quieter than -16 dBFS
+                                        silence_thresh=-45,
+                                        keep_silence=200
+                                        )
 
-print len(a)
+print "Кол-во отрезков:", len(chunks)
+for i in chunks:
+    playback.play(i)
+    raw_input()
 
-for alt in a:
-    print '["alternatives"]', len(alt["alternatives"])
-    print alt["alternatives"][0]["confidence"]
-    print unicode(str(alt["alternatives"][0]["transcript"]), "unicode-escape")
+print "Позиции отрезков с тишиной:"
+for one in silence.detect_nonsilent(track, min_silence_len=300, silence_thresh=-40):
+    print "Отрезок с {0} по {1} секунды".format(one[0]/1000.0, one[1]/1000.0)

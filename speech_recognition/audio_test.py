@@ -16,9 +16,19 @@ import requests
 from pydub import AudioSegment, playback
 import pydub.silence
 
-AUDIO_PATH = "/home/sergey/Downloads/"
+from googleapiclient import discovery
+import httplib2
+from oauth2client.client import GoogleCredentials
+import base64
+import json
+from gcloud import storage
+import os
+
+
+AUDIO_PATH = "/home/sergey/Downloads/Telegram Desktop/"
 TEMP_PATH = "audio_temp/"
-AUDIO_FILE = "2015_12_21+10-45-34+zavladenie+Outgoing+to+sergey.spevak+.mp3"
+# AUDIO_FILE = "2015_12_21+10-45-34+zavladenie+Outgoing+to+sergey.spevak+.mp3"
+AUDIO_FILE = "W1a15verTJyfsFmD_a1P3JjX0u8LBEmBsFDqev3zvpM.mp3"
 SPLIT_SILENCE = False
 
 
@@ -60,14 +70,16 @@ def prepare_audio_file(file=None, path=None, file_format=None):
     if track.sample_width != 2:
         track = track.set_sample_width(sample_width=2)
 
+    SPLIT_SILENCE = True
+
     if SPLIT_SILENCE:
         # Режем по паузам
         chunks = pydub.silence.split_on_silence(track,
                                                 # must be silent for at least half a second
-                                                min_silence_len=500,
+                                                min_silence_len=450,
                                                 # consider it silent if quieter than -16 dBFS
-                                                silence_thresh=-13,
-                                                keep_silence=100
+                                                silence_thresh=-45,
+                                                keep_silence=200
                                                 )
 
         print "Кол-во отрезков:", len(chunks)
@@ -78,7 +90,7 @@ def prepare_audio_file(file=None, path=None, file_format=None):
         for i, chunk in enumerate(chunks):
             fname = TEMP_PATH + tmp_filename + "-{0}".format(i) + ".pcm"
             chunk.export(out_f=fname, format="u16le", parameters=["-acodec", "pcm_s16le"])
-            tmp_list.append(fname)
+            tmp_list.append(tmp_filename + "-{0}".format(i) + ".pcm")
 
         return tmp_list
     else:
@@ -91,30 +103,16 @@ def prepare_audio_file(file=None, path=None, file_format=None):
 
 if __name__ == '__main__':
 
-    file_name = prepare_audio_file(file=AUDIO_FILE, path=AUDIO_PATH, file_format="mp3")[0]
+    parts = prepare_audio_file(file=AUDIO_FILE, path=AUDIO_PATH, file_format="mp3")
+    print parts
 
-    TEMP_PATH = "/home/sergey/"
-    file_name ="test-20sec-16pcm.pcm"
-
-    #TEMP_PATH = "/home/sergey/Downloads/"
-    #file_name = "2015_12_21+10-45-34+zavladenie+Outgoing+to+sergey.spevak+.mp3"
-
-    # готовим к отправке файл
-    print "# готовим к отправке файл: %s" % TEMP_PATH + file_name
-    raw_input()
-
-    if file_name:
+    if len(parts) == 1:
+        file_name = parts[0]
+        # готовим к отправке файл
+        print "# готовим к отправке файл: %s" % TEMP_PATH + file_name
+        raw_input()
 
         # Google speech api
-
-        from googleapiclient import discovery
-        import httplib2
-        from oauth2client.client import GoogleCredentials
-        import base64
-        import json
-        from gcloud import storage
-        import os
-
 
         # Application default credentials provided by env variable
         # GOOGLE_APPLICATION_CREDENTIALS
@@ -200,6 +198,109 @@ if __name__ == '__main__':
             print '["alternatives"]', len(alt["alternatives"])
             print alt["alternatives"][0]["confidence"]
             print unicode(str(alt["alternatives"][0]["transcript"]), "unicode-escape")
+
+    elif len(parts) >= 2:
+        # отправялем по частям
+        async_req_ids = list()
+        # Google speech api
+
+        # Application default credentials provided by env variable
+        # GOOGLE_APPLICATION_CREDENTIALS
+        credentials = GoogleCredentials.get_application_default().create_scoped(
+            ['https://www.googleapis.com/auth/cloud-platform'])
+        http = httplib2.Http()
+        credentials.authorize(http)
+        speech_service = discovery.build('speech', 'v1beta1', http=http)
+
+        chunks = list()
+
+        print "Отправляем запросы в Google speech api..."
+        for i in range(0, min(30, len(parts))):
+            file_name = parts[i]
+            print "Читаем отрезок: ", file_name
+            file_size = os.path.getsize(TEMP_PATH + file_name)
+
+            chunks.append(open(TEMP_PATH + file_name, "rb").read())
+
+            if file_size*1.4 > 1024*1024:
+                print "Файл больше 1Мб, отправляем через Google Cloud Store..."
+                store_service = discovery.build("storage", 'v1', credentials=credentials)
+                BUCKET = "conversation-parser-speech.appspot.com"
+
+                client = storage.Client()
+                bucket = client.get_bucket(BUCKET)
+                blob = bucket.blob(file_name)
+                blob.upload_from_filename(TEMP_PATH + file_name, content_type="binary/octet-stream")
+                print "Файл загружен в Cloud store (%s)" % blob.public_url
+                req_content = {"uri": "gs://{0}/{1}".format(BUCKET, file_name)}
+
+            else:
+                print "Файл меньше 1Мб, отправляем прямой запрос..."
+                file_content = open(TEMP_PATH + file_name, 'rb').read()
+                # Base64 encode the binary audio file for inclusion in the request.
+                speech_content = base64.b64encode(file_content)
+                req_content = {"content": speech_content.decode('UTF-8')}
+
+            context = {"phrases": ['документ', "нотариус", "печать", "электронная подпись", "встреча", "подать", "комплект",
+                                   "стоимость", "регистрация", "налоговая", "расчетный", "счет", "привезем", "банк",
+                                   "мы", "получим", "паспорт", "копия", "одна", "нас", "диалог", "юрбюро точка ру", "бюро",
+                                   "yurburo.ru", "точка ру", "но"]}
+
+            # [START construct_request]
+            service_request = speech_service.speech().asyncrecognize(
+                body={
+                    'config': {
+                        # There are a bunch of config options you can specify. See
+                        # https://goo.gl/EPjAup for the full list.
+                        'encoding': 'LINEAR16',  # raw 16-bit signed LE samples
+                        'sampleRate': 16000,  # 16 khz
+                        # See https://goo.gl/DPeVFW for a list of supported languages.
+                        'languageCode': 'ru-RU',  # a BCP-47 language tag
+                        'speechContext': context
+                    },
+                    'audio': req_content
+                    })
+            # [END construct_request]
+            # [START send_request]
+            try:
+                response = service_request.execute()
+            except Exception as e:
+                print "Ошибка.", str(e)
+                raw_input("Продолжить?")
+            else:
+                async_req_ids.append(speech_service.operations().get(name=response['name']))
+                print "Запрос #{0} принят. Идентификатор: {1}".format(i, response['name'])
+
+        print "Все запросы приняты... Продолжить?"
+        raw_input()
+        result = [None for i in range(len(async_req_ids))]
+        # Получаем ответы на запросы
+
+        for i in range(0, len(async_req_ids)):
+            print "Запрашиваем ответ для части {0}.".format(i)
+            recieved = False
+            while not recieved:
+                resp = async_req_ids[i].execute()
+                if 'done' in resp and resp['done']:
+                    print "Получен ответ для части {0}.".format(i)
+                    if resp['response'].get('results'):
+                        result[i] = resp['response'].get('results')[0]['alternatives'][0]['transcript']
+                    else:
+                        result[i] = ""
+                    recieved = True
+                else:
+                    print "Ждем 10 сек..."
+                    time.sleep(10)
+
+        print "Итоговый результат распознавания:"
+        for one in result:
+            print " - ", one
+
+
+    else:
+        print "Ошибка."
+
+
 
 
 
