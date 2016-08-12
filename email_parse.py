@@ -206,11 +206,19 @@ def exception(data):
 
     # Не обрабатываем сообщения, если адрес отправителя это адрес аккаунта используещегося системой.
     # Т.е. письмо или отправлено само себе или переслано по правилам пересылки от кого-то.
+    if debug:
+        print "**** Проверка не отправлялось ли письмо системой (уведомление) ****"
+
     str = data['sender']
     email = re.compile(CPO.smtp_email, re.I|re.U)
     email_re = email.search(str)
     if email_re:
         isexception = True
+
+    if debug:
+        print "Отправитель: {0}".format(str)
+        print "Аккаунт системы: {0}".format(CPO.smtp_email)
+        print "EXCEPTION: {0}".format(isexception)
 
     # Проверяем что поля От, Кому и СС, содержат адреса из доменов подлежащих проверке
     # Список доменов находится в CHECK_DOMAINS
