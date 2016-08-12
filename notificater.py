@@ -251,6 +251,12 @@ def send_email(category=None, orig_msg=None, msg_uuid=None, notify_list=None):
     finally:
         smtp.quit()
 
+if __name__ == '__main__':
+    if PRODUCTION_MODE:
+        notify()
+    else:
+        print "*** Система находится в режиме обучения ***"
+        print "*** Уведомления не отправляются ***"
+        print "PRODUCTION_MODE: ", PRODUCTION_MODE
 
-notify()
 

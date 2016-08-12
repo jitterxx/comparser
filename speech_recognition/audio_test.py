@@ -43,6 +43,13 @@ def prepare_audio_file(file=None, path=None, file_format=None):
     print track.frame_rate
     print "-"*30
 
+    # приводим к 16000hz 16bit
+    print "# приводим к 16000hz 16bit"
+    if track.frame_rate != 16000:
+        track = track.set_frame_rate(frame_rate=16000)
+    if track.sample_width != 2:
+        track = track.set_sample_width(sample_width=2)
+
     if track.channels == 2:
         mono_channels = track.split_to_mono()
 
@@ -62,13 +69,6 @@ def prepare_audio_file(file=None, path=None, file_format=None):
     print track.duration_seconds
     print track.frame_rate
     print "-"*30
-
-    # приводим к 16000hz 16bit
-    print "# приводим к 16000hz 16bit"
-    if track.frame_rate != 16000:
-        track = track.set_frame_rate(frame_rate=16000)
-    if track.sample_width != 2:
-        track = track.set_sample_width(sample_width=2)
 
     SPLIT_SILENCE = True
 
@@ -243,7 +243,7 @@ if __name__ == '__main__':
 
             context = {"phrases": ['документ', "нотариус", "печать", "электронная подпись", "встреча", "подать", "комплект",
                                    "стоимость", "регистрация", "налоговая", "расчетный", "счет", "привезем", "банк",
-                                   "мы", "получим", "паспорт", "копия", "одна", "нас", "диалог", "юрбюро точка ру", "бюро",
+                                   "мы", "получим", "паспорт", "копия", "одна", "у нас", "диалог", "юрбюро точка ру", "бюро",
                                    "yurburo.ru", "точка ру", "но"]}
 
             # [START construct_request]
@@ -270,6 +270,9 @@ if __name__ == '__main__':
             else:
                 async_req_ids.append(speech_service.operations().get(name=response['name']))
                 print "Запрос #{0} принят. Идентификатор: {1}".format(i, response['name'])
+
+                # удаляем временный файл
+                os.remove(TEMP_PATH + file_name)
 
         print "Все запросы приняты... Продолжить?"
         raw_input()

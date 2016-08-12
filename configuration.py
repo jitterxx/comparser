@@ -83,4 +83,8 @@ CHANNEL_TYPE = {0: "email", 1: "phone"}
 
 DIALOG_MEMBER_TYPE = {0: "employee", 1: "client"}
 
+# Режим работы системы. True - рабочий режим (ведем статистику и шлем уведомления),
+# False - режим обучения (не ведется статистика, не отправляются уведомления)
+PRODUCTION_MODE = False
+
 

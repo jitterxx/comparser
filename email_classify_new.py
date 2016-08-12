@@ -127,13 +127,18 @@ else:
                         print "email_classify_new(). Ошибка создания Задачи. %s" % str(e)
                 """
     # обновляем статистику после классификации
-    if clear:
+    if clear and PRODUCTION_MODE:
         if args.debug:
             print "Email_classify_new(). Считаем дневную статистику по основным показателям."
         try:
             CPO.violation_stat_daily()
         except Exception as e:
             print "email_classify_new(). Ошибка вычисления статистики. ", str(e)
+    else:
+        print "*** Система находится в режиме обучения ***"
+        print "*** Статистика не рассчитывается ***"
+        print "clear:", clear
+        print "PRODUCTION_MODE: ", PRODUCTION_MODE
 
 finally:
     session.close()
