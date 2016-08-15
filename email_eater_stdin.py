@@ -81,6 +81,9 @@ if msg:
         session.close()
 
 print msg
-sys.exit(os.EX_OK)
+# если все нормально, фильтр завершает работу с кодом 100, чтобы getmail дропнул сообщение и не доставлял в майлбокс
+# sys.exit(os.EX_OK)
+sys.exit(100)
+
 
 
