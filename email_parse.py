@@ -299,7 +299,9 @@ for row in raw_data:
                   'isbroken': row.isbroken,
                   'isexception': 0,
                   'references': row.references,
-                  'in_reply_to': row.in_reply_to}
+                  'in_reply_to': row.in_reply_to,
+                  'channel_type': 0  # =0 for email channel
+                  }
 
     clear_data = get_emails(row, clear_data)
     clear_data["message_title"] = get_title(row.message_title)
@@ -355,6 +357,7 @@ for row in raw_data:
         try:
             new = CPO.Msg()
             new.message_id = clear_data['message_id']
+            new.channel_type = clear_data['channel_type']  # = 0 for email channel
             new.sender = clear_data['sender']
             new.sender_name = clear_data['sender_name']
             new.recipients = clear_data['recipients']
