@@ -137,7 +137,7 @@ else:
     else:
         print "*** Система находится в режиме обучения ***"
         print "*** Статистика не рассчитывается ***"
-        print "clear:", clear
+        print "clear:", type(clear)
         print "PRODUCTION_MODE: ", PRODUCTION_MODE
 
 finally:
