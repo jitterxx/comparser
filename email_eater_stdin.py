@@ -27,6 +27,7 @@ sys.setdefaultencoding("utf-8")
 
 parser = argparse.ArgumentParser(description='Debug option')
 parser.add_argument('-d', action='store_true', dest='debug', help='print debug info')
+parser.add_argument('-m', action='store', dest='mode', help='exit code. getmail = 100, default = 0.')
 args = parser.parse_args()
 debug = args.debug
 
@@ -81,9 +82,18 @@ if msg:
         session.close()
 
 print msg
-# если все нормально, фильтр завершает работу с кодом 100, чтобы getmail дропнул сообщение и не доставлял в майлбокс
-# sys.exit(os.EX_OK)
-sys.exit(100)
+
+# Проверяем режим работы
+if args.mode == "default" or not args.mode:
+    # print "Дефолтный режим."
+    sys.exit(os.EX_OK)
+elif args.mode == "getmail":
+    # если все нормально, фильтр завершает работу с кодом 100, чтобы getmail дропнул сообщение и
+    # не доставлял в майлбокс
+    # sys.exit(os.EX_OK)
+    sys.exit(100)
+else:
+    sys.exit(os.EX_OK)
 
 
 
