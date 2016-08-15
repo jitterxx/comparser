@@ -9,11 +9,13 @@
 # import MySQLdb
 # import datetime
 
+
 import mailbox
 
 import poplib, email
 import re
 import argparse
+import logging
 from configuration import *
 
 # conversation parser object
@@ -29,6 +31,7 @@ parser = argparse.ArgumentParser(description='Debug option')
 parser.add_argument('-d', action='store_true', dest='debug', help='print debug info')
 args = parser.parse_args()
 debug = args.debug
+logging.basicConfig(filename='~/email_eater_stdin_imap.log',level=logging.DEBUG)
 
 data = ""
 
@@ -70,8 +73,8 @@ if msg:
         session.add(new)
         session.commit()
     except Exception as e:
-        print "Ошибка записи нового сообщения. %s" % str(e)
-        print "Message ID: %s" % msg['message-id']
+        logging.debug("Message ID: %s" % msg['message-id'])
+        logging.debug("Ошибка записи нового сообщения. %s" % str(e))
         sys.exit(os.EX_DATAERR)
     else:
         if debug:
@@ -86,6 +89,4 @@ print msg
 # не доставлял в майлбокс
 # sys.exit(os.EX_OK)
 sys.exit(100)
-
-
 
