@@ -31,7 +31,10 @@ parser = argparse.ArgumentParser(description='Debug option')
 parser.add_argument('-d', action='store_true', dest='debug', help='print debug info')
 args = parser.parse_args()
 debug = args.debug
-logging.basicConfig(filename='~/email_eater_stdin_imap.log',level=logging.DEBUG)
+
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(filename='email_eater_stdin_imap.log',level=logging.DEBUG)
+logging.basicConfig()
 
 data = ""
 
