@@ -3630,6 +3630,29 @@ def delete_exception(uuid=None):
 
 
 
+class PhoneCall(Base):
+    __tablename__ = "phone_call_raw_data"
+    __table_args__ = TABLE_ARGS
+
+    id = Column(sqlalchemy.Integer, primary_key=True)
+    call_id = Column(sqlalchemy.String(256), unique=True)
+    orig_call_id = Column(sqlalchemy.String(256), unique=True)
+    call_status = Column(sqlalchemy.String(256))
+    from_phone = Column(sqlalchemy.String(256))
+    to_phone = Column(sqlalchemy.String(256))
+    from_name = Column(sqlalchemy.TEXT())
+    to_name = Column(sqlalchemy.TEXT())
+    duration = Column(sqlalchemy.Integer)
+    call_date = Column(sqlalchemy.DATETIME())
+    create_date = Column(sqlalchemy.DATETIME())
+    references = Column(sqlalchemy.TEXT())
+    record_link = Column(sqlalchemy.TEXT())
+    record_file = Column(sqlalchemy.TEXT(256))
+    is_cleared = Column(sqlalchemy.Integer)
+
+
+
+
 def initial_configuration():
     # Фунции которые настраивают константы и глобальные переменные
     global CURRENT_TRAIN_EPOCH

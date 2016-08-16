@@ -7,12 +7,12 @@
 """
 
 db_host = "localhost"
-# db_user = "conparser"
-db_user = "demo"
+db_user = "conparser"
+#db_user = "demo"
 db_pass = "Qazcde123"
 db_port = 3306
-# db_name = "vipct"
-db_name = "conparser_demo"
+db_name = "vipct"
+# db_name = "conparser_demo"
 
 TABLE_ARGS = {'mysql_engine': 'InnoDB',
               'mysql_charset': 'utf8',
@@ -87,4 +87,10 @@ DIALOG_MEMBER_TYPE = {0: "employee", 1: "client"}
 # False - режим обучения (не ведется статистика, не отправляются уведомления)
 PRODUCTION_MODE = False
 
+
+# Ключ доступа к API провайдера телефонии
+PHONE_API_KEY = "59d9448ae3d1f9b44379cc29887dce89"
+
+# Каталог временного хранения записей телефонных разговоров
+PHONE_CALL_TEMP = "temp"
 
