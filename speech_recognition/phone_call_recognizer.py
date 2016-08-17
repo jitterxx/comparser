@@ -625,6 +625,14 @@ if __name__ == '__main__':
                             record.is_recognized = 1
                             session.commit()
                             logging.debug("Запись отмечена как обработанная.")
+                            try:
+                                # удаляем файл с записью
+                                os.remove(record.record_file)
+                            except Exception as e:
+                                logging.error("Ошибка удаления записи {}. {}".format(record.record_file, str(e)))
+                            else:
+                                logging.debug("Запись разговора удалена - {}.".format(record.record_file))
+
 
     finally:
         session.close()
