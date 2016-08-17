@@ -75,7 +75,7 @@ if msg:
         session.add(new)
         session.commit()
     except exc.IntegrityError as e:
-        logging.error("Запись с таким Message-ID={} уже существует.")
+        logging.error("Запись с таким Message-ID={} уже существует.".format(new.message_id))
         logging.error("*"*30)
         session.rollback()
 
