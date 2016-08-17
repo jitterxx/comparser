@@ -32,9 +32,10 @@ parser.add_argument('-d', action='store_true', dest='debug', help='print debug i
 args = parser.parse_args()
 debug = args.debug
 
-logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-logging.basicConfig(filename='email_eater_stdin_imap.log',level=logging.DEBUG)
-logging.basicConfig()
+logging.basicConfig(format='%(asctime)s.%(msecs)d %(levelname)s in \'%(module)s\' at line %(lineno)d: %(message)s',
+                    datefmt='%d-%m-%Y %H:%M:%S',
+                    level=logging.DEBUG,
+                    filename='{}/{}.log'.format(os.path.expanduser("~"), os.path.basename(sys.argv[0])))
 
 data = ""
 
