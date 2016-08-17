@@ -20,7 +20,7 @@ from configuration import *
 
 # conversation parser object
 import objects as CPO
-
+from sqlalchemy import exc
 import os
 import sys
 reload(sys)
@@ -43,9 +43,8 @@ data = sys.stdin
 msg = email.message_from_file(data)
 
 if msg:
+    session = CPO.Session()
     try:
-        session = CPO.Session()
-
         message = CPO.parse_message(msg=msg, debug=debug)
 
         new = CPO.MsgRaw()
@@ -72,9 +71,13 @@ if msg:
 
         """
 
-
         session.add(new)
         session.commit()
+    except exc.IntegrityError as e:
+        logging.error("Запись с таким Message-ID={} уже существует.")
+        logging.error("*"*30)
+        session.rollback()
+
     except Exception as e:
         logging.debug("Message ID: %s" % msg['message-id'])
         logging.debug("Ошибка записи нового сообщения. %s" % str(e))

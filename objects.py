@@ -462,7 +462,7 @@ class Msg(Base):
 
     id = Column(sqlalchemy.Integer, primary_key=True)
     channel_type = Column(sqlalchemy.Integer)
-    message_id = Column(sqlalchemy.String(256))
+    message_id = Column(sqlalchemy.String(256), unique=True)
     sender = Column(sqlalchemy.String(256))
     sender_name = Column(sqlalchemy.String(256))
     recipients = Column(sqlalchemy.TEXT())
