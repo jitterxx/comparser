@@ -3649,7 +3649,7 @@ class PhoneCall(Base):
     record_link = Column(sqlalchemy.TEXT())
     record_file = Column(sqlalchemy.TEXT(256))
     is_recognized = Column(sqlalchemy.Integer)
-    recognize_uuid = Column(sqlalchemy.TEXT())
+    recognize_uuid = Column(sqlalchemy.TEXT(), default=None)
 
     def __init__(self):
         self.duration = 0

@@ -563,7 +563,7 @@ def get_recognize_result(recognize_uuid=None):
         text = ""
         for one in result:
             # print " - ", one
-            text += "-- {}... \n".format(one)
+            text += "-- {}... <br>\n".format(one)
 
     except Exception as e:
         raise e
@@ -646,7 +646,8 @@ if __name__ == '__main__':
         resp = session.query(CPO.PhoneCall).filter(CPO.PhoneCall.duration >= PHONE_CALL_DURATION_FOR_RECOGNIZE,
                                                    CPO.PhoneCall.call_status == PHONE_CALL_STATUS_FOR_RECOGNIZE,
                                                    CPO.PhoneCall.is_recognized == 0,
-                                                   CPO.func.isnull(CPO.PhoneCall.recognize_uuid)).limit(request_limit)
+                                                   CPO.or_(CPO.func.isnull(CPO.PhoneCall.recognize_uuid),
+                                                           CPO.PhoneCall.recognize_uuid == str())).limit(10)
     except Exception as e:
         logging.error("Ошибка при получении данных звонков. {}".format(str(e)))
         raise e

@@ -160,6 +160,8 @@ class ClassifierNew(object):
             raise e
         else:
             if not resp:
+                print("# Данных для обучения не найдено.")
+                print("# Создаем заглушки для обучения.")
                 # Создаем заглушки для обучения
                 resp = list()
                 cats = CPO.GetCategory().values()
@@ -169,7 +171,7 @@ class ClassifierNew(object):
                     new.message_text = i.category
                     new.category = i.code
                     new.train_epoch = 0
-                    resp.append()
+                    resp.append(new)
 
             # Проводим обучение
             train = list()
