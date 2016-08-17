@@ -159,6 +159,19 @@ class ClassifierNew(object):
             print "Error. Mod_classifier_new. Ошибка загрузки данных для тренировки. %s" % str(e)
             raise e
         else:
+            if not resp:
+                # Создаем заглушки для обучения
+                resp = list()
+                cats = CPO.GetCategory().values()
+                for i in cats:
+                    new = CPO.TrainData()
+                    new.message_id = str(i.id)
+                    new.message_text = i.category
+                    new.category = i.code
+                    new.train_epoch = 0
+                    resp.append()
+
+            # Проводим обучение
             train = list()
             answer = list()
             # Нормальные сообщения тестовые данные
