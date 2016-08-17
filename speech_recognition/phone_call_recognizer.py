@@ -25,28 +25,27 @@ import json
 from gcloud import storage
 import os
 
+import logging
 
-# AUDIO_PATH = "/home/sergey/Downloads/Telegram Desktop/"
-# AUDIO_PATH = PHONE_CALL_TEMP
-# TEMP_PATH = "audio_temp/"
-# AUDIO_FILE = "2015_12_21+10-45-34+zavladenie+Outgoing+to+sergey.spevak+.mp3"
-# AUDIO_FILE = "W1a15verTJyfsFmD_a1P3JjX0u8LBEmBsFDqev3zvpM.mp3"
-# SPLIT_SILENCE = True
-
+logging.basicConfig(format='%(asctime)s.%(msecs)d %(levelname)s in \'%(module)s\' at line %(lineno)d: %(message)s',
+                    datefmt='%d-%m-%Y %H:%M:%S',
+                    level=logging.DEBUG,
+                    filename='{}/{}.log'.format(os.path.expanduser("~"), os.path.basename(sys.argv[0])))
 
 def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
     parts = list()
 
     track = AudioSegment.from_file(file=file_name, format=file_format)
 
-    print track.channels
-    print track.frame_width
-    print track.duration_seconds
-    print track.frame_rate
-    print "-"*30
+    logging.debug("Исходная запись:")
+    logging.debug("Каналы - {}".format(track.channels))
+    logging.debug("Ширина полосы - {} bit".format(track.frame_width*8))
+    logging.debug("Длительность - {}".format(track.duration_seconds))
+    logging.debug("Частота - {}".format(track.frame_rate))
+    logging.debug("-"*30)
 
     # приводим к 16000hz 16bit
-    print "# приводим к 16000hz 16bit"
+    logging.debug("# приводим к 16000hz 16bit")
     if track.frame_rate != 16000:
         track = track.set_frame_rate(frame_rate=16000)
     if track.sample_width != 2:
@@ -57,8 +56,7 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
 
         # Выравниваем громкость на каналах
         for i in range(0, len(mono_channels)):
-            print mono_channels[i].max_dBFS
-            print mono_channels[i].rms
+            logging.debug("Выравниваем громкость...")
             mono_channels[i] = mono_channels[i].apply_gain(-mono_channels[i].max_dBFS)
 
         track = mono_channels[0].overlay(mono_channels[1])
@@ -66,11 +64,12 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
         # Выравниваем громкость, если один канал, до максимального уровня
         track = track.apply_gain(-track.max_dBFS)
 
-    print track.channels
-    print track.frame_width
-    print track.duration_seconds
-    print track.frame_rate
-    print "-"*30
+    logging.debug("Обработанная запись:")
+    logging.debug("Каналы - {}".format(track.channels))
+    logging.debug("Ширина полосы - {} bit".format(track.frame_width*8))
+    logging.debug("Длительность - {}".format(track.duration_seconds))
+    logging.debug("Частота - {}".format(track.frame_rate))
+    logging.debug("-"*30)
 
     if PHONE_CALL_SPLIT_SILENCE:
         # Режем по паузам
@@ -95,12 +94,12 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
         return tmp_list
     else:
         # конвертируем в PCM
-        print "# конвертируем в PCM"
+        logging.debug("# конвертируем в PCM")
         tmp_filename = uuid.uuid4().__str__()[:6]
         track.export(out_f=temp_path + "/" + tmp_filename + ".pcm", format="u16le", parameters=["-acodec", "pcm_s16le"])
         return [tmp_filename + ".pcm"]
 
-
+"""
 def recognize_call(file_name=None):
 
     parts = prepare_audio_file(file_name=file_name, path=AUDIO_PATH, file_format="mp3")
@@ -141,11 +140,9 @@ def recognize_call(file_name=None):
             speech_content = base64.b64encode(file_content)
             req_content = {"content": speech_content.decode('UTF-8')}
 
-        """
-        Transcribe the given audio file asynchronously.
-        speech_file: the name of the audio file.
-        """
-        raw_input()
+
+        # Transcribe the given audio file asynchronously.
+        # speech_file: the name of the audio file.
 
         # [START construct_request]
         speech_service = discovery.build('speech', 'v1beta1', http=http)
@@ -298,17 +295,17 @@ def recognize_call(file_name=None):
 
     else:
         print "Ошибка."
-
+"""
 
 def run_recognize_call(file_name=None):
 
     parts = prepare_audio_file(file_name=file_name, temp_path=PHONE_CALL_TEMP, file_format="mp3")
-    print "Файл разбит на {} частей.".format(len(parts))
+    logging.debug("Файл разбит на {} частей.".format(len(parts)))
 
     if len(parts) == 1:
         file_name = parts[0]
         # готовим к отправке файл
-        print "# готовим к отправке файл: %s" % PHONE_CALL_TEMP + "/" + file_name
+        logging.debug("# готовим к отправке файл: {}".format(PHONE_CALL_TEMP + "/" + file_name))
         raw_input()
 
         # Google speech api
@@ -322,19 +319,19 @@ def run_recognize_call(file_name=None):
 
         file_size = os.path.getsize(PHONE_CALL_TEMP + "/" + file_name)
         if file_size*1.4 > 1024*1024:
-            print "Файл больше 1Мб, отправляем через Google Cloud Store..."
-            store_service = discovery.build("storage", 'v1', credentials=credentials)
+            logging.debug("Файл больше 1Мб, отправляем через Google Cloud Store...")
+            # store_service = discovery.build("storage", 'v1', credentials=credentials)
             BUCKET = "conversation-parser-speech.appspot.com"
 
             client = storage.Client()
             bucket = client.get_bucket(BUCKET)
             blob = bucket.blob(file_name)
             blob.upload_from_filename(PHONE_CALL_TEMP + "/" + file_name, content_type="binary/octet-stream")
-            print "Файл загружен в Cloud store (%s)" % blob.public_url
+            logging.debug("Файл загружен в Cloud store ({})".format(blob.public_url))
             req_content = {"uri": "gs://{0}/{1}".format(BUCKET,file_name)}
 
         else:
-            print "Файл меньше 1Мб, отправляем прямой запрос..."
+            logging.debug("Файл меньше 1Мб, отправляем прямой запрос...")
             file_content = open(PHONE_CALL_TEMP + "/" + file_name, 'rb').read()
             # Base64 encode the binary audio file for inclusion in the request.
             speech_content = base64.b64encode(file_content)
@@ -367,11 +364,11 @@ def run_recognize_call(file_name=None):
         try:
             # [START send_request]
             response = service_request.execute()
-            print(json.dumps(response))
+            logging.debug("Ответ сервиса: {}".format(json.dumps(response)))
             # [END send_request]
             name = response['name']
         except Exception as e:
-            print "Ошибка отправки запроса на распознавание. UUID не получен!!!", str(e)
+            logging.error("Ошибка отправки запроса на распознавание. UUID не получен!!! {}".format(str(e)))
             raise e
         else:
             # Возвращаем код запроса
@@ -423,16 +420,16 @@ def run_recognize_call(file_name=None):
 
         chunks = list()
 
-        print "Отправляем запросы в Google speech api..."
+        logging.debug("Отправляем запросы в Google speech api...")
         for i in range(0, len(parts)):
             file_name = parts[i]
-            print "Читаем отрезок: ", file_name
+            logging.debug("Читаем отрезок: {}".format(file_name))
             file_size = os.path.getsize(PHONE_CALL_TEMP + "/" + file_name)
 
             chunks.append(open(PHONE_CALL_TEMP + "/" + file_name, "rb").read())
 
             if file_size*1.4 > 1024*1024:
-                print "Файл больше 1Мб, отправляем через Google Cloud Store..."
+                logging.debug("Файл больше 1Мб, отправляем через Google Cloud Store...")
                 store_service = discovery.build("storage", 'v1', credentials=credentials)
                 BUCKET = "conversation-parser-speech.appspot.com"
 
@@ -440,11 +437,11 @@ def run_recognize_call(file_name=None):
                 bucket = client.get_bucket(BUCKET)
                 blob = bucket.blob(file_name)
                 blob.upload_from_filename(PHONE_CALL_TEMP + "/" + file_name, content_type="binary/octet-stream")
-                print "Файл загружен в Cloud store (%s)" % blob.public_url
+                logging.debug("Файл загружен в Cloud store (%s)" % blob.public_url)
                 req_content = {"uri": "gs://{0}/{1}".format(BUCKET, file_name)}
 
             else:
-                print "Файл меньше 1Мб, отправляем прямой запрос..."
+                logging.debug("Файл меньше 1Мб, отправляем прямой запрос...")
                 file_content = open(PHONE_CALL_TEMP + "/" + file_name, 'rb').read()
                 # Base64 encode the binary audio file for inclusion in the request.
                 speech_content = base64.b64encode(file_content)
@@ -469,20 +466,20 @@ def run_recognize_call(file_name=None):
             try:
                 response = service_request.execute()
             except Exception as e:
-                print "Ошибка отправки запроса на распознавание по частям. UUID не получен!!!", str(e)
-                print "Часть с ошибкой {}".format(i)
+                logging.error("Ошибка отправки запроса на распознавание по частям. UUID не получен!!!. {}".format(str(e)))
+                logging.error("Часть с ошибкой {}".format(i))
                 # удаляем временный файл
                 os.remove(PHONE_CALL_TEMP + "/" + file_name)
                 # raise e
             else:
                 async_req_ids.append(response['name'])
                 #async_req_ids.append(speech_service.operations().get(name=response['name']))
-                print "Запрос #{0} принят. Идентификатор: {1}".format(i, response['name'])
+                logging.debug("Запрос #{0} принят. Идентификатор: {1}".format(i, response['name']))
 
                 # удаляем временный файл
                 os.remove(PHONE_CALL_TEMP + "/" + file_name)
 
-        print "Все запросы приняты... "
+        logging.debug("Все запросы приняты... ")
         return async_req_ids
 
         """
@@ -512,7 +509,7 @@ def run_recognize_call(file_name=None):
         """
 
     else:
-        print "Ошибка."
+        logging.debug("Ошибка.")
 
 
 def get_recognize_result(recognize_uuid=None):
@@ -523,7 +520,7 @@ def get_recognize_result(recognize_uuid=None):
     """
 
     if not isinstance(recognize_uuid, list):
-        print "{}. Ошибка. Получен неверный список UUID для проверки. ".format(__name__)
+        logging.error("{}. Ошибка. Получен неверный список UUID для проверки. ".format(__name__))
         return None
 
     # Application default credentials provided by env variable
@@ -547,19 +544,19 @@ def get_recognize_result(recognize_uuid=None):
         # Получаем ответы на запросы
 
         for i in range(0, len(async_req_ids)):
-            print "Запрашиваем ответ для части {0}.".format(i)
+            logging.debug("Запрашиваем ответ для части {0}.".format(i))
             recieved = False
             while not recieved:
                 resp = async_req_ids[i].execute()
                 if 'done' in resp and resp['done']:
-                    print "Получен ответ для части {0}.".format(i)
+                    logging.debug("Получен ответ для части {0}.".format(i))
                     if resp['response'].get('results'):
                         result[i] = resp['response'].get('results')[0]['alternatives'][0]['transcript']
                     else:
                         result[i] = ""
                     recieved = True
                 else:
-                    print "Ждем 10 сек..."
+                    logging.debug("Ждем 10 сек...")
                     time.sleep(10)
 
         # print "Итоговый результат распознавания:"
@@ -576,76 +573,99 @@ def get_recognize_result(recognize_uuid=None):
 
 if __name__ == '__main__':
 
+    logging.debug("####### Начало работы #########")
+    try:
+        request_limit = int(sys.argv[1])
+    except Exception as e:
+        logging.debug("Лимит не задан, используем стандартный - 10. {}".format(str(e)))
+        request_limit = 10
+
+    logging.debug("# Лимит запросов: {}".format(request_limit))
+
     # Проверяем наличие задач на распознавание и получаем ответы по recognize_uuid
-    print "# Проверяем наличие задач на распознавание и получаем ответы по recognize_uuid"
+    logging.debug("# Проверяем наличие задач на распознавание и получаем ответы по recognize_uuid")
     session = CPO.Session()
     try:
         resp = session.query(CPO.PhoneCall).filter(CPO.PhoneCall.is_recognized == 0,
-                                                   CPO.func.isnull(CPO.PhoneCall.recognize_uuid) == False).limit(1)
+                                                   CPO.func.isnull(CPO.PhoneCall.recognize_uuid) == False,
+                                                   CPO.PhoneCall.recognize_uuid != "").\
+            limit(request_limit)
 
     except Exception as e:
-        print "Ошибка при получении данных звонков. {}".format(str(e))
+        logging.error("Ошибка при получении данных звонков. {}".format(str(e)))
         raise e
     else:
         if resp.count() == 0:
-            print "{}. Активных запросов на распознавание нет.".format(__name__)
+            logging.debug("# Активных запросов на распознавание нет.")
         else:
             for record in resp:
-                print "Получаем результат для: {} - {} - {} - {}".format(record.call_id, record.call_status,
-                                                                         record.is_recognized, record.recognize_uuid)
-                raw_input()
+                logging.debug("Получаем результат для: {} - {} - {} - {}".
+                              format(record.call_id, record.call_status, record.is_recognized, record.recognize_uuid))
+                # raw_input()
                 # запрашиваем результат в Speech api
                 try:
                     text = get_recognize_result(recognize_uuid=re.split(",", record.recognize_uuid))
                 except Exception as e:
-                    print "Ошибка при получении результата распознавания ID - {}". format(record.call_id)
+                    logging.error("Ошибка при получении результата распознавания ID - {}". format(record.call_id))
+                    logging.error(str(e))
                 else:
                     if text:
                         # Ставим статус в phone_call_raw_data, если распознавание прошло без ошибок
-                        print "Результат получен. \n Транскрипт: \n {} \n Пишем результат в clear_data.".format(text)
+                        logging.debug("Результат получен. \n Транскрипт: \n {} \n".
+                                      format(text))
 
                         try:
                             # Пишем результат в clear_data
                             CPO.create_new_clear_phone_record(call_data=record, text=text)
                         except Exception as e:
-                            print "Ошибка записи clear_data для ID - {}. {}".format(record.call_id, str(e))
+                            logging.error("Ошибка записи clear_data для ID - {}. {}".format(record.call_id, str(e)))
                         else:
+                            logging.debug("Результат в clear_data записан.")
                             record.recognize_uuid = None
                             record.is_recognized = 1
                             session.commit()
-                            print "Запись отмечена как обработанная."
+                            logging.debug("Запись отмечена как обработанная.")
 
     finally:
         session.close()
 
     # Запускаем распознавание для новых звонков
-    print "# Запускаем распознавание для новых звонков"
-    raw_input()
+    logging.debug("# Запускаем распознавание для новых звонков")
+    # raw_input()
+
     session = CPO.Session()
     try:
         resp = session.query(CPO.PhoneCall).filter(CPO.PhoneCall.duration >= PHONE_CALL_DURATION_FOR_RECOGNIZE,
                                                    CPO.PhoneCall.call_status == PHONE_CALL_STATUS_FOR_RECOGNIZE,
                                                    CPO.PhoneCall.is_recognized == 0,
-                                                   CPO.func.isnull(CPO.PhoneCall.recognize_uuid)).limit(1)
+                                                   CPO.func.isnull(CPO.PhoneCall.recognize_uuid)).limit(request_limit)
     except Exception as e:
-        print "Ошибка при получении данных звонков. {}".format(str(e))
+        logging.error("Ошибка при получении данных звонков. {}".format(str(e)))
         raise e
     else:
-        for record in resp:
-            print "Запускаем распознавание для: {} - {} - {} - {}".format(record.call_id, record.call_status,
-                                                                          record.is_recognized, record.recognize_uuid)
-            raw_input("Начать?")
-            try:
-                recognize_uuid = run_recognize_call(file_name=record.record_file)
-            except Exception as e:
-                print "Ошибка при старте распознавания записи ID - {}.".format(record.call_id), str(e)
-            else:
-                if recognize_uuid:
-                    # Запоминаем UUID задачи распознавания и ждем результат
-                    record.recognize_uuid = ",".join(recognize_uuid)
-                    record.is_recognized = 0
-                    session.commit()
+        if resp.count() == 0:
+            logging.debug("# Новых звонков на распознавание нет.")
+        else:
+
+            for record in resp:
+                logging.debug("Запускаем распознавание для: {} - {} - {} - {}".
+                              format(record.call_id, record.call_status, record.is_recognized, record.recognize_uuid))
+                # raw_input("Начать?")
+                try:
+                    recognize_uuid = run_recognize_call(file_name=record.record_file)
+                except Exception as e:
+                    logging.error("Ошибка при старте распознавания записи ID - {}.".format(record.call_id), str(e))
+                else:
+                    if recognize_uuid:
+                        # Запоминаем UUID задачи распознавания и ждем результат
+                        record.recognize_uuid = ",".join(recognize_uuid)
+                        record.is_recognized = 0
+                        session.commit()
+                        logging.debug("Идентификаторы: {}. \n Идентификаторы задач распознавания записаны.".
+                                      format(recognize_uuid))
 
 
     finally:
         session.close()
+
+    logging.debug("####### Завершение работы #########")

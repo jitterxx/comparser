@@ -22,6 +22,12 @@ import json
 import os
 from dateutil.parser import *
 from dateutil.tz import tzutc, tzlocal
+import logging
+
+logging.basicConfig(format='%(asctime)s.%(msecs)d %(levelname)s in \'%(module)s\' at line %(lineno)d: %(message)s',
+                    datefmt='%d-%m-%Y %H:%M:%S',
+                    level=logging.DEBUG,
+                    filename='{}/{}.log'.format(os.path.expanduser("~"), os.path.basename(sys.argv[0])))
 
 def get_last_check_time():
     """
@@ -34,7 +40,7 @@ def get_last_check_time():
     try:
         resp = session.query(func.max(CPO.PhoneCall.call_date)).all()
     except Exception as e:
-        print "Ошибка получения записей о звонках. {0}".format(str(e))
+        logging.error("Ошибка получения записей о звонках. {0}".format(str(e)))
         raise e
     else:
         if resp[0][0] is None:
@@ -48,7 +54,7 @@ def get_last_check_time():
         session.close()
 
 
-def get_phone_calls(provider=None, from_date=None, to_date=None, offset=0):
+def get_phone_calls(provider=None, from_date=None, to_date=None, offset=0, max_res=1):
     """
     Функция получения записей от провайдера телефонии или станции.
 
@@ -67,50 +73,59 @@ def get_phone_calls(provider=None, from_date=None, to_date=None, offset=0):
             change_date = "{0}-{1:02d}-{2:02d} {3:02d}:{4:02d}:{5:02d}".\
                 format(last_check.year, last_check.month, last_check.day,
                        last_check.hour, last_check.minute, last_check.second)
-            parameters = {"api_key": PHONE_API_KEY, "max": 100, "change_date": change_date, "offset": offset,
+            parameters = {"api_key": PHONE_API_KEY, "max": max_res, "change_date": change_date, "offset": offset,
                           "from_date": change_date}
-            print "req params: ", parameters
+            logging.debug("req params: {}".format(parameters))
         elif from_date and to_date is None:
-            parameters = {"api_key": PHONE_API_KEY, "max": 100, "change_date": from_date, "offset": offset,
+            parameters = {"api_key": PHONE_API_KEY, "max": max_res, "change_date": from_date, "offset": offset,
                           "from_date": from_date}
-            print "req params: ", parameters
+            logging.debug("req params: {}".format(parameters))
         req = requests.get(url=url, params=parameters)
         while True:
-            print "status :", req.status_code
+            logging.debug("status : {}".format(req.status_code))
             if req.status_code in [200, 304]:
                 break
             else:
                 time.sleep(10)
-                print "Ждем 10 сек..."
+                logging.debug("Ждем 10 сек...")
 
         if req.status_code == 200:
-            print req.content
+            logging.debug("Ответ провайдера: {}".format(req.content))
             return json.loads(req.content)
         else:
             return []
-
 
     else:
         return ""
 
 
-
-
 if __name__ == "__main__":
 
+    logging.debug("####### Начало работы #########")
+
+    try:
+        request_limit = int(sys.argv[1])
+    except Exception as e:
+        logging.debug("Лимит не задан, используем стандартный - 10. {}".format(str(e)))
+        request_limit = 10
+
+    logging.debug("# Лимит количества обрабатываемых за один запуск разговоров: {}".format(request_limit))
+
     call_list = list()
-    calls = get_phone_calls(provider="callmart", offset=0)
+    calls = get_phone_calls(provider="callmart", offset=0, max_res=request_limit)
 
     try:
         os.makedirs(PHONE_CALL_TEMP)
     except Exception as e:
-        print str(e)
+        logging.debug("Каталог уже существует. {}".format(str(e)))
 
 
     if calls:
-        print "Calls: ", len(calls.get("data").get("list"))
+        logging.debug("Calls: {}".format(len(calls.get("data").get("list"))))
         session = CPO.Session()
         for one in calls.get("data").get("list"):
+
+            # Проверяем номера на попадание в EXCEPTION и CHECK списки
 
             file_name = ""
             if one["recordUrl"] is not None:
@@ -120,8 +135,8 @@ if __name__ == "__main__":
             try:
                 dt = parse(one["dateCreated"]).astimezone(tzlocal()).replace(tzinfo=None)
             except Exception as e:
-                print "phone_call_eater. Ошибка считывания времени {} из сообщения. \n " \
-                      "Ошибка: {}".format(one["dateCreated"], str(e))
+                logging.error("phone_call_eater. Ошибка считывания времени {} из сообщения. \n " \
+                              "Ошибка: {}".format(one["dateCreated"], str(e)))
                 dt = parse(one["dateCreated"].split("+", 1)[0])
 
             try:
@@ -134,13 +149,13 @@ if __name__ == "__main__":
                 try:
                     new.from_name = one["client"]["name"]
                 except KeyError as e:
-                    print "Не указано имя звонившего, ID - {}".format(one["id"])
+                    logging.error("Не указано имя звонившего, ID - {}".format(one["id"]))
                     new.from_name = ""
 
                 try:
                     new.to_name = one["user"]["name"]
                 except KeyError as e:
-                    print "Не указано имя ответившего, ID - {}".format(one["id"])
+                    logging.error("Не указано имя ответившего, ID - {}".format(one["id"]))
                     new.to_name = ""
 
                 new.call_date = dt
@@ -152,41 +167,42 @@ if __name__ == "__main__":
                 new.is_recognized = 0
                 new.recognize_uuid = ""
 
-                print "Обрабатываю звонок ID: {0}".format(one["id"])
-                print "Статус: ", one["phoneStatus"]
-                print "От кого: ", one["phoneTo"]
-                print "Кому: ", one["phoneFrom"]
-                print "Длительность: ", one["duration"]
-                print "Время: ", one["dateCreated"]
-                print "Имя звонившего: ", new.from_name
-                print "Имя ответившего: ", new.to_name
-                print "Ссылка на запись: ", one["recordUrl"]
-                print "Имя файла: {}_{}_{}".format(one["id"], one["phoneFrom"], one["phoneTo"])
-                print "*"*30
+                logging.debug("Обрабатываю звонок ID: {0}".format(one["id"]))
+                logging.debug("Статус: {}".format(one["phoneStatus"]))
+                logging.debug("От кого: {}".format(one["phoneTo"]))
+                logging.debug("Кому: {}".format(one["phoneFrom"]))
+                logging.debug("Длительность: {}".format(one["duration"]))
+                logging.debug("Время: {}".format(one["dateCreated"]))
+                logging.debug("Имя звонившего: {}".format(new.from_name))
+                logging.debug("Имя ответившего: {}".format(new.to_name))
+                logging.debug("Ссылка на запись: {}".format(one["recordUrl"]))
+                logging.debug("Имя файла: {}_{}_{}".format(one["id"], one["phoneFrom"], one["phoneTo"]))
+                logging.debug("*"*30)
 
                 session.add(new)
                 session.commit()
             except exc.IntegrityError as e:
-                print "Запись с таким ID={} уже существует."
-                print "*"*30
-                raw_input("Нажмите клавишу")
+                logging.error("Запись с таким ID={} уже существует.")
+                logging.error("*"*30)
+                # raw_input("Нажмите клавишу")
                 session.rollback()
             except Exception as e:
-                print "Ошибка при записи данныех звонка ID-{}. Ошибка: {}".format(one["id"], str(e))
-                raw_input("Звонок НЕ записан... Нажмите клавишу")
+                logging.error("Ошибка при записи данныех звонка ID-{}. Ошибка: {}".format(one["id"], str(e)))
+                # raw_input("Звонок НЕ записан... Нажмите клавишу")
             else:
                 if one["recordUrl"] is not None:
                     with open(file_name, 'wb') as f:
                         r = requests.get(url=one["recordUrl"], stream=True)
-                        print "Записываем данные в файл {}".format(file_name)
+                        logging.debug("Записываем данные в файл {}".format(file_name))
                         for block in r.iter_content(1024):
                             if not block:
-                                print "Файл скачан."
+                                logging.debug("Файл скачан.")
                                 break
                             f.write(block)
 
-                raw_input("Звонок записан... Нажмите клавишу")
+                # raw_input("Звонок записан... Нажмите клавишу")
 
         session.close()
 
 
+        logging.debug("####### Завершение работы #########")

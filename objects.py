@@ -3664,7 +3664,7 @@ def create_new_clear_phone_record(call_data=None, text=None):
 
     try:
         new = Msg()
-        new.message_id = call_data.id
+        new.message_id = call_data.call_id
         new.channel_type = 1
         new.sender = call_data.from_phone
         new.sender_name = call_data.from_name
