@@ -149,7 +149,8 @@ if __name__ == "__main__":
                 new.record_file = file_name
                 new.create_date = datetime.datetime.now()
                 new.references = ""
-                new.is_cleared = 0
+                new.is_recognized = 0
+                new.recognize_uuid = ""
 
                 print "Обрабатываю звонок ID: {0}".format(one["id"])
                 print "Статус: ", one["phoneStatus"]
@@ -172,7 +173,7 @@ if __name__ == "__main__":
                 session.rollback()
             except Exception as e:
                 print "Ошибка при записи данныех звонка ID-{}. Ошибка: {}".format(one["id"], str(e))
-                raw_input("Звоннок НЕ записан... Нажмите клавишу")
+                raw_input("Звонок НЕ записан... Нажмите клавишу")
             else:
                 if one["recordUrl"] is not None:
                     with open(file_name, 'wb') as f:
@@ -184,7 +185,7 @@ if __name__ == "__main__":
                                 break
                             f.write(block)
 
-                raw_input("Звоннок записан... Нажмите клавишу")
+                raw_input("Звонок записан... Нажмите клавишу")
 
         session.close()
 

@@ -3648,8 +3648,41 @@ class PhoneCall(Base):
     references = Column(sqlalchemy.TEXT())
     record_link = Column(sqlalchemy.TEXT())
     record_file = Column(sqlalchemy.TEXT(256))
-    is_cleared = Column(sqlalchemy.Integer)
+    is_recognized = Column(sqlalchemy.Integer)
+    recognize_uuid = Column(sqlalchemy.TEXT())
 
+    def __init__(self):
+        self.duration = 0
+        self.recognize_uuid = ""
+        self.references = ""
+        self.is_recognized = 0
+
+
+def create_new_clear_phone_record(call_data=None, text=None):
+
+    session = Session()
+
+    try:
+        new = Msg()
+        new.message_id = call_data.id
+        new.channel_type = 1
+        new.sender = call_data.from_phone
+        new.sender_name = call_data.from_name
+        new.recipients = call_data.to_phone
+        new.recipients_name = call_data.to_name
+        new.create_date = call_data.create_date
+        new.orig_date = call_data.call_date
+        new.message_title = ""
+        new.message_text = text
+        new.references = call_data.references
+
+        session.add(new)
+        session.commit()
+    except Exception as e:
+        print "{}. Ошибка записи данных PHONE CALL в cleared_data. {}".format(__name__, str(e))
+        raise e
+    finally:
+        session.close()
 
 
 
