@@ -96,7 +96,8 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
             fname = temp_path + "/" + tmp_filename + "-{0}".format(i) + ".pcm"
             chunk.export(out_f=fname, format="u16le", parameters=["-acodec", "pcm_s16le"])
             tmp_list.append(tmp_filename + "-{0}".format(i) + ".pcm")
-            logging.debug(" - файл {}, длина {} сконвертирован".format(tmp_filename + "-{0}".format(i) + ".pcm", chunks.__sizeof__()))
+            logging.debug(" - файл {}, длина {} сконвертирован".format(tmp_filename + "-{0}".format(i) + ".pcm",
+                                                                       os.path.getsize(fname) ))
 
         return tmp_list
     else:
@@ -316,7 +317,6 @@ def run_recognize_call(file_name=None):
         file_name = parts[0]
         # готовим к отправке файл
         logging.debug("# готовим к отправке файл: {}".format(PHONE_CALL_TEMP + "/" + file_name))
-        raw_input()
 
         # Google speech api
 
@@ -351,7 +351,6 @@ def run_recognize_call(file_name=None):
         Transcribe the given audio file asynchronously.
         speech_file: the name of the audio file.
         """
-        raw_input()
 
         # [START construct_request]
         speech_service = discovery.build('speech', 'v1beta1', http=http)
