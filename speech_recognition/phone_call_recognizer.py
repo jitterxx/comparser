@@ -93,11 +93,15 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
         tmp_filename = uuid.uuid4().__str__()[:6]
         tmp_list = list()
         for i, chunk in enumerate(chunks):
-            fname = temp_path + "/" + tmp_filename + "-{0}".format(i) + ".pcm"
-            chunk.export(out_f=fname, format="u16le", parameters=["-acodec", "pcm_s16le"])
-            tmp_list.append(tmp_filename + "-{0}".format(i) + ".pcm")
-            logging.debug(" - файл {}, длина {} сконвертирован".format(tmp_filename + "-{0}".format(i) + ".pcm",
-                                                                       os.path.getsize(fname) ))
+            try:
+                fname = temp_path + "/" + tmp_filename + "-{0}".format(i) + ".pcm"
+                chunk.export(out_f=fname, format="u16le", parameters=["-acodec", "pcm_s16le"])
+                tmp_list.append(tmp_filename + "-{0}".format(i) + ".pcm")
+                logging.debug(" - файл {}, длина {} сконвертирован".format(tmp_filename + "-{0}".format(i) + ".pcm",
+                                                                           os.path.getsize(fname) ))
+            except Exception as e:
+                logging.error(" **** Ошибка конвертации файла - {} **** \n {}".format(file_name, str(e)))
+                logging.error("Пропускаем отрезок")
 
         return tmp_list
     else:
@@ -106,9 +110,15 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
         logging.debug("Размер {} bytes".format(file_size))
         logging.debug("# конвертируем в PCM")
         tmp_filename = uuid.uuid4().__str__()[:6]
-        track.export(out_f=temp_path + "/" + tmp_filename + ".pcm", format="u16le", parameters=["-acodec", "pcm_s16le"])
-        logging.debug(" - файл {} сконвертирован".format(temp_path + "/" + tmp_filename + ".pcm"))
-        return [tmp_filename + ".pcm"]
+        try:
+            track.export(out_f=temp_path + "/" + tmp_filename + ".pcm", format="u16le", parameters=["-acodec", "pcm_s16le"])
+        except Exception as e:
+            logging.error(" **** Ошибка конвертации файла - {} **** \n {}".
+                          format(temp_path + "/" + tmp_filename + ".pcm", str(e)))
+            return []
+        else:
+            logging.debug(" - файл {} сконвертирован".format(temp_path + "/" + tmp_filename + ".pcm"))
+            return [tmp_filename + ".pcm"]
 
 """
 def recognize_call(file_name=None):
@@ -518,7 +528,7 @@ def run_recognize_call(file_name=None):
         """
 
     else:
-        logging.debug("Ошибка.")
+        logging.debug("**** Ошибка. Возвращено {} файлов для распознавания. **** ".format(len(parts)))
 
 
 def get_recognize_result(recognize_uuid=None):
