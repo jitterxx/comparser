@@ -639,7 +639,6 @@ if __name__ == '__main__':
                             else:
                                 logging.debug("Запись разговора удалена - {}.".format(record.record_file))
 
-
     finally:
         session.close()
 
@@ -653,7 +652,7 @@ if __name__ == '__main__':
                                                    CPO.PhoneCall.call_status == PHONE_CALL_STATUS_FOR_RECOGNIZE,
                                                    CPO.PhoneCall.is_recognized == 0,
                                                    CPO.or_(CPO.func.isnull(CPO.PhoneCall.recognize_uuid),
-                                                           CPO.PhoneCall.recognize_uuid == str())).limit(10)
+                                                           CPO.PhoneCall.recognize_uuid == str())).limit(request_limit)
     except Exception as e:
         logging.error("Ошибка при получении данных звонков. {}".format(str(e)))
         raise e
@@ -663,10 +662,7 @@ if __name__ == '__main__':
         else:
 
             for record in resp:
-                logging.debug("Запускаем распознавание для: {} - {} - {} - {}".format(record.call_id,
-                                                                                      record.call_status,
-                                                                                      record.is_recognized,
-                                                                                      record.recognize_uuid))
+                logging.debug("Запускаем распознавание для: {} - {}".format(str(record.call_id), str(record.call_status)))
                 # raw_input("Начать?")
                 try:
                     recognize_uuid = run_recognize_call(file_name=record.record_file)
@@ -680,7 +676,6 @@ if __name__ == '__main__':
                         session.commit()
                         logging.debug("Идентификаторы: {}. \n Идентификаторы задач распознавания записаны.".
                                       format(recognize_uuid))
-
 
     finally:
         session.close()
