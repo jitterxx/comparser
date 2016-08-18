@@ -45,8 +45,8 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
     logging.debug("-"*30)
 
     # приводим к 16000hz 16bit
-    logging.debug("# приводим к 16000hz 16bit")
-    if track.frame_rate != 16000:
+    logging.debug("# приводим к 8000 - 16000hz 16bit")
+    if track.frame_rate not in [8000, 16000]:
         track = track.set_frame_rate(frame_rate=16000)
     if track.sample_width != 2:
         track = track.set_sample_width(sample_width=2)
@@ -102,7 +102,7 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
                               format(fname, os.path.getsize(fname), str(e)))
                 logging.error("Пропускаем отрезок")
 
-        return tmp_list
+        return track.frame_rate, tmp_list
     else:
         # конвертируем в PCM
         logging.debug("Кол-во отрезков: 1")
@@ -114,10 +114,10 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
         except Exception as e:
             logging.error(" **** Ошибка конвертации файла - {} **** \n {}".
                           format(temp_path + "/" + tmp_filename + ".pcm", str(e)))
-            return []
+            return track.frame_rate, []
         else:
             logging.debug(" - файл {} сконвертирован".format(temp_path + "/" + tmp_filename + ".pcm"))
-            return [tmp_filename + ".pcm"]
+            return track.frame_rate, [tmp_filename + ".pcm"]
 
 """
 def recognize_call(file_name=None):
@@ -319,7 +319,7 @@ def recognize_call(file_name=None):
 
 def run_recognize_call(file_name=None):
 
-    parts = prepare_audio_file(file_name=file_name, temp_path=PHONE_CALL_TEMP, file_format="mp3")
+    frame_rate, parts = prepare_audio_file(file_name=file_name, temp_path=PHONE_CALL_TEMP, file_format="mp3")
     logging.debug("Файл разбит на {} частей.".format(len(parts)))
 
     if len(parts) == 1:
@@ -369,7 +369,7 @@ def run_recognize_call(file_name=None):
                     # There are a bunch of config options you can specify. See
                     # https://goo.gl/EPjAup for the full list.
                     'encoding': 'LINEAR16',  # raw 16-bit signed LE samples
-                    'sampleRate': 16000,  # 16 khz
+                    'sampleRate': frame_rate,  # 8 or 16 khz
                     # See https://goo.gl/DPeVFW for a list of supported languages.
                     'languageCode': 'ru-RU',  # a BCP-47 language tag
                     'speechContext': {"phrases": PHONE_CONTEXT_PHRASES}
@@ -472,7 +472,7 @@ def run_recognize_call(file_name=None):
                         # There are a bunch of config options you can specify. See
                         # https://goo.gl/EPjAup for the full list.
                         'encoding': 'LINEAR16',  # raw 16-bit signed LE samples
-                        'sampleRate': 16000,  # 16 khz
+                        'sampleRate': frame_rate,  # 8 or 16 khz
                         # See https://goo.gl/DPeVFW for a list of supported languages.
                         'languageCode': 'ru-RU',  # a BCP-47 language tag
                         'speechContext': {"phrases": PHONE_CONTEXT_PHRASES}
