@@ -125,82 +125,86 @@ if __name__ == "__main__":
         session = CPO.Session()
         for one in calls.get("data").get("list"):
 
-            # Проверяем номера на попадание в EXCEPTION и CHECK списки
+            # Работаем, если разговор уже завершен
+            if one["phoneStatus"] == PHONE_CALL_STATUS_FOR_RECOGNIZE:
 
-            file_name = ""
-            if one["recordUrl"] is not None:
-                file_name = "{}/{}_{}_{}.mp3".format(PHONE_CALL_TEMP, one["id"], one["phoneFrom"], one["phoneTo"])
+                # Проверяем номера на попадание в EXCEPTION и CHECK списки
 
-            # Время приводим к МСК
-            try:
-                dt = parse(one["dateCreated"]).astimezone(tzlocal()).replace(tzinfo=None)
-            except Exception as e:
-                logging.error("phone_call_eater. Ошибка считывания времени {} из сообщения. \n " \
-                              "Ошибка: {}".format(one["dateCreated"], str(e)))
-                dt = parse(one["dateCreated"].split("+", 1)[0])
-
-            try:
-                new = CPO.PhoneCall()
-                new.call_id = one["id"]
-                new.orig_call_id = one["id"]
-                new.call_status = one["phoneStatus"]
-                new.from_phone = one["phoneFrom"]
-                new.to_phone = one["phoneTo"]
-                try:
-                    new.from_name = one["client"]["name"]
-                except KeyError as e:
-                    logging.error("Не указано имя звонившего, ID - {}".format(one["id"]))
-                    new.from_name = ""
-
-                try:
-                    new.to_name = one["user"]["name"]
-                except KeyError as e:
-                    logging.error("Не указано имя ответившего, ID - {}".format(one["id"]))
-                    new.to_name = ""
-
-                new.call_date = dt
-                new.duration = one["duration"]
-                new.record_link = one["recordUrl"]
-                new.record_file = file_name
-                new.create_date = datetime.datetime.now()
-                new.references = ""
-                new.is_recognized = 0
-                new.recognize_uuid = ""
-
-                logging.debug("Обрабатываю звонок ID: {0}".format(one["id"]))
-                logging.debug("Статус: {}".format(one["phoneStatus"]))
-                logging.debug("От кого: {}".format(one["phoneTo"]))
-                logging.debug("Кому: {}".format(one["phoneFrom"]))
-                logging.debug("Длительность: {}".format(one["duration"]))
-                logging.debug("Время: {}".format(one["dateCreated"]))
-                logging.debug("Имя звонившего: {}".format(new.from_name))
-                logging.debug("Имя ответившего: {}".format(new.to_name))
-                logging.debug("Ссылка на запись: {}".format(one["recordUrl"]))
-                logging.debug("Имя файла: {}_{}_{}".format(one["id"], one["phoneFrom"], one["phoneTo"]))
-                logging.debug("*"*30)
-
-                session.add(new)
-                session.commit()
-            except exc.IntegrityError as e:
-                logging.error("Запись с таким ID={} уже существует.")
-                logging.error("*"*30)
-                # raw_input("Нажмите клавишу")
-                session.rollback()
-            except Exception as e:
-                logging.error("Ошибка при записи данныех звонка ID-{}. Ошибка: {}".format(one["id"], str(e)))
-                # raw_input("Звонок НЕ записан... Нажмите клавишу")
-            else:
+                file_name = ""
                 if one["recordUrl"] is not None:
-                    with open(file_name, 'wb') as f:
-                        r = requests.get(url=one["recordUrl"], stream=True)
-                        logging.debug("Записываем данные в файл {}".format(file_name))
-                        for block in r.iter_content(1024):
-                            if not block:
-                                logging.debug("Файл скачан.")
-                                break
-                            f.write(block)
+                    file_name = "{}/{}_{}_{}.mp3".format(PHONE_CALL_TEMP, one["id"], one["phoneFrom"], one["phoneTo"])
 
-                # raw_input("Звонок записан... Нажмите клавишу")
+                # Время приводим к МСК
+                try:
+                    dt = parse(one["dateCreated"]).astimezone(tzlocal()).replace(tzinfo=None)
+                except Exception as e:
+                    logging.error("phone_call_eater. Ошибка считывания времени {} из сообщения. \n " \
+                                  "Ошибка: {}".format(one["dateCreated"], str(e)))
+                    dt = parse(one["dateCreated"].split("+", 1)[0])
+
+
+                try:
+                    new = CPO.PhoneCall()
+                    new.call_id = one["id"]
+                    new.orig_call_id = one["id"]
+                    new.call_status = one["phoneStatus"]
+                    new.from_phone = one["phoneFrom"]
+                    new.to_phone = one["phoneTo"]
+                    try:
+                        new.from_name = one["client"]["name"]
+                    except KeyError as e:
+                        logging.error("Не указано имя звонившего, ID - {}".format(one["id"]))
+                        new.from_name = ""
+
+                    try:
+                        new.to_name = one["user"]["name"]
+                    except KeyError as e:
+                        logging.error("Не указано имя ответившего, ID - {}".format(one["id"]))
+                        new.to_name = ""
+
+                    new.call_date = dt
+                    new.duration = one["duration"]
+                    new.record_link = one["recordUrl"]
+                    new.record_file = file_name
+                    new.create_date = datetime.datetime.now()
+                    new.references = ""
+                    new.is_recognized = 0
+                    new.recognize_uuid = ""
+
+                    logging.debug("Обрабатываю звонок ID: {0}".format(one["id"]))
+                    logging.debug("Статус: {}".format(one["phoneStatus"]))
+                    logging.debug("От кого: {}".format(one["phoneTo"]))
+                    logging.debug("Кому: {}".format(one["phoneFrom"]))
+                    logging.debug("Длительность: {}".format(one["duration"]))
+                    logging.debug("Время: {}".format(one["dateCreated"]))
+                    logging.debug("Имя звонившего: {}".format(new.from_name))
+                    logging.debug("Имя ответившего: {}".format(new.to_name))
+                    logging.debug("Ссылка на запись: {}".format(one["recordUrl"]))
+                    logging.debug("Имя файла: {}_{}_{}".format(one["id"], one["phoneFrom"], one["phoneTo"]))
+                    logging.debug("*"*30)
+
+                    session.add(new)
+                    session.commit()
+                except exc.IntegrityError as e:
+                    logging.error("Запись с таким ID={} уже существует.")
+                    logging.error("*"*30)
+                    # raw_input("Нажмите клавишу")
+                    session.rollback()
+                except Exception as e:
+                    logging.error("Ошибка при записи данныех звонка ID-{}. Ошибка: {}".format(one["id"], str(e)))
+                    # raw_input("Звонок НЕ записан... Нажмите клавишу")
+                else:
+                    if one["recordUrl"] is not None:
+                        with open(file_name, 'wb') as f:
+                            r = requests.get(url=one["recordUrl"], stream=True)
+                            logging.debug("Записываем данные в файл {}".format(file_name))
+                            for block in r.iter_content(1024):
+                                if not block:
+                                    logging.debug("Файл скачан.")
+                                    break
+                                f.write(block)
+
+                    # raw_input("Звонок записан... Нажмите клавишу")
 
         session.close()
 
