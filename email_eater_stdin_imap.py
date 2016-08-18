@@ -37,6 +37,7 @@ logging.basicConfig(format='%(asctime)s.%(msecs)d %(levelname)s in \'%(module)s\
                     level=logging.DEBUG,
                     filename='{}/{}.log'.format(os.path.expanduser("~"), os.path.basename(sys.argv[0])))
 
+
 data = ""
 
 data = sys.stdin
@@ -95,8 +96,9 @@ if msg:
         sys.exit(100)
     else:
         if debug:
-            print 'Перенос в прочитанные...\n'
-            print 'Битое: ', message[8]
+            # print 'Перенос в прочитанные...\n'
+            # print 'Битое: ', message[8]
+            pass
     finally:
         session.close()
 

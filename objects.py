@@ -356,11 +356,11 @@ def parse_message(msg=None, debug=False):
         msg_datetime = dt
     """
 
-    # Вычисляем время создания сообщения в UTC
+    # Вычисляем время создания сообщения в MSK
     try:
-        dt = parse(date_hdr).astimezone(tzutc()).replace(tzinfo=None)
+        dt = parse(date_hdr).astimezone(tzlocal()).replace(tzinfo=None)
     except Exception as e:
-        print "Email_eater. Ошибка считывания времени из сообщения в UTC. %s" % str(e)
+        print "Email_eater. Ошибка считывания времени из сообщения в MSK. %s" % str(e)
     else:
         msg_datetime = dt
 
