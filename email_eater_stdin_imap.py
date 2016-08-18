@@ -47,6 +47,9 @@ if msg:
     session = CPO.Session()
     try:
         message = CPO.parse_message(msg=msg, debug=debug)
+        if debug:
+            logging.debug("# Оригинальные поля сообщения")
+            logging.debug("Тема: {}".format(msg.get('Subject', 'No subject provided')))
 
         new = CPO.MsgRaw()
         new.message_id = message[0]  # msg_id
@@ -97,7 +100,7 @@ if msg:
     finally:
         session.close()
 
-print msg
+# print msg
 
 # если все нормально, фильтр завершает работу с кодом 100, чтобы getmail дропнул сообщение и
 # не доставлял в майлбокс
