@@ -72,7 +72,9 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
     logging.debug("Частота - {}".format(track.frame_rate))
     logging.debug("-"*30)
 
-    if PHONE_CALL_SPLIT_SILENCE:
+    file_size = os.path.getsize(file_name)
+
+    if PHONE_CALL_SPLIT_SILENCE and file_size*1.4 > 1024*1024:
         logging.debug("# Режем по паузам")
         # Режем по паузам
         chunks = pydub.silence.split_on_silence(track,
@@ -99,6 +101,8 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
         return tmp_list
     else:
         # конвертируем в PCM
+        logging.debug("Кол-во отрезков: 1")
+        logging.debug("Размер {} bytes".format(file_size))
         logging.debug("# конвертируем в PCM")
         tmp_filename = uuid.uuid4().__str__()[:6]
         track.export(out_f=temp_path + "/" + tmp_filename + ".pcm", format="u16le", parameters=["-acodec", "pcm_s16le"])
