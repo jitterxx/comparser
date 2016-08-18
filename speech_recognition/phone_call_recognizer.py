@@ -37,7 +37,7 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
 
     track = AudioSegment.from_file(file=file_name, format=file_format)
 
-    logging.debug("Исходная запись:")
+    logging.debug("Исходная запись : {}".format(file_name))
     logging.debug("Каналы - {}".format(track.channels))
     logging.debug("Ширина полосы - {} bit".format(track.frame_width*8))
     logging.debug("Длительность - {}".format(track.duration_seconds))
@@ -94,7 +94,7 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
             fname = temp_path + "/" + tmp_filename + "-{0}".format(i) + ".pcm"
             chunk.export(out_f=fname, format="u16le", parameters=["-acodec", "pcm_s16le"])
             tmp_list.append(tmp_filename + "-{0}".format(i) + ".pcm")
-            logging.debug(" - файл {} сконвертирован".format(tmp_filename + "-{0}".format(i) + ".pcm"))
+            logging.debug(" - файл {}, длина {} сконвертирован".format(tmp_filename + "-{0}".format(i) + ".pcm", chunks.__sizeof__()))
 
         return tmp_list
     else:
@@ -667,7 +667,7 @@ if __name__ == '__main__':
                 try:
                     recognize_uuid = run_recognize_call(file_name=record.record_file)
                 except Exception as e:
-                    logging.error("Ошибка при старте распознавания записи ID - {}.".format(record.call_id), str(e))
+                    logging.error("Ошибка при старте распознавания записи ID - {}. \n {}".format(record.call_id, str(e)))
                 else:
                     if recognize_uuid:
                         # Запоминаем UUID задачи распознавания и ждем результат
