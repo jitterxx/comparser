@@ -78,11 +78,18 @@ if msg:
         logging.error("Запись с таким Message-ID={} уже существует.".format(new.message_id))
         logging.error("*"*30)
         session.rollback()
+        sys.exit(100)
+    except exc.OperationalError as e:
+        logging.error("Operational Error. MID={}.".format(new.message_id))
+        logging.error("{}".format(str(e)))
+        logging.error("*"*30)
+        session.rollback()
+        sys.exit(100)
 
     except Exception as e:
-        logging.debug("Message ID: %s" % msg['message-id'])
-        logging.debug("Ошибка записи нового сообщения. %s" % str(e))
-        sys.exit(os.EX_DATAERR)
+        logging.error("Message ID: %s" % msg['message-id'])
+        logging.error("Ошибка записи нового сообщения. %s" % str(e))
+        sys.exit(100)
     else:
         if debug:
             print 'Перенос в прочитанные...\n'

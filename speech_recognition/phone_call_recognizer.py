@@ -51,14 +51,15 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
     if track.sample_width != 2:
         track = track.set_sample_width(sample_width=2)
 
+    logging.debug("# Выравниваем громкость...")
     if track.channels == 2:
         mono_channels = track.split_to_mono()
 
         # Выравниваем громкость на каналах
         for i in range(0, len(mono_channels)):
-            logging.debug("Выравниваем громкость...")
             mono_channels[i] = mono_channels[i].apply_gain(-mono_channels[i].max_dBFS)
 
+        logging.debug("# Объединяем каналы в один...")
         track = mono_channels[0].overlay(mono_channels[1])
     else:
         # Выравниваем громкость, если один канал, до максимального уровня
@@ -72,6 +73,7 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
     logging.debug("-"*30)
 
     if PHONE_CALL_SPLIT_SILENCE:
+        logging.debug("# Режем по паузам")
         # Режем по паузам
         chunks = pydub.silence.split_on_silence(track,
                                                 # must be silent for at least half a second
@@ -81,15 +83,18 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
                                                 keep_silence=200
                                                 )
 
-        # print "Кол-во отрезков:", len(chunks)
+        logging.debug("Кол-во отрезков: {}".format(len(chunks)))
 
         # конвертируем в PCM
+        logging.debug("# конвертируем отрезки в PCM")
+
         tmp_filename = uuid.uuid4().__str__()[:6]
         tmp_list = list()
         for i, chunk in enumerate(chunks):
             fname = temp_path + "/" + tmp_filename + "-{0}".format(i) + ".pcm"
             chunk.export(out_f=fname, format="u16le", parameters=["-acodec", "pcm_s16le"])
             tmp_list.append(tmp_filename + "-{0}".format(i) + ".pcm")
+            logging.debug(" - файл {} сконвертирован".format(tmp_filename + "-{0}".format(i) + ".pcm"))
 
         return tmp_list
     else:
@@ -97,6 +102,7 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
         logging.debug("# конвертируем в PCM")
         tmp_filename = uuid.uuid4().__str__()[:6]
         track.export(out_f=temp_path + "/" + tmp_filename + ".pcm", format="u16le", parameters=["-acodec", "pcm_s16le"])
+        logging.debug(" - файл {} сконвертирован".format(temp_path + "/" + tmp_filename + ".pcm"))
         return [tmp_filename + ".pcm"]
 
 """
@@ -657,8 +663,10 @@ if __name__ == '__main__':
         else:
 
             for record in resp:
-                logging.debug("Запускаем распознавание для: {} - {} - {} - {}".
-                              format(record.call_id, record.call_status, record.is_recognized, record.recognize_uuid))
+                logging.debug("Запускаем распознавание для: {} - {} - {} - {}".format(record.call_id,
+                                                                                      record.call_status,
+                                                                                      record.is_recognized,
+                                                                                      record.recognize_uuid))
                 # raw_input("Начать?")
                 try:
                     recognize_uuid = run_recognize_call(file_name=record.record_file)

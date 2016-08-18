@@ -117,6 +117,13 @@ sql_update_17 = "ALTER TABLE `email_cleared_data` ADD COLUMN `channel_type` INT(
 sql_update_18 = "UPDATE `email_cleared_data` SET `channel_type` = 0 WHERE `id` > 0 and message_id like 'message%';"
 
 
+#19
+sql_update_19 = "ALTER TABLE `email_raw_data` CHANGE COLUMN `message_text` `message_text` MEDIUMTEXT NULL DEFAULT NULL ," \
+                "CHANGE COLUMN `message_text_html` `message_text_html` MEDIUMTEXT NULL DEFAULT NULL;" \
+                "ALTER TABLE `email_cleared_data` CHANGE COLUMN `message_text` `message_text` MEDIUMTEXT NULL DEFAULT NULL;" \
+                "ALTER TABLE `email_err_cleared_data` CHANGE COLUMN `message_text` `message_text` MEDIUMTEXT NULL DEFAULT NULL;"
+
+
 # Создаем новые таблицы
 CPO.create_tables()
 
@@ -263,6 +270,13 @@ else:
 
 try:
     result = connection.execute(sql_update_18)
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
+
+try:
+    result = connection.execute(sql_update_19)
 except Exception as e:
     print e.message, e.args
 else:

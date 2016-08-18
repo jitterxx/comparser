@@ -8,6 +8,7 @@ sys.setdefaultencoding("utf-8")
 import sqlalchemy
 from sqlalchemy import Table, Column, Integer, ForeignKey, and_, or_, func
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.dialects import mysql
 from configuration import *
 import datetime
 import email
@@ -124,8 +125,8 @@ class MsgRaw(Base):
     recipient = Column(sqlalchemy.TEXT())
     cc_recipient = Column(sqlalchemy.TEXT())
     message_title = Column(sqlalchemy.TEXT())
-    message_text = Column(sqlalchemy.TEXT())
-    message_text_html = Column(sqlalchemy.TEXT())
+    message_text = Column(mysql.MEDIUMTEXT)
+    message_text_html = Column(mysql.MEDIUMTEXT)
     orig_date = Column(sqlalchemy.DATETIME())
     create_date = Column(sqlalchemy.DATETIME())
     iscleared = Column(sqlalchemy.Integer)
@@ -470,7 +471,7 @@ class Msg(Base):
     cc_recipients = Column(sqlalchemy.TEXT())
     cc_recipients_name = Column(sqlalchemy.TEXT())
     message_title = Column(sqlalchemy.TEXT())
-    message_text = Column(sqlalchemy.TEXT())
+    message_text = Column(mysql.MEDIUMTEXT)
     orig_date = Column(sqlalchemy.DATETIME())
     create_date = Column(sqlalchemy.DATETIME())
     isclassified = Column(sqlalchemy.Integer, default=0)
@@ -499,7 +500,7 @@ class MsgErr(Base):
     cc_recipients = Column(sqlalchemy.TEXT())
     cc_recipients_name = Column(sqlalchemy.TEXT())
     message_title = Column(sqlalchemy.TEXT())
-    message_text = Column(sqlalchemy.TEXT())
+    message_text = Column(mysql.MEDIUMTEXT)
     orig_date = Column(sqlalchemy.DATETIME())
     create_date = Column(sqlalchemy.DATETIME())
     references = Column(sqlalchemy.TEXT())
