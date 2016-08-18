@@ -98,9 +98,10 @@ def prepare_audio_file(file_name=None, temp_path=None, file_format=None):
                 chunk.export(out_f=fname, format="u16le", parameters=["-acodec", "pcm_s16le"])
                 tmp_list.append(tmp_filename + "-{0}".format(i) + ".pcm")
                 logging.debug(" - файл {}, длина {} сконвертирован".format(tmp_filename + "-{0}".format(i) + ".pcm",
-                                                                           os.path.getsize(fname) ))
+                                                                           os.path.getsize(fname)))
             except Exception as e:
-                logging.error(" **** Ошибка конвертации файла - {} **** \n {}".format(file_name, str(e)))
+                logging.error(" **** Ошибка конвертации файла - {}, размер {} **** \n {}".
+                              format(fname, os.path.getsize(fname), str(e)))
                 logging.error("Пропускаем отрезок")
 
         return tmp_list
