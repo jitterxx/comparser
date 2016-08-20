@@ -160,6 +160,10 @@ class Root(object):
         return lookup.get_template("yandex_6e3971fd399cf7fd.html").render()
 
     @cherrypy.expose
+    def robots_txt(self):
+        return lookup.get_template("robots.txt").render()
+
+    @cherrypy.expose
     def demo_request(self, customer_email=None, customer_name=None, customer_phone=None, ads_code=None):
 
         if not customer_email and not customer_phone:
