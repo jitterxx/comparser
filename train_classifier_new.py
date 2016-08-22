@@ -45,9 +45,6 @@ else:
         else:
             train_data_ready = False
 
-exit()
-
-
 if train_data_ready:
     print("# Примеров для работы достаточно. Ошибок не обнаружено. \n Копируем данные...")
     # Копируем данные обучения текущей эпохи в train_data из user_train_data и чистим последнюю.
@@ -77,6 +74,7 @@ if train_data_ready:
                 session.add(new)
                 session.commit()
             except Exception as e:
+                print("Ошибка при копировании данных для обучения. {}".format(str(e)))
                 raise e
 
         # чистим user_train_data
@@ -85,6 +83,7 @@ if train_data_ready:
                 session.delete(one)
             session.commit()
         except Exception as e:
+            print("Ошибка при обновлении эпохи обучения. {}".format(str(e)))
             raise e
 
         # Обновляем эпоху
@@ -93,3 +92,5 @@ if train_data_ready:
         session.close()
 else:
     print("# Примеров для работы НЕ достаточно. Добавьте недостающие данные.")
+
+
