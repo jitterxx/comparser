@@ -35,18 +35,21 @@ except Exception as e:
     raise e
 else:
     for count, cat in resp:
+        print("Проверяем категорию - {}, количество примеров - {}".format(cat, count))
         if cat in cats and count >= 10:
             train_data_ready = True
+            print("\t ок")
         elif cat in cats and count < 10:
             train_data_ready = False
+            print("\t Недостаточно примеров")
         else:
             train_data_ready = False
-
 
 exit()
 
 
 if train_data_ready:
+    print("# Примеров для работы достаточно. Ошибок не обнаружено. \n Копируем данные...")
     # Копируем данные обучения текущей эпохи в train_data из user_train_data и чистим последнюю.
     try:
         utd = session.query(CPO.UserTrainData).all()
@@ -88,3 +91,5 @@ if train_data_ready:
         CPO.update_epoch()
     finally:
         session.close()
+else:
+    print("# Примеров для работы НЕ достаточно. Добавьте недостающие данные.")
