@@ -48,7 +48,7 @@ class Root(object):
     # blog = Blog()
 
     @cherrypy.expose
-    def index(self, ads=None):
+    def index(self, ads=None, utm_source=None, utm_medium=None, utm_campaign=None, utm_term=None):
         """
         Основная страница лендинга.
 
@@ -60,7 +60,12 @@ class Root(object):
 
         if not ads:
             ads = "organic"
-        print "ads :", ads
+        try:
+            print "Параметры перехода: \n \t ADS: {0}\n\t UTM_SOURCE: {1}\n\t UTM_MEDIUM: {2}\n" \
+                  "\t UTM_CAMPAIGN: {3}\n\t UTM_TERM: {4}\n".format(ads, str(utm_source), str(utm_medium),
+                                                                    str(utm_campaign), str(utm_term))
+        except Exception as e:
+            print "Ошибка при выводе параметров запроса. {}".format(str(e))
 
         try:
             user_agent = parse(cherrypy.request.headers['User-Agent'])
