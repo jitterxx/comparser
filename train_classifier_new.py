@@ -16,7 +16,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-
+CPO.initial_configuration()
 
 session = CPO.Session()
 # Проверяем что данные для обучения удовлетворяют условиям.
@@ -54,6 +54,14 @@ if train_data_ready:
         print "Ошибка при чтении User_train_data. %s" % str(e)
         raise e
     else:
+
+        try:
+            # Обновляем эпоху
+            CPO.update_epoch()
+        except Exception as e:
+            print("Ошибка при обновлении эпохи обучения. {}".format(str(e)))
+            raise e
+
         # переносим записи из user_train_data в train_data
         for one in utd:
             new = CPO.TrainData()
@@ -83,11 +91,9 @@ if train_data_ready:
                 session.delete(one)
             session.commit()
         except Exception as e:
-            print("Ошибка при обновлении эпохи обучения. {}".format(str(e)))
+            print("Ошибка при удалении данных пользовательского обучения. {}".format(str(e)))
             raise e
 
-        # Обновляем эпоху
-        CPO.update_epoch()
     finally:
         session.close()
 else:
