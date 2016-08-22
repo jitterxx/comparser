@@ -8,8 +8,6 @@
 from operator import itemgetter
 import re
 import argparse
-import mod_classifier as cl
-import mysql.connector
 import math
 from configuration import *
 import objects as CPO
@@ -26,7 +24,7 @@ session = CPO.Session()
 
 train_data_ready = False
 
-cats = CPO.GetCategory().values()
+cats = CPO.GetCategory().keys()
 
 try:
     resp = session.query(func.count(CPO.UserTrainData.category), CPO.UserTrainData.category).\
@@ -36,7 +34,14 @@ except Exception as e:
     print("Ошибка получения данных из UserTrainData. {}".format(str(e)))
     raise e
 else:
-    print resp
+    for count, cat in resp:
+        if cat in cats and count >= 10:
+            train_data_ready = True
+        elif cat in cats and count < 10:
+            train_data_ready = False
+        else:
+            train_data_ready = False
+
 
 exit()
 
