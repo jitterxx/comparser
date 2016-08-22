@@ -14,6 +14,7 @@ import html2text
 from configuration import *
 import datetime
 import objects as CPO
+from sqlalchemy import exc
 
 import sys
 reload(sys)
@@ -374,6 +375,35 @@ for row in raw_data:
 
             session.add(new)
             session.commit()
+        except exc.IntegrityError as e:
+            # Сообщение уже было обработано, помечяем его как обработанное
+            if "Duplicate entry" in e.message:
+                print("Сообщение уже было обработано, но не отмечено как обработанное. Отмечаем...")
+                session.rollback()
+
+                # Все ок, обновляем запись в email_raw_data
+                try:
+                    row.iscleared = 1
+                    session.commit()
+                except Exception as e:
+                    pass
+                else:
+                    if debug:
+                        print('Сообщение отмечено как обработанное. Добавлено в базу чистых сообщений.')
+
+                # Добавляем сообщение в тред
+                try:
+                    CPO.add_message_to_thread(msg=row)
+                except Exception as e:
+                    if debug:
+                        print "email_parse. Ошибка добавления сообщения в тред. Ошибка: ", str(e)
+
+                else:
+                    if debug:
+                        print("Сообщение добавлено в тред.")
+
+                print("*"*30)
+
         except Exception as e:
             print("**** Ошибка записи очищенного сообщения! {}".format(str(e)))
             pass
