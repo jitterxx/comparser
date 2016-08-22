@@ -30,7 +30,7 @@ sys.setdefaultencoding("utf-8")
 parser = argparse.ArgumentParser(description='Debug option')
 parser.add_argument('-d', action='store_true', dest='debug', help='print debug info')
 args = parser.parse_args()
-debug = args.debug
+debug = True
 
 logging.basicConfig(format='%(asctime)s.%(msecs)d %(levelname)s in \'%(module)s\' at line %(lineno)d: %(message)s',
                     datefmt='%d-%m-%Y %H:%M:%S',
@@ -49,8 +49,11 @@ if msg:
     try:
         message = CPO.parse_message(msg=msg, debug=debug)
         if debug:
-            logging.debug("# Оригинальные поля сообщения")
-            logging.debug("Тема: {}".format(msg.get('Subject', 'No subject provided')))
+            logging.debug("\n# Оригинальные поля сообщения")
+            logging.debug("ID: {}".format(str(message[0])))
+            logging.debug("Date: {}".format(str(message[7])))
+            logging.debug("From: {} \n To: {}".format(str(message[1]), str(message[2])))
+            logging.debug("Subject: {}".format(msg.get('Subject', 'No subject provided')))
 
         new = CPO.MsgRaw()
         new.message_id = message[0]  # msg_id
@@ -87,15 +90,18 @@ if msg:
         logging.error("Operational Error. MID={}.".format(new.message_id))
         logging.error("{}".format(str(e)))
         logging.error("*"*30)
+
         session.rollback()
         sys.exit(100)
 
     except Exception as e:
         logging.error("Message ID: %s" % msg['message-id'])
         logging.error("Ошибка записи нового сообщения. %s" % str(e))
+        logging.error("*"*30)
         sys.exit(100)
     else:
         if debug:
+            logging.debug("*"*30)
             # print 'Перенос в прочитанные...\n'
             # print 'Битое: ', message[8]
             pass

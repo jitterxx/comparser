@@ -326,14 +326,14 @@ for row in raw_data:
     
     if debug:
         print '*'*100,'\n'
-        print row.id,' ','.'*10
-        print('От: {}\nАдрес: {}\n'.format(clear_data['sender_name'],clear_data['sender']))
-        print('Кому: {}\nАдреса: {}\n'.format(clear_data['recipients_name'],clear_data['recipients']))
-        print 'Тема: ',clear_data['message_title']
+        print("MSG_ID: {}".format(str(clear_data.get("message_id"))))
+        print('От: {}\n\t Адрес: {}\n'.format(clear_data['sender_name'],clear_data['sender']))
+        print('Кому: {}\n\t Адреса: {}\n'.format(clear_data['recipients_name'],clear_data['recipients']))
+        print 'Тема: ', clear_data['message_title']
         print "Raw текст:\n", raw_text
-        print 'Текст:\n',clear_data['message_text']
-        print 'Битое: ',clear_data['isbroken']
-        print 'Исключение: ',clear_data['isexception']
+        print 'Текст:\n', clear_data['message_text']
+        print 'Битое: ', clear_data['isbroken']
+        print 'Исключение: ', clear_data['isexception']
         print '#'*100,'\n'
 
     # Remember processed entry id
@@ -375,6 +375,7 @@ for row in raw_data:
             session.add(new)
             session.commit()
         except Exception as e:
+            print("**** Ошибка записи очищенного сообщения! {}".format(str(e)))
             pass
         else:
             # Все ок, обновляем запись в email_raw_data
