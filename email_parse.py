@@ -331,7 +331,7 @@ for row in raw_data:
         print('От: {}\n\t Адрес: {}\n'.format(clear_data['sender_name'],clear_data['sender']))
         print('Кому: {}\n\t Адреса: {}\n'.format(clear_data['recipients_name'],clear_data['recipients']))
         print 'Тема: ', clear_data['message_title']
-        print "Raw текст:\n", raw_text
+        # print "Raw текст:\n", raw_text
         print 'Текст:\n', clear_data['message_text']
         print 'Битое: ', clear_data['isbroken']
         print 'Исключение: ', clear_data['isexception']
