@@ -7,28 +7,54 @@ sys.setdefaultencoding("utf-8")
 sys.path.extend(['..'])
 import re
 import objects as CPO
+import datetime
 
 session = CPO.Session()
 
-text = [u'А я не знаю как выглядит финальная, если честно. Штамп об оплате есть? >Четверг, 1 сентября 2016, 13:46 +03:00 от yana@yurburo.ru:',
-        u'На пластиковой, пожалуйста. Можно будет на Первомайской завтра забрать с утра? За наличные. 01.09.2016, 17:00, "Софья :: Печати и Штампы. Полиграфия." <sofiya@nl- pro.ru>: > Здравствуйте! '
-        u'Не финальная, которую мы фактически несем в налоговую. Спасибо! 01.09.2016, 13:08, "Ольга Авруцкая" <avru@mail.ru>: > Для нас да, если есть договор с этим человеком на эти услуги. ',
-        u'Добрый день, 30.09.2009. Сможем после 16-00. Вам будет удобно? 01.09.2016, 11:45, "Майорова Ирина" <majorova-ira@rambler.ru>: > Добрый день! ',
-        u'Подтвердить для кого? добрый день. >Четверг, 1 сентября 2016, 12:31 +03:00 от yana@yurburo.ru: ',
-        u'Ок! 01.09.2016, 17:06, "Софья :: Печати и Штампы. Полиграфия." <sofiya@nl- pro.ru>: > Завтра утром еще не будет, где-то к 12-13 часам ок? ',
-        u'Данные для доверенности во вложении. 01.09.2016, 11:59, "Максимова Алла" <am.notary@mail.ru>: > Добрый день! > При регистрации мы не можем указать Ваш электронный адрес, т.к. документы передает и получает нотариус.',
-        u'достаточно, чтобы подтвердить расход на госпошлину? Спасибо. 29.08.2016, 15:43, "yana@yurburo.ru" <yana@yurburo.ru>: > Поняла, спасибо! ',
-        ]
+empl_access_list = list()
 
 
+# список емайл адресов и доменов клиентов к которым у этого пользователя есть доступ
+client_access_list = CPO.get_watch_list(user_uuid="admin-uuid", is_admin=True)
 
-for one in text:
-    print("Исходный текст: {}".format(one))
+api_list, message_list, message_id_list, unchecked, checked = \
+                CPO.get_dialogs(for_day=datetime.datetime.now(), cat=CPO.WARNING_CATEGORY,
+                                empl_access_list=empl_access_list,
+                                client_access_list=client_access_list)
 
-    cut_text = ""
+for id in message_id_list:
+    print(id)
+    print(message_list[id].orig_date)
+    print("\n")
 
-    cut_text = re.split("\d{2}\.\d{2}\.\d{2,4}.{1,4}\d{2}:\d{2},.*\w+@\w+.\w+.|"
-                        ">.?\w{3,15}.{1,4}\d{1,2}.{1,4}\w{3,15}.{1,4}\d{2,4}.{1,4}\d{2}:\d{2}.*\w+@\w+.\w+.|"
-                        "\d{2}\.\d{2}\.\d{2,4}.{1,4}\d{2}:\d{2},.*<.+@.+>", one, 1, re.UNICODE)[0]
-    print("Текст после отреза: {}\n".format(cut_text))
+for_day = datetime.datetime.now()
+start = datetime.datetime.strptime("%s-%s-%s 00:00:00" % (for_day.year, for_day.month, for_day.day),
+                                   "%Y-%m-%d %H:%M:%S")
+end = datetime.datetime.strptime("%s-%s-%s 23:59:59" % (for_day.year, for_day.month, for_day.day),
+                                 "%Y-%m-%d %H:%M:%S")
 
+cat = CPO.WARNING_CATEGORY
+
+resp = session.query(CPO.Msg).\
+    filter(CPO.and_(CPO.Msg.create_date >= start, CPO.Msg.create_date <= end), CPO.Msg.isclassified == 1,
+           CPO.or_(*[CPO.Msg.category.like(c + "%") for c in cat])).\
+    order_by(CPO.Msg.create_date.desc()).all()
+
+ll = list()
+
+for one in resp:
+    print(one.message_id)
+    print(one.orig_date)
+    print("\n")
+    ll.append(one.message_id)
+
+print api_list.keys()
+print ll
+
+i = len(ll)
+while i > 0:
+    if ll[i] not in ll:
+        ll.pop[i]
+    i = i - 1
+
+print ll

@@ -834,6 +834,8 @@ def get_dialogs(for_day=None, cat=None, client_access_list=None, empl_access_lis
                     message_id_list.append(message.message_id)
                     message_list[message.message_id] = message
 
+        # TODO: Переписать предыдущий и следующий запросы через JOIN
+
         # Получаем список индентификаторов сообщений (нужен для получения самих сообщений)
         try:
             resp = session.query(TrainAPIRecords).\
@@ -867,13 +869,21 @@ def get_dialogs(for_day=None, cat=None, client_access_list=None, empl_access_lis
             print "API list len: %s" % len(api_list.keys())
             print "MSG ID list len: %s" % len(message_id_list)
 
-            message_id_list = list(set(api_list.keys()).intersection(set(message_id_list)))
+            # Оставляем только те сообщения которые были классифицированы и входят в искомые cat
+            # Для сохранения порядка следования сообщений, убираем через цикл
+            # message_id_list = list(set(api_list.keys()).intersection(set(message_id_list)))
+            i = len(message_id_list)
+            while i > 0:
+                i -= 1
+                if message_id_list[i] not in api_list:
+                    # print "Удаляем %s" % message_id_list[i]
+                    message_id_list.pop(i)
 
             print "MSG ID list len (intersection): %s" % len(message_id_list)
             # """
 
-        # Получаем сами сообщения
         """
+        # Получаем сами сообщения
         try:
             resp = session.query(Msg).\
                 filter(Msg.message_id.in_(message_id_list)).order_by(Msg.create_date.desc()).all()
