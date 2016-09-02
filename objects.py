@@ -100,12 +100,14 @@ def update_epoch():
     try:
         resp = session.query(Settings).one()
     except Exception as e:
+        print("Ошибка при получении настроек: ".format(str(e)))
         raise e
     else:
         try:
-            resp.train_epoch = int(CURRENT_TRAIN_EPOCH) + 1
+            resp.train_epoch = int(resp.train_epoch) + 1
             session.commit()
         except Exception as e:
+            print("Ошибка при обновлении эпохи: ".format(str(e)))
             raise e
         else:
             CURRENT_TRAIN_EPOCH = int(CURRENT_TRAIN_EPOCH) + 1
