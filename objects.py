@@ -873,9 +873,10 @@ def get_dialogs(for_day=None, cat=None, client_access_list=None, empl_access_lis
             # Для сохранения порядка следования сообщений, убираем через цикл
             # message_id_list = list(set(api_list.keys()).intersection(set(message_id_list)))
             i = len(message_id_list)
+            api_list_keys = api_list.keys()
             while i > 0:
                 i -= 1
-                if message_id_list[i] not in api_list:
+                if message_id_list[i] not in api_list_keys:
                     # print "Удаляем %s" % message_id_list[i]
                     message_id_list.pop(i)
 
