@@ -378,12 +378,7 @@ def specfeatures_new(entry):
 
     # Ищем вопросительные знаки
     quest = find_questions.findall(entry.message_text)
-    if quest:
-        # print "QUESTION : ", quest
-        if f.get("QUESTION"):
-            f['QUESTION'] += 1
-        else:
-            f['QUESTION'] = 1
+    f['QUESTION'] = len(quest)
 
     # Извлечь и аннотировать слова из заголовка
     titlewords = list()

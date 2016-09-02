@@ -70,7 +70,6 @@ if __name__ == '__main__':
                 group_by(CPO.TrainAPIRecords.auto_cat).all()
         except Exception as e:
             print str(e)
-            session.close()
             raise e
         else:
 
