@@ -37,6 +37,16 @@
 
     <link rel="stylesheet" type="text/css" href="/static/css/flaticon.css">
 
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="/static/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="/static/js/bootstrap.min.js"></script>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
+
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]>
@@ -93,19 +103,20 @@
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav navbar-right">
                 <!--
-                <li><a href="#product">Описание</a></li>
+
                 <li><a href="#ability">Возможности</a></li>
                 <li><a href="#profit">Польза</a></li>
                 -->
-                <li><a href="#cases">Кейсы</a></li>
+                <li><a href="#product">Решение</a></li>
+                <li><a href="#pilot">Попробовать</a></li>
                 <li><a href="#howto">Как все устроено</a></li>
                 <li><a href="#price">Стоимость</a></li>
-                <li><a href="#pilot">Попробовать</a></li>
+                <li><a href="#cases">Кейсы</a></li>
             </ul>
         </div><!--/.nav-collapse -->
     </div>
 </nav>
-<div class="header">
+<div class="header section-scroll">
     <div class="container">
         <div class="starter-template">
             <h1 class="header-phrase">CONVERSATION <span class="parser-word">PARSER</span></h1>
@@ -118,18 +129,22 @@
     </div><!-- /.container -->
 </div>
 
+<div class="container">
+    <div class="row">
+        <div style="margin-top: 8em;">&nbsp;</div>
+    </div>
+</div>
+
+
 <a name="product"></a>
-<div class="section-a"> <!-- light -->
+<div class="section-b section-scroll"> <!-- light -->
     <div class="container">
         <div class="row">
-            <div class="col-md-12" align="center">
-                <div style="margin-top: 4em;">&nbsp;</div>
-                <!--<h1 class="section-header">КЕЙС</h1>-->
-            </div>
+            <div style="margin-top: 6em;">&nbsp;</div>
         </div>
+
         <div class="row">
             <div class="col-md-8">
-
                 <h1 style="font-size: 1.5em; font-weight: 700; text-transform: uppercase; line-height: 150%;">
                     Находим <span class="attention">проблемы</span><br> и
                     <span class="attention">снижаем</span> отток клиентов до <strong>5%*</strong>
@@ -406,14 +421,14 @@
             </div>
         </div>
         -->
-        <div style="margin-bottom: 3em;">&nbsp;</div>
+        <div style="margin-bottom: 6em;">&nbsp;</div>
     </div>
 </div>
 
 
 
 <a name="ability"></a>
-<div class="section-b"> <!-- stripe -->
+<div class="section-a section-scroll"> <!-- stripe -->
     <div class="container">
         <div class="row">
             <div class="col-md-12">
@@ -435,7 +450,7 @@
                         <tr>
                             <td align="center" valign="top" width="33%" class="table-td-padding">
                                 <p>
-                                    <i class="fa fa-exclamation-triangle fa-3x" aria-hidden="true"></i>
+                                    <i class="fa fa-exclamation-triangle fa-3x text-warning" aria-hidden="true"></i>
                                 </p>
                                 <p>
                                     Недовольство клиентов действиями сотрудников
@@ -443,14 +458,14 @@
                             </td>
                             <td align="center" valign="top" width="33%" class="table-td-padding">
                                 <p>
-                                    <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                                    <i class="fa fa-spinner fa-spin fa-3x fa-fw text-muted"></i>
 
                                 </p>
                                 <p>Отсутствие ответа от сотрудников на запрос или задержка сроков</p>
                             </td>
                             <td align="center" valign="top" width="33%" class="table-td-padding">
                                 <p>
-                                    <i class="fa fa-question fa-3x" aria-hidden="true"></i>
+                                    <i class="fa fa-question fa-3x text-info" aria-hidden="true"></i>
                                 </p>
                                 <p>
                                     Несоответствие ответа сотрудника запросу клиента
@@ -473,7 +488,7 @@
                             </td>
                             <td align="center" valign="top" width="33%" class="table-td-padding">
                                 <p>
-                                    <i class="fa fa-ambulance fa-3x" aria-hidden="true"></i>
+                                    <i class="fa fa-ambulance fa-3x text-success" aria-hidden="true"></i>
                                 </p>
 
                                 <p>
@@ -482,7 +497,7 @@
                             </td>
                             <td align="center" valign="top" width="33%" class="table-td-padding">
                                 <p>
-                                    <i class="fa fa-random fa-3x" aria-hidden="true"></i>
+                                    <i class="fa fa-random fa-3x text-default" aria-hidden="true"></i>
                                 </p>
 
                                 <p>
@@ -502,7 +517,7 @@
 
 
 <a name="ability"></a>
-<div class="section-a"> <!-- white -->
+<div class="section-a section-scroll"> <!-- white -->
     <div class="container">
         <div class="row">
             <div class="col-md-12">
@@ -512,25 +527,68 @@
                 </h2>
                 <div style="margin-bottom: 1em;">&nbsp;</div>
                 <p>
+                    Отсутствие реакции на недовольство клиента или его проблему в
+                    <span class="attention">85% случаев</span> <strong>приводит к его уходу к конкурентам</strong>.
+                    Если вы сможете во время поймать проблему клиента и ее исправить, ваш клиент останется с вами.
+                </p>
+                <!--
+                <p>
                     Для <span class="attention">управления customer experience</span> (клиентским опытом)
                     важно понимать <strong>о чем</strong> говорят клиенты,
                     чем они <strong>довольны</strong> и <strong>не довольны</strong>, что им <strong>мешает</strong> и
                     чего <strong>не хватает</strong>.
                 </p>
-                <p>
-                    Проблемы о которых раньше можно было узнать через месяц, опросив клиентов,
-                    или после жалоб,<br> вы увидите через <span class="attention">5 минут</span> после их возникновения.
-                </p>
-                <p>
-                    Мы поможем вам <strong>поймать проблему вовремя</strong> и
-                    <span class="attention">сохранить ваших клиентов</span>.
-                </p>
+                -->
+
+                <div class="table-responsive" style="margin-left: 1em;">
+                    <table border="0" class="table-1-padding" align="left">
+                        <tbody>
+                        <tr>
+                            <td align="center">
+                                <i class="fa fa-frown-o fa-4x" aria-hidden="true"></i>
+                            </td>
+                            <td>
+                                Проблемы о которых раньше можно было узнать через месяц, опросив клиентов,
+                                или после жалоб
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center">
+                                <i class="fa fa-long-arrow-down fa-2x" aria-hidden="true"></i>
+                            </td>
+                            <td>
+                                &nbsp;
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <i class="fa fa-search fa-4x" aria-hidden="true"></i>
+                            </td>
+                            <td>
+                                вы увидите через <span class="attention">5 минут</span> после их возникновения
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center">
+                                <i class="fa fa-long-arrow-down fa-2x" aria-hidden="true"></i>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td align="center">
+                                <i class="fa fa-thumbs-o-up fa-4x" aria-hidden="true"></i>
+                            </td>
+                            <td>
+                                Мы поможем вам <strong>отреагировать на проблему вовремя</strong> и
+                        <span class="attention">сохранить ваших клиентов</span>
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
                 <div style="margin-bottom: 1em;">&nbsp;</div>
-                <p>
-                    Отсутствие реакции на недовольство клиента или его проблему в
-                    <span class="attention">85% случаев</span> <strong>приводит к его уходу к конкурентам</strong>.
-                    Если вы сможете во время поймать проблему клиента и ее исправить, ваш клиент останется с вами.
-                </p>
                 <p>
                     В <span class="attention">30% случаев</span> новые клиенты приходят <strong>по рекомендации от
                     текущих клиентов</strong> компании.*
@@ -549,7 +607,7 @@
 
 
 <a name="ability"></a>
-<div class="section-a"> <!-- stripe -->
+<div class="section-a section-scroll"> <!-- stripe -->
     <div class="container">
 
         <div class="row">
@@ -561,10 +619,16 @@
                 </h2>
                 <div style="margin-bottom: 1em;">&nbsp;</div>
                 <p>
-                    Мы поможем составить <strong>портрет клиента</strong> и выстроить с ним персональную коммуникацию.
+                    Для <span class="attention">управления customer experience</span> (клиентским опытом)
+                    важно понимать <strong>о чем</strong> говорят клиенты,
+                    чем они <strong>довольны</strong> и <strong>не довольны</strong>, что им <strong>мешает</strong> и
+                    чего <strong>не хватает</strong>.
                 </p>
                 <p>
-                    Извлечем из переписки и разговоров максимум информации о клиенте.
+                    Извлечем из переписки и разговоров <strong>максимум информации</strong> о клиенте.
+                </p>
+                <p>
+                    Мы поможем составить <strong>портрет клиента</strong> и выстроить с ним персональную коммуникацию.
                 </p>
                 <div style="margin-bottom: 1em;">&nbsp;</div>
                 <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
@@ -580,8 +644,8 @@
 
                     <!-- Wrapper for slides -->
                     <div class="carousel-inner" role="listbox">
-                        <div class="item active">
-                            <img src="/static/img/page1_client_profile.png" alt="...">
+                        <div class="item active" align="center">
+                            <img src="/static/img/page1_client_profile.png" align="center">
                             <div class="carousel-caption">
                                 <h3>Коммуникационный профиль для каждого клиента</h3>
                                 <p>
@@ -599,11 +663,21 @@
                             </div>
                         </div>
                         <div class="item">
+                            <img src="/static/img/page5_problem_via_cause.png" alt="...">
+                            <div class="carousel-caption">
+                                <h3>Проблемы и причины</h3>
+                                <p>
+                                    Связи между проблемам и причинам их возникновения
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="item">
                             <img src="/static/img/page3_problem_via_empl.png" alt="...">
                             <div class="carousel-caption">
                                 <h3>Сотрудники и ошибки</h3>
                                 <p>
-                                     Статистка по ошибкам совершенным сотрудниками
+                                     Кто совершает больше всего ошибок и создает проблемы
                                 </p>
                             </div>
                         </div>
@@ -612,16 +686,7 @@
                             <div class="carousel-caption">
                                 <h3>Клиенты и проблемы</h3>
                                 <p>
-                                    Статистика по проблемам клиентов
-                                </p>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <img src="/static/img/page5_problem_via_cause.png" alt="...">
-                            <div class="carousel-caption">
-                                <h3>Проблемы и причины</h3>
-                                <p>
-                                    Статистика по проблемам и причинам их возникновения
+                                    Кто из клиентов больше всего недоволен и находится в зоне риска
                                 </p>
                             </div>
                         </div>
@@ -645,7 +710,7 @@
 
 
 <a name="ability"></a>
-<div class="section-a"> <!-- white -->
+<div class="section-a section-scroll"> <!-- white -->
     <div class="container">
         <div class="row">
             <div class="col-md-12">
@@ -689,186 +754,53 @@
     </div>
 </div>
 
-
-<a name="product"></a>
-<div class="section-b"> <!-- stripe -->
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12" align="center">
-                <div style="margin-top: 4em;"></div>
-                <h1 class="section-header">
-                    До снижения оттока клиентов - <span style="color: #0083dd;">один звонок</span>
-                </h1>
+<a name="pilot"></a>
+<div class="section-b section-scroll">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12" align="center">
+                    <h1 class="section-header">Начните пилотный проект <span style="color: #0083dd;">сегодня</span></h1>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12" align="center">
-
-                <p>
-                    Пожалуйста, оставьте свои контакты
-                </p>
-
-                <div style="height: 1em;"></div>
-                    <div>
+            <div class="row">
+                <div class="col-md-12">
+                    <p>
+                        Пилотный проект мы делаем <span class="attention">бесплатно</span>.
+                    </p>
+                    <p>
+                        По функционалу он не отличается от коммерческой версии сервиса, но ограничен
+                        временем или объемами обрабатываемых данных.</p>
+                    <p>
+                        При запуске пилотного проекты, мы делаем настройку системы, обучение и
+                        подключение к вашим сервисам (электронной почте, телефонии и т.д.) - самостоятельно.
+                    </p>
+                    <p>
+                        Пожалуйста, заполните поля и мы с вами свяжемся.
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" align="center">
+                    <div style="margin-top: 3em; margin-bottom: 5em;">
                         <form class="form-inline" action="/demo_request" method="post">
-                            <input type="hidden" name="ads_code" value="main_connect_with_me">
+                            <input type="hidden" name="ads_code" value="Бесплатный пилотный проект.">
                             <input type="text" class="form-control input-lg" placeholder="Ваше имя"
                                    name="customer_name" width="40%">
                             <input type="text" class="form-control input-lg" placeholder="Телефон"
                                    name="customer_phone">
                             <input type="email" class="form-control input-lg" placeholder="Email"
                                    name="customer_email">
-                            <button class="btn btn-success btn-lg">Свяжитесь со мной</button>
+                            <button class="btn btn-success btn-lg">Начать пилотный проект</button>
                         </form>
                     </div>
+                </div>
             </div>
+            <div style="margin-top: 4em;"></div>
         </div>
-        <div style="margin-bottom: 3em;">&nbsp;</div>
-    </div>
 </div>
-
-
-<a name="cases"></a>
-<div class="section-a">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12" align="center">
-                <h1 class="section-header">Кейсы</h1>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-12">
-                <h2 class="section-subheader">
-                    Сфера услуг
-                </h2>
-                <h3>Ситуация</h3>
-                <p>
-                    Юридическая компания находится в стадии активного роста.
-                    10 сотрудников, 20 видов различных услуг,
-                    средняя продолжительность сделки от 1 до 3 недель, до 10 контрагентов в процессе сделки с разными
-                    правилами взаимодействия. Средний чек - 18 000 рублей.
-                </p>
-                <p>
-                    Стоимость привлечения одного нового платящего клиента в этой отрасли, примерно -
-                    <strong>7000 рублей</strong>.
-
-                </p>
-                <p>
-                    Владельцы компании считают, что только качественный сервис и минимум ошибок могут выделить компанию на рынке.
-                    Что путь к качеству лежит через <strong>управление customer experience (клиентским опытом)</strong> и
-                    понимание клиентов.
-                </p>
-                <p>
-                    Управление клиентским опытом и качеством встраивается в бизнес процессы компании.
-                    За счет высокого качества услуг, компании удается получать до <span class="attention">30%</span>
-                    новых клиентов по
-                    рекомендациям и еще <span class="attention">30%</span> это постоянные клиенты, которые возвращаются.
-                    В этой ситуации стоимость
-                    каждого нового клиента падает до примерно <strong>3000 рублей</strong>, что уже позволяет успешно работать.
-                </p>
-
-                <h3>Проблема</h3>
-                <p>
-                    Ошибки сотрудников в области юридического знания и при обслуживании клиентов, в виду
-                    большого количества услуг с большим количеством деталей.
-                </p>
-
-                <h3>Решение</h3>
-                <p>
-                    Раньше качество сервиса поддерживалось в ручном режиме, но как быть при развитии компании?
-                    Руководитель компании не сможет тратить время на чтение почты, прослушивание разговоров и т.д.,
-                    чтобы поймать все проблемные ситуации в процессе взаимодействия с клиентом. Нужен инструмент.
-                </p>
-                <p>
-                    Использование
-                    <span style="color: #0083dd; font-weight: 600;">Conversation</span>
-                    <span style="color: #27384b; font-weight: 600;">parser</span>,
-                    решает проблему мониторинга коммуникаций. Сейчас
-                    руководитель привлекается в тех ситуациях, когда действительно произошла ошибка и клиент чем-от
-                    недоволен, все остальное происходит без участия людей. Увеличение звонков, количества электронной
-                    почты и т.д., не являются узким местом при развитии компании.
-
-                </p>
-                <h3>Про деньги</h3>
-                <p>
-
-                    Если представить, что клиенты не приходят по рекомендации и не возвращаются,<br>
-                    то привлечение <strong>100 клиентов в месяц</strong>, обходится в
-                    <h3 align="center">100 x 7 0000 = 700 000 рублей</h3>
-                </p>
-                <div style="margin-bottom: 1em;">&nbsp;</div>
-                <p>
-                    При <strong>высоком качестве сервиса</strong> происходит до
-                    <span class="attention">30%</span> повторных обращений и
-                    <span class="attention">30%</span> приходит по
-                    рекомендациям, <br>значит на <strong>привлечение тех же 100 клиентов</strong> компания тратит
-                    всего
-                    <h3 align="center">(100 - 60) x 7000 + 30 000 = <span class="attention">310 000</span> рублей</h3>
-                </p>
-                <div style="margin-bottom: 1em;">&nbsp;</div>
-                <p>
-                    Из которых 30 000 рублей тратит на <strong>инструмент управления клиентским опытом</strong>.
-                </p>
-                <div style="margin-bottom: 1em;">&nbsp;</div>
-                <p>
-                    Применение
-                    <span style="color: #0083dd; font-weight: 600;">Conversation</span>
-                    <span style="color: #27384b; font-weight: 600;">parser</span>
-                    в процессе управление
-                    <strong>customer experience (клиентским опытом)</strong>, позволяет меньше тратить на привлечение
-                    и больше
-                    зарабатывать на лояльных и постоянных клиентах.
-
-                </p>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-12">
-                <h2 class="section-subheader">
-                    ИТ компании
-                </h2>
-               <h3>Ситуация</h3>
-                <p>
-                    ИТ компания разрабатывает программное обеспечение на заказ. Около 400 сотрудников. Активно работают
-                    с зарубежными заказчиками. Средняя стоимость проекта 50-60 млн рублей. В общении с
-                    клиентами участвует много сотрудников компании сейлзы, директора, менеджеры проектов, разработчики,
-                    тестеры и т.д. Не все из них хорошо знают язык заказчика и не все умеют правильно строить
-                    коммуникации, корректно реагировать и поддерживать общение.
-                </p>
-                <h3>Проблема</h3>
-                <p>
-                    Множественные случаи игнорирование требований клиентов, задержки ответов, непонимание из-за
-                    неправильного перевода, замалчивание проблемных ситуаций. Из-за этого риск потери заказчика,
-                    не продление контракта и его уход к другому поставщику очень высок.
-                </p>
-
-                <h3>Решение</h3>
-                <p>
-                   Автоматический мониторинг коммуникаций с клиенами. Выявление подозрительных
-                    ситуаций и уведомление менеджеров проектов. Ситуации раньше приводившие к конфликтам,
-                    теперь разбираются и решаются при возникновении. Появилась картина, по возможностям сотрудников
-                    поддерживать общение с клиентами. Вскрылись узкие места в процессах.
-                </p>
-                <h3>Про деньги</h3>
-                <p>
-                    Стоимость использования
-                    <span style="color: #0083dd; font-weight: 600;">Conversation</span>
-                    <span style="color: #27384b; font-weight: 600;">parser</span>
-                     не превышает <strong>1% стоимости контракта</strong>
-                    и <strong>снимает серьезные риски его потери</strong>.
-                </p>
-            </div>
-        </div>
-        <div style="margin-bottom: 3em;">&nbsp;</div>
-    </div>
-</div>
-
-
 
 <a name="howto"></a>
-<div class="section-a"> <!-- white -->
+<div class="section-a section-scroll"> <!-- white -->
     <div class="container">
         <div class="row">
             <div class="col-md-12" align="center">
@@ -1002,7 +934,7 @@
 
 
 <a name="price"></a>
-<div class="section-b">
+<div class="section-b section-scroll">
         <div class="container">
             <div class="row">
                 <div class="col-md-12" align="center">
@@ -1056,54 +988,197 @@
         </div>
 </div>
 
-<a name="pilot"></a>
-<div class="section-a">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12" align="center">
-                    <h1 class="section-header">Начните пилотный проект <span style="color: #0083dd;">сегодня</span></h1>
-                </div>
+<a name="one_call"></a>
+<div class="section-a section-scroll">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12" align="center">
+                <div style="margin-top: 6em;"></div>
+                <h1 class="section-header">
+                    До снижения оттока клиентов - <span style="color: #0083dd;">один звонок</span>
+                </h1>
             </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <p>
-                        Пилотный проект мы делаем <span class="attention">бесплатно</span>.
-                    </p>
-                    <p>
-                        По функционалу он не отличается от коммерческой версии сервиса, но ограничен
-                        временем или объемами обрабатываемых данных.</p>
-                    <p>
-                        При запуске пилотного проекты, мы делаем настройку системы, обучение и
-                        подключение к вашим сервисам (электронной почте, телефонии и т.д.) - самостоятельно.
-                    </p>
-                    <p>
-                        Пожалуйста, заполните поля и мы с вами свяжемся.
-                    </p>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12" align="center">
-                    <div style="margin-top: 3em; margin-bottom: 5em;">
+        </div>
+        <div class="row">
+            <div class="col-md-12" align="center">
+
+                <p>
+                    Пожалуйста, оставьте свои контакты
+                </p>
+
+                <div style="height: 1em;"></div>
+                    <div>
                         <form class="form-inline" action="/demo_request" method="post">
-                            <input type="hidden" name="ads_code" value="Бесплатный пилотный проект.">
+                            <input type="hidden" name="ads_code" value="main_connect_with_me">
                             <input type="text" class="form-control input-lg" placeholder="Ваше имя"
                                    name="customer_name" width="40%">
                             <input type="text" class="form-control input-lg" placeholder="Телефон"
                                    name="customer_phone">
                             <input type="email" class="form-control input-lg" placeholder="Email"
                                    name="customer_email">
-                            <button class="btn btn-success btn-lg">Начать пилотный проект</button>
+                            <button class="btn btn-success btn-lg">Свяжитесь со мной</button>
                         </form>
                     </div>
+            </div>
+        </div>
+        <div style="margin-bottom: 8em;">&nbsp;</div>
+    </div>
+</div>
+
+<a name="cases"></a>
+<div class="section-b section-scroll">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12" align="center">
+                <h1 class="section-header">Кейсы</h1>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h2 class="section-subheader">
+                    Сфера услуг
+                </h2>
+                <div style="margin-left: 1em;">
+                    <h3>Ситуация</h3>
+                    <p>
+                        Юридическая компания находится в стадии активного роста.
+                        10 сотрудников, 20 видов различных услуг,
+                        средняя продолжительность сделки от 1 до 3 недель, до 10 контрагентов в процессе сделки с разными
+                        правилами взаимодействия. Средний чек - 18 000 рублей.
+                    </p>
+                </div>
+                <div align="right">
+                <a data-toggle="collapse" href="#collapse_case_1" aria-expanded="false" aria-controls="collapse_case_1"
+                onclick="this.hidden=true;">
+                    еще...
+                </a>
+                </div>
+                <div class="collapse" id="collapse_case_1" style="margin-left: 1em;">
+                    <p>
+                        Стоимость привлечения одного нового платящего клиента в этой отрасли, примерно -
+                        <strong>7000 рублей</strong>.
+
+                    </p>
+                    <p>
+                        Владельцы компании считают, что только качественный сервис и минимум ошибок могут выделить компанию на рынке.
+                        Что путь к качеству лежит через <strong>управление customer experience (клиентским опытом)</strong> и
+                        понимание клиентов.
+                    </p>
+                    <p>
+                        Управление клиентским опытом и качеством встраивается в бизнес процессы компании.
+                        За счет высокого качества услуг, компании удается получать до <span class="attention">30%</span>
+                        новых клиентов по
+                        рекомендациям и еще <span class="attention">30%</span> это постоянные клиенты, которые возвращаются.
+                        В этой ситуации стоимость
+                        каждого нового клиента падает до примерно <strong>3000 рублей</strong>, что уже позволяет успешно работать.
+                    </p>
+
+                    <h3>Проблема</h3>
+                    <p>
+                        Ошибки сотрудников в области юридического знания и при обслуживании клиентов, в виду
+                        большого количества услуг с большим количеством деталей.
+                    </p>
+
+                    <h3>Решение</h3>
+                    <p>
+                        Раньше качество сервиса поддерживалось в ручном режиме, но как быть при развитии компании?
+                        Руководитель компании не сможет тратить время на чтение почты, прослушивание разговоров и т.д.,
+                        чтобы поймать все проблемные ситуации в процессе взаимодействия с клиентом. Нужен инструмент.
+                    </p>
+                    <p>
+                        Использование
+                        <span style="color: #0083dd; font-weight: 600;">Conversation</span>
+                        <span style="color: #27384b; font-weight: 600;">parser</span>,
+                        решает проблему мониторинга коммуникаций. Сейчас
+                        руководитель привлекается в тех ситуациях, когда действительно произошла ошибка и клиент чем-от
+                        недоволен, все остальное происходит без участия людей. Увеличение звонков, количества электронной
+                        почты и т.д., не являются узким местом при развитии компании.
+
+                    </p>
+                    <h3>Про деньги</h3>
+                    <p>
+
+                        Если представить, что клиенты не приходят по рекомендации и не возвращаются,<br>
+                        то привлечение <strong>100 клиентов в месяц</strong>, обходится в
+                        <h3 align="center">100 x 7 0000 = 700 000 рублей</h3>
+                    </p>
+                    <div style="margin-bottom: 1em;">&nbsp;</div>
+                    <p>
+                        При <strong>высоком качестве сервиса</strong> происходит до
+                        <span class="attention">30%</span> повторных обращений и
+                        <span class="attention">30%</span> приходит по
+                        рекомендациям, <br>значит на <strong>привлечение тех же 100 клиентов</strong> компания тратит
+                        всего
+                        <h3 align="center">(100 - 60) x 7000 + 30 000 = <span class="attention">310 000</span> рублей</h3>
+                    </p>
+                    <div style="margin-bottom: 1em;">&nbsp;</div>
+                    <p>
+                        Из которых 30 000 рублей тратит на <strong>инструмент управления клиентским опытом</strong>.
+                    </p>
+                    <div style="margin-bottom: 1em;">&nbsp;</div>
+                    <p>
+                        Применение
+                        <span style="color: #0083dd; font-weight: 600;">Conversation</span>
+                        <span style="color: #27384b; font-weight: 600;">parser</span>
+                        в процессе управление
+                        <strong>customer experience (клиентским опытом)</strong>, позволяет привлекать за те же деньги
+                        <strong>в 2 раза больше</strong> клиентов
+                        и больше зарабатывать.
+
+                    </p>
                 </div>
             </div>
-            <div style="margin-top: 4em;"></div>
         </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <a data-toggle="collapse" href="#collapse_case_2" aria-expanded="false" aria-controls="collapse_case_2">
+                    <h2 class="section-subheader story-header">
+                        ИТ компании
+                    </h2>
+                </a>
+                <div class="collapse" id="collapse_case_2" style="margin-left: 1em;">
+                   <h3>Ситуация</h3>
+                    <p>
+                        ИТ компания разрабатывает программное обеспечение на заказ. Около 400 сотрудников. Активно работают
+                        с зарубежными заказчиками. Средняя стоимость проекта 50-60 млн рублей. В общении с
+                        клиентами участвует много сотрудников компании сейлзы, директора, менеджеры проектов, разработчики,
+                        тестеры и т.д. Не все из них хорошо знают язык заказчика и не все умеют правильно строить
+                        коммуникации, корректно реагировать и поддерживать общение.
+                    </p>
+                    <h3>Проблема</h3>
+                    <p>
+                        Множественные случаи игнорирование требований клиентов, задержки ответов, непонимание из-за
+                        неправильного перевода, замалчивание проблемных ситуаций. Из-за этого риск потери заказчика,
+                        не продление контракта и его уход к другому поставщику очень высок.
+                    </p>
+
+                    <h3>Решение</h3>
+                    <p>
+                       Автоматический мониторинг коммуникаций с клиенами. Выявление подозрительных
+                        ситуаций и уведомление менеджеров проектов. Ситуации раньше приводившие к конфликтам,
+                        теперь разбираются и решаются при возникновении. Появилась картина, по возможностям сотрудников
+                        поддерживать общение с клиентами. Вскрылись узкие места в процессах.
+                    </p>
+                    <h3>Про деньги</h3>
+                    <p>
+                        Стоимость использования
+                        <span style="color: #0083dd; font-weight: 600;">Conversation</span>
+                        <span style="color: #27384b; font-weight: 600;">parser</span>
+                         не превышает <strong>1% стоимости контракта</strong>
+                        и <strong>снимает серьезные риски его потери</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div style="margin-bottom: 3em;">&nbsp;</div>
+    </div>
 </div>
 
 
     <a name="contacts"></a>
-    <footer class="section-b">
+    <footer class="section-a section-footer">
         <br>
         <br>
         <div class="container">
@@ -1145,18 +1220,9 @@
                     </a>
                 </div>
             </div>
+            <div style="margin-bottom: 3em;">&nbsp;</div>
         </div>
     </footer>
-
-
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="/static/js/vendor/jquery.min.js"><\/script>')</script>
-    <script src="/static/js/bootstrap.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
 
 
     <!-- Yandex.Metrika counter -->
