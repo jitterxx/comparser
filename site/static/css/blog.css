@@ -1,0 +1,35 @@
+
+.blog-post h1 {
+    margin-top: 6em;
+    margin-bottom: 2em;
+    font-weight: 700;
+}
+
+.blog-post h2 {
+    margin-top: 2em;
+    font-weight: 600;
+}
+
+.blog-post p {
+    line-height: 1.6em;
+    margin-bottom: 2em;
+    font-size: 1.1em;
+}
+
+.blog-post h2, h3 {
+    color: #aaa;
+}
+
+.blog-post ul {
+    line-height: 1.6em;
+    font-size: 1.1em;
+    list-style-type: circle;
+    padding-left: 2em;
+    padding-right: 2em;
+    }
+
+.blog-post ul a {
+    color: #aaa;
+    font-size: 0.8em;
+}
+

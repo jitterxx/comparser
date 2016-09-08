@@ -42,10 +42,31 @@ class ShowNotification(object):
         return tmpl.render(error=error, url=url)
 
 
+class Blog(object):
+
+    lookup = TemplateLookup(directories=["./templates/blog"], output_encoding="utf-8",
+                            input_encoding="utf-8", encoding_errors="replace")
+
+    @cherrypy.expose
+    def index(self, post=None, ads=None, utm_source=None, utm_medium=None, utm_campaign=None, utm_term=None):
+        if post:
+            try:
+                tmpl = self.lookup.get_template("blog_post_{}.html".format(post))
+            except Exception as e:
+                print("Ошибка при получении поста для блога. {}".format(str(e)))
+                tmpl = lookup.get_template("error.html")
+                return tmpl.render(error="Статья не найдена.", url="/")
+            else:
+                return tmpl.render()
+        else:
+            tmpl = self.lookup.get_template("blog_index.html")
+            return tmpl.render()
+
+
 class Root(object):
 
     # demo = Demo()
-    # blog = Blog()
+    blog = Blog()
 
     @cherrypy.expose
     def index(self, ads=None, utm_source=None, utm_medium=None, utm_campaign=None, utm_term=None):
