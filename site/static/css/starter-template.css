@@ -42,8 +42,8 @@ hr {
 }
 
 .header {
-    padding-top: 3em;
-    padding-bottom: 7em;
+    padding-top: 0em;
+    padding-bottom: 0em;
     text-align: center;
     background: url(/static/img/header-bg-waves.png) no-repeat center 40%;
     background-size: cover;
@@ -55,7 +55,7 @@ hr {
 .header-phrase {
     color: #0083dd;
     position: relative;
-    margin-top: 2em;
+    margin-top: 0.7em;
     text-shadow: 2px 2px 3px #cccccc;
     font-size: 4em;
     font-weight: 700;
