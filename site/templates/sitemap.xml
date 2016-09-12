@@ -14,4 +14,16 @@
 
    </url>
 
+   <url>
+
+       <loc>http://conparser.ru/blog</loc>
+
+       <lastmod>2016-09-12</lastmod>
+
+       <changefreq>weekly</changefreq>
+
+       <priority>0.8</priority>
+
+   </url>
+
 </urlset>
