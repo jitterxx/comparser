@@ -121,7 +121,9 @@
     <div class="container">
         <div class="row">
             <div class="starter-template col-md-12">
-                <h1 class="header-phrase">CONVERSATION <span class="parser-word">PARSER</span></h1>
+                <h1 class="header-phrase hidden-xs">CONVERSATION <span class="parser-word">PARSER</span></h1>
+
+                <h1 class="header-phrase-xs visible-xs">CONVERSATION <span class="parser-word">PARSER</span></h1>
                 <!--
                 <h1 class="subheader-phrase">инструмент для управления клиентским опытом</h1>
 
@@ -135,6 +137,7 @@
             </div>
 
         </div>
+
         <div class="row">
             <div class="col-md-12">
                 <h1 style="font-size: 1.5em; font-weight: 700; text-transform: uppercase; line-height: 150%;">
@@ -744,14 +747,15 @@
                 <div style="margin-bottom: 2em;"></div>
 
             </div>
+        </div>
 
-            <link href="/static/css/timeline.css" rel="stylesheet">
-            <div class="row">
-                <div class="col-lg-12">
-                    <ul class="timeline">
+        <div class="row">
+            <div class="col-md-12" align="center">
+                <link href="/static/css/timeline.css" rel="stylesheet">
+                <ul class="timeline">
                         <li>
                             <div class="timeline-image" align="center">
-                                <span style="font-size: 2em;"><br>Шаг 1</span>
+                                <div class="tl-caption">Шаг 1</div>
                             </div>
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
@@ -774,7 +778,7 @@
                         </li>
                         <li class="timeline-inverted">
                             <div class="timeline-image" align="center">
-                                <span style="font-size: 2em;"><br>Шаг 2</span>
+                                <div class="tl-caption">Шаг 2</div>
                             </div>
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
@@ -797,7 +801,7 @@
                         </li>
                         <li>
                             <div class="timeline-image" align="center">
-                                <span style="font-size: 2em;"><br>Шаг 3</span>
+                                <div class="tl-caption">Шаг 3</div>
                             </div>
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
@@ -819,7 +823,7 @@
                         </li>
                         <li class="timeline-inverted">
                             <div class="timeline-image" align="center">
-                                <span style="font-size: 2em;"><br>Шаг 4</span>
+                                <div class="tl-caption">Шаг 4</div>
                             </div>
 
                             <div class="timeline-panel">
@@ -837,9 +841,9 @@
                                 </div>
                             </div>
                         </li>
-                        <li>
+                        <li class="timeline">
                             <div class="timeline-image" align="center">
-                                <span style="font-size: 2em;"><br>Шаг 5</span>
+                                <div class="tl-caption">Шаг 5</div>
                             </div>
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
@@ -848,7 +852,7 @@
                                 <div class="timeline-body">
 
                                     <p>
-                                        Вы анализируете информацию и примаете решения.
+                                        Вы анализируете информацию и принимаете решения.
                                     </p>
                                     <br>
                                     <p>
@@ -863,10 +867,9 @@
                         </li>
 
                     </ul>
-                </div>
-            </div>
 
-            <div style="margin-top: 4em;"></div>
+                <div style="margin-top: 4em;"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -880,25 +883,59 @@
                     <h1 class="section-header">Стоимость</h1>
                 </div>
             </div>
-            <div class="row">
-                <div class="table-responsive" style="margin-left: 1em;">
-                    <table border="0" class="table-1-padding" align="left">
+            <div class="row hidden-lg hidden-md" align="center">
+                <div class="col-sm-12 col-xs-12" align="center">
+                    <div style="position: relative; top: 0px;">
+                        <span style="font-size: 4.8em; font-weight: 700;">
+                            20&nbsp;000
+                        </span>
+                    </div>
+                    <div style="position: relative; top: -30px; left: -0px;">
+                        <span style="font-size: 2.01em; font-weight: 300; vertical-align: top;">
+                            рублей&nbsp;в&nbsp;месяц
+                        </span>
+                    </div>
+
+                </div>
+                <div class="col-sm-12 col-xs-12" align="center">
+                    <i class="fa fa-plus fa-3x" aria-hidden="true" style="color: #0083dd;"></i>
+                </div>
+                <div class="col-sm-12 col-xs-12" align="center">
+                   <p style="line-height: 2.5em;">
+                        <strong>70 копеек</strong> &le; 20 000 сообщений
+                       <br>
+                        <strong>60 копеек</strong> &le; 50 000 сообщений
+                       <br>
+                        <strong>50 копеек</strong> &gt; 50 000 сообщений
+                    </p>
+                </div>
+                <div class="col-sm-12 col-xs-12"  align="center">
+                    <i class="fa fa-plus fa-3x" aria-hidden="true" style="color: #0083dd;"></i>
+                </div>
+                <div class="col-sm-12 col-xs-12" align="center">
+                    <strong>3 рубля</strong> - 1 минута
+                </div>
+            </div>
+            <div class="row hidden-sm hidden-xs" align="center">
+                    <table border="0" class="table-1-padding" align="center">
                         <tbody>
                         <tr valign="center">
-                            <td align="center" style="padding-left: 45px;padding-right: 45px;">
+                            <td align="center" style="padding-left: 15px;padding-right: 15px;">
                                 <div style="position: relative; top: 0px;">
-                                    <span style="font-size: 4.8em; font-weight: 700;">20 000</span>
+                                    <span style="font-size: 4.8em; font-weight: 700;">
+                                        20&nbsp;000
+                                    </span>
                                 </div>
                                 <div style="position: relative; top: -30px; left: -0px;">
                                     <span style="font-size: 2.01em; font-weight: 300; vertical-align: top;">
-                                        рублей в месяц
+                                        рублей&nbsp;в&nbsp;месяц
                                     </span>
                                 </div>
                             </td>
                             <td align="center">
                                 <i class="fa fa-plus fa-3x" aria-hidden="true" style="color: #0083dd;"></i>
                             </td>
-                            <td align="left" style="padding-left: 45px;padding-right: 45px;" valign="center">
+                            <td align="left" style="padding-left: 15px;padding-right: 15px;" valign="center">
                                <p style="line-height: 2.5em;">
                                     <strong>70 копеек</strong> &le; 20 000 сообщений
                                    <br>
@@ -910,13 +947,13 @@
                             <td align="center">
                                 <i class="fa fa-plus fa-3x" aria-hidden="true" style="color: #0083dd;"></i>
                             </td>
-                            <td align="center"  style="padding-left: 45px;padding-right: 45px;">
+                            <td align="center"  style="padding-left: 15px;padding-right: 15px;">
                                 <strong>3 рубля</strong> - 1 минута
                             </td>
                         </tr>
                         </tbody>
                     </table>
-                </div>
+
             </div>
             <div class="row">
                 <div class="col-md-12">
@@ -980,7 +1017,7 @@
             <div class="col-md-12" align="center">
                 <div style="margin-top: 6em;"></div>
                 <h1 class="section-header">
-                    До снижения оттока клиентов - <span style="color: #0083dd;">один звонок</span>
+                    До снижения оттока клиентов - <span style="color: #0083dd;">один&nbsp;звонок</span>
                 </h1>
             </div>
         </div>
@@ -992,19 +1029,34 @@
                 </p>
 
                 <div style="height: 1em;"></div>
-                <form class="form-inline" action="/demo_request" method="post">
-                    <input type="hidden" name="ads_code" value="main_connect_with_me">
-                    <input type="text" class="form-control input-lg" placeholder="Ваше имя"
-                           name="customer_name" width="40%">
-                    <input type="text" class="form-control input-lg" placeholder="Телефон"
-                           name="customer_phone">
-                    <input type="email" class="form-control input-lg" placeholder="Email"
-                           name="customer_email">
-                    <button class="btn btn-success btn-lg">Свяжитесь со мной</button>
-
-                </form>
             </div>
         </div>
+
+        <div class="row">
+            <form action="/demo_request" method="post">
+                <input type="hidden" name="ads_code" value="last_connect_with_me">
+                <div class="col-md-3" align="center" style="padding: 3px;">
+                    <input type="text" class="form-control input-lg" placeholder="Ваше имя"
+                           name="customer_name">
+                    <div style="height: 0.5em;"></div>
+                </div>
+                <div class="col-md-3" align="center" style="padding: 3px;">
+                    <input type="text" class="form-control input-lg" placeholder="Телефон"
+                           name="customer_phone">
+                    <div style="height: 0.5em;"></div>
+                </div>
+                <div class="col-md-3" align="center" style="padding: 3px;">
+                    <input type="email" class="form-control input-lg" placeholder="Email"
+                           name="customer_email">
+                    <div style="height: 0.5em;"></div>
+                </div>
+                <div class="col-md-3" align="center" style="padding: 3px;">
+                    <button class="btn btn-success btn-lg btn-block">Свяжитесь со мной</button>
+                </div>
+
+            </form>
+        </div>
+
         <div style="margin-bottom: 8em;">&nbsp;</div>
     </div>
 </div>

@@ -3,6 +3,13 @@ body {
   font-size: 1.8em;
 }
 
+.vcenter {
+
+    vertical-align: middle;
+    float: none;
+    padding: 2px;
+}
+
 .story-header {
     text-decoration-style: dashed;
     text-decoration: underline;
@@ -105,6 +112,16 @@ hr {
     margin-top: 0.7em;
     text-shadow: 2px 2px 3px #cccccc;
     font-size: 4em;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.header-phrase-xs {
+    color: #0083dd;
+    position: relative;
+    margin-top: 0.7em;
+    text-shadow: 2px 2px 3px #cccccc;
+    font-size: 2.6em;
     font-weight: 700;
     text-transform: uppercase;
 }
