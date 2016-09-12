@@ -47,10 +47,57 @@ hr {
     text-align: center;
     background: url(/static/img/header-bg-waves.png) no-repeat center 40%;
     background-size: cover;
-    height: 40em;
+
 
 
 }
+
+@media(max-width:767px) {
+
+    .carousel-caption {
+        font-size: 0.7em;
+        bottom: -10px;
+    }
+
+    .carousel-caption h3 {
+        font-size: 1em;
+        font-weight: 600;
+    }
+
+    .carousel-indicators {
+        bottom: -20px;
+        }
+
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .carousel-caption {
+        font-size: 0.9em;
+        bottom: -40px;
+    }
+
+    .carousel-caption h3 {
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .carousel-indicators {
+        bottom: -40px;
+        }
+
+}
+
+@media (min-width: 992px) and (max-width: 1200px) {
+    .carousel-caption {
+        bottom: -20px;
+    }
+
+    .carousel-indicators {
+        bottom: -20px;
+        }
+
+}
+
 
 .header-phrase {
     color: #0083dd;

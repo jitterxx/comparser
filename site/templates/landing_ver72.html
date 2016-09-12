@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description"
-          content="Управление клиентским опытом. Customer experience management. Инструмент для управления клиентским опытом.">
+          content="Управление клиентским опытом. Customer experience management.">
     <meta name="keywords"
           content="автоматический, сплошной, мониторинг, управление опытом, клиентским опытом,
           телефонных разговоров, звонков,
@@ -116,26 +116,30 @@
         </div><!--/.nav-collapse -->
     </div>
 </nav>
-<div class="header section-scroll">
-    <div class="container">
-        <div class="starter-template">
-            <h1 class="header-phrase">CONVERSATION <span class="parser-word">PARSER</span></h1>
-            <!--
-            <h1 class="subheader-phrase">инструмент для управления клиентским опытом</h1>
 
-            <h1 class="subheader-phrase">Понимаем клиентов. Находим проблемы.</h1>
-            -->
-            <h3 style="font-weight: 300;">
-                Анализируем коммуникации с клиентами по всем каналам связи <br>
-                в&nbsp;реальном&nbsp;времени без&nbsp;участия&nbsp;людей
-            </h3>
+<div class="header">
+    <div class="container">
+        <div class="row">
+            <div class="starter-template col-md-12">
+                <h1 class="header-phrase">CONVERSATION <span class="parser-word">PARSER</span></h1>
+                <!--
+                <h1 class="subheader-phrase">инструмент для управления клиентским опытом</h1>
+
+                <h1 class="subheader-phrase">Понимаем клиентов. Находим проблемы.</h1>
+                -->
+                <h3 style="font-weight: 300;">
+                    Анализируем коммуникации с клиентами по всем каналам связи <br>
+                    в&nbsp;реальном&nbsp;времени без&nbsp;участия&nbsp;людей
+                </h3>
+
+            </div>
 
         </div>
         <div class="row">
             <div class="col-md-12">
                 <h1 style="font-size: 1.5em; font-weight: 700; text-transform: uppercase; line-height: 150%;">
                     Находим <span class="attention">проблемы</span><br> и
-                    <span class="attention">снижаем</span> отток клиентов до <strong>10%</strong>
+                    <span class="attention">снижаем</span> отток клиентов до&nbsp;<strong>10%</strong>
                 </h1>
 
 
@@ -144,35 +148,56 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" align="center">
-                <div style="height: 1em;"></div>
-                    <div>
+            <form action="/demo_request" method="post">
+                <input type="hidden" name="ads_code" value="main_connect_with_me">
+                <div class="col-md-3" align="center" style="padding: 3px;">
+                    <input type="text" class="form-control input-lg" placeholder="Ваше имя"
+                           name="customer_name">
+                    <div style="height: 0.5em;"></div>
+                </div>
+                <div class="col-md-3" align="center" style="padding: 3px;">
+                    <input type="text" class="form-control input-lg" placeholder="Телефон"
+                           name="customer_phone">
+                    <div style="height: 0.5em;"></div>
+                </div>
+                <div class="col-md-3" align="center" style="padding: 3px;">
+                    <input type="email" class="form-control input-lg" placeholder="Email"
+                           name="customer_email">
+                    <div style="height: 0.5em;"></div>
+                </div>
+                <div class="col-md-3" align="center" style="padding: 3px;">
+                    <button class="btn btn-success btn-lg btn-block">Свяжитесь со мной</button>
+                </div>
 
-                        <form class="form-inline" action="/demo_request" method="post">
-                            <input type="hidden" name="ads_code" value="main_connect_with_me">
-                            <input type="text" class="form-control input-lg" placeholder="Ваше имя"
-                                   name="customer_name" width="40%">
-                            <input type="text" class="form-control input-lg" placeholder="Телефон"
-                                   name="customer_phone">
-                            <input type="email" class="form-control input-lg" placeholder="Email"
-                                   name="customer_email">
-                            <button class="btn btn-success btn-lg">Свяжитесь со мной</button>
-                        </form>
-                    </div>
-            </div>
+            </form>
         </div>
 
+        <div class="row">
+            <div class="col-md-12" align="center">
+
+                <!--
+                <form class="form-inline" action="/demo_request" method="post">
+                    <input type="hidden" name="ads_code" value="main_connect_with_me">
+                    <input type="text" class="form-control input-lg" placeholder="Ваше имя"
+                           name="customer_name" width="40%">
+                    <input type="text" class="form-control input-lg" placeholder="Телефон"
+                           name="customer_phone">
+                    <input type="email" class="form-control input-lg" placeholder="Email"
+                           name="customer_email">
+                    <button class="btn btn-success btn-lg">Свяжитесь со мной</button>
+                </form>
+                -->
+            </div>
+        </div>
 
     </div><!-- /.container -->
 </div>
 
-<!--
 <div class="container">
     <div class="row">
         <div style="margin-top: 8em;">&nbsp;</div>
     </div>
 </div>
--->
 
 <!--
 <a name="product"></a>
@@ -249,6 +274,76 @@
                 <p>
 
                 </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 table-td-padding" align="center">
+                <p>
+                    <i class="fa fa-exclamation-triangle fa-3x text-warning" aria-hidden="true"></i>
+                </p>
+                <p>
+                    Когда клиенты указывают сотрудникам на ошибки или выражают недовольство
+                </p>
+
+            </div>
+            <div class="col-md-4 table-td-padding" align="center">
+                <p>
+                    <i class="fa fa-spinner fa-spin fa-3x fa-fw text-muted"></i>
+
+                </p>
+                <p>Отсутствие ответа от сотрудников на запрос или задержка сроков</p>
+
+            </div>
+            <div class="col-md-4 table-td-padding" align="center">
+                <p>
+                    <i class="fa fa-question fa-3x text-info" aria-hidden="true"></i>
+                </p>
+                <p>
+                    Несоответствие ответа сотрудника запросу клиента
+                </p>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 table-td-padding" align="center">
+                <p>
+
+                    <span class="fa-stack fa-2x">
+                        <i class="fa fa-volume-up fa-stack-1x"></i>
+                        <i class="fa fa-ban fa-stack-2x text-danger"></i>
+                    </span>
+                </p>
+
+                <p>
+                    Негатив в общении: грубость, хамство и т.д.
+                </p>
+
+            </div>
+            <div class="col-md-4 table-td-padding" align="center">
+                <p>
+                    <i class="fa fa-ambulance fa-3x text-success" aria-hidden="true"></i>
+                </p>
+
+                <p>
+                    Ситуации, где сотрудник не может решить задачу, потому что она выходит за рамки его компетенции
+                </p>
+
+            </div>
+            <div class="col-md-4 table-td-padding" align="center">
+                <p>
+                    <i class="fa fa-random fa-3x text-default" aria-hidden="true"></i>
+                </p>
+
+                <p>
+                    Нарушение сотрудниками установленных процессов
+                </p>
+
+            </div>
+        </div>
+
+        <!--
+        <div class="row">
+            <div class="col-md-12">
 
                 <div class="table-responsive">
                     <table border="0" class="table-1-padding" align="left">
@@ -259,7 +354,7 @@
                                     <i class="fa fa-exclamation-triangle fa-3x text-warning" aria-hidden="true"></i>
                                 </p>
                                 <p>
-                                    <!--Недовольство клиентов действиями сотрудников-->
+
                                     Когда клиенты указывают сотрудникам на ошибки или выражают недовольство
                                 </p>
                             </td>
@@ -318,6 +413,7 @@
                 <div style="margin-bottom: 2em;">&nbsp;</div>
             </div>
         </div>
+        -->
 
     </div>
 </div>
@@ -334,7 +430,7 @@
                     Поймайте проблему и сохраните клиента
                 </h2>
 
-                <div class="table-responsive" style="margin-left: 1em;">
+                <div style="margin-left: 1em;">
                     <table border="0" class="table-1-padding" align="left">
                         <tbody>
                         <tr>
@@ -380,7 +476,8 @@
                         </tbody>
                     </table>
                 </div>
-
+            </div>
+            <div class="col-md-12">
                 <div style="margin-bottom: 1em;">&nbsp;</div>
                 <p>
                     <!--Некачественный сервис, отсутствие реакции на недовольство клиента или его проблему в
@@ -436,7 +533,7 @@
                     Мы поможем составить <strong>портрет клиента</strong> и выстроить с ним персональную коммуникацию.
                 </p>
                 <div style="margin-bottom: 1em;">&nbsp;</div>
-                <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+                <div id="carousel1" class="carousel slide" data-ride="carousel">
                     <!-- Indicators -->
                     <ol class="carousel-indicators">
                         <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
@@ -497,11 +594,11 @@
                         </div>
                     </div>
                     <!-- Controls -->
-                    <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+                    <a class="left carousel-control" href="#carousel1" role="button" data-slide="prev">
                         <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
                         <span class="sr-only">Previous</span>
                     </a>
-                    <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+                    <a class="right carousel-control" href="#carousel1" role="button" data-slide="next">
                         <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
                         <span class="sr-only">Next</span>
                     </a>
@@ -524,36 +621,40 @@
                     <!--Легко использовать<br>-->
                     Полная картина за 10 минут
                 </h2>
-                <div style="margin-bottom: 1em;">&nbsp;</div>
-                <div style="margin-left: 1em;">
-                    <p>
-                        <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+
+                <ul class="fa-ul">
+                    <li>
+                        <i class="fa-li fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
                         Работа с
                         <span style="color: #0083dd; font-weight: 600;">Conversation</span>
                         <span style="color: #27384b; font-weight: 600;">parser</span>
                         занимает 10 минут в день при анализе работы отдела из 10 человек
-                    </p>
-                    <p>
-                        <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                    </li>
+                    <li>
+                        <i class="fa-li fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
                         Мониторинг ведется в автоматическом режиме без участия людей
-                    </p>
-                    <p>
-                        <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                    </li>
+                    <li>
+                        <i class="fa-li fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
                         Мониторинг всех сотрудников, взаимодействующих с клиентами
-                    </p>
-                    <p>
-                        <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                    </li>
+                    <li>
+                        <i class="fa fa-li fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
                         <span style="color: #0083dd; font-weight: 600;">Conversation</span>
                         <span style="color: #27384b; font-weight: 600;">parser</span>
                         не нарушет рабочие процессы компании,
                         проявляет себя только в момент возникновения проблемных ситуаций
-                    </p>
-                    <p>
-                        <i class="fa fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
+                    </li>
+                    <li>
+                        <i class="fa fa-li fa-angle-right" aria-hidden="true" style="color: #0083dd;"></i>
                         Простая интеграция с с инструментами компании (телефония, crm, email, messengers, social и т.д.)
-                    </p>
+                    </li>
 
-                </div>
+                </ul>
                 <div style="margin-bottom: 4em;">&nbsp;</div>
             </div>
         </div>
@@ -585,11 +686,37 @@
                         Пожалуйста, заполните поля для начала пилотного проекта.
                     </p>
                     -->
+
                 </div>
             </div>
-            <div class="row">
+            <div class="row" align="center" style="margin-top: 3em; margin-bottom: 5em;">
+                <form action="/demo_request" method="post">
+                    <input type="hidden" name="ads_code" value="Бесплатный пилотный проект.">
+                    <div class="col-md-3" align="center">
+                        <input type="text" class="form-control input-lg" placeholder="Ваше имя"
+                               name="customer_name">
+                        <div style="height: 0.5em;"></div>
+                    </div>
+                    <div class="col-md-3" align="center">
+                        <input type="text" class="form-control input-lg" placeholder="Телефон"
+                               name="customer_phone">
+                        <div style="height: 0.5em;"></div>
+                    </div>
+                    <div class="col-md-3" align="center">
+                        <input type="email" class="form-control input-lg" placeholder="Email"
+                               name="customer_email">
+                        <div style="height: 0.5em;"></div>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-success btn-lg">Начать пилотный проект</button>
+                    </div>
+
+                </form>
+            </div>
+            <!--
+            <div class="row" style="margin-top: 3em; margin-bottom: 5em;">
                 <div class="col-md-12" align="center">
-                    <div style="margin-top: 3em; margin-bottom: 5em;">
+                    <div >
                         <form class="form-inline" action="/demo_request" method="post">
                             <input type="hidden" name="ads_code" value="Бесплатный пилотный проект.">
                             <input type="text" class="form-control input-lg" placeholder="Ваше имя"
@@ -603,6 +730,7 @@
                     </div>
                 </div>
             </div>
+            -->
             <div style="margin-top: 4em;"></div>
         </div>
 </div>
@@ -790,10 +918,6 @@
                     </table>
                 </div>
             </div>
-                <div style="margin-bottom: 4em;"></div>
-                <hr>
-                <div style="margin-bottom: 4em;"></div>
-
             <div class="row">
                 <div class="col-md-12">
                     <!--
@@ -803,17 +927,17 @@
                     <p>
                         Стоимость использования складывается из двух частей <span class="attention">фиксированной и переменной</span>.
                     </p>
-                    -->
+
                     <p>
                         Фиксированный платеж - <span class="attention">20 000</span> рублей в месяц.
                     </p>
                     <div style="margin-bottom: 2em;"></div>
-                    <!--
+
                     <p>
                         Переменный платеж, рассчитывается на основе количества сообщений и длительности
                         телефонных звонков проверенных системой.
                     </p>
-                    -->
+
                     <p>
                         Стоимость анализа сообщений электронной почты, социальных сетей и мессенджеров:
                     </p>
@@ -837,11 +961,14 @@
                             3 рубля за 1 минуту.
                         </li>
                     </ul>
-
-
-                    </div>
+                    -->
+                    <div style="margin-bottom: 4em;"></div>
+                    <p class="text-muted small" style="margin-left: 1em;">
+                        Указанные цены, представлены в целях ознакомления, и не являются офертой.
+                    </p>
+                    <div style="margin-bottom: 4em;"></div>
                 </div>
-                <hr>
+
             </div>
         </div>
 </div>
@@ -865,18 +992,17 @@
                 </p>
 
                 <div style="height: 1em;"></div>
-                    <div>
-                        <form class="form-inline" action="/demo_request" method="post">
-                            <input type="hidden" name="ads_code" value="main_connect_with_me">
-                            <input type="text" class="form-control input-lg" placeholder="Ваше имя"
-                                   name="customer_name" width="40%">
-                            <input type="text" class="form-control input-lg" placeholder="Телефон"
-                                   name="customer_phone">
-                            <input type="email" class="form-control input-lg" placeholder="Email"
-                                   name="customer_email">
-                            <button class="btn btn-success btn-lg">Свяжитесь со мной</button>
-                        </form>
-                    </div>
+                <form class="form-inline" action="/demo_request" method="post">
+                    <input type="hidden" name="ads_code" value="main_connect_with_me">
+                    <input type="text" class="form-control input-lg" placeholder="Ваше имя"
+                           name="customer_name" width="40%">
+                    <input type="text" class="form-control input-lg" placeholder="Телефон"
+                           name="customer_phone">
+                    <input type="email" class="form-control input-lg" placeholder="Email"
+                           name="customer_email">
+                    <button class="btn btn-success btn-lg">Свяжитесь со мной</button>
+
+                </form>
             </div>
         </div>
         <div style="margin-bottom: 8em;">&nbsp;</div>
