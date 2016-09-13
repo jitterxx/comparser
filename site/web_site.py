@@ -69,7 +69,7 @@ class Root(object):
     blog = Blog()
 
     @cherrypy.expose
-    def index(self, ads=None, utm_source=None, utm_medium=None, utm_campaign=None, utm_term=None):
+    def index(self, ads=None, utm_source=None, utm_medium=None, utm_campaign=None, utm_term=None, yclid=None):
         """
         Основная страница лендинга.
 
@@ -94,10 +94,15 @@ class Root(object):
             print "Ошибка определения типа клиента. %s" % str(e)
             user_agent = ""
 
+        try:
+            print("Метка Яндекс.Директ: {}".format(yclid))
+        except Exception as e:
+            print "Ошибка получения метки Яндекс.Директ. %s" % str(e)
+
         return tmpl.render(user_agent=user_agent, ads_code=ads)
 
     @cherrypy.expose
-    def test(self, ads=None, utm_source=None, utm_medium=None, utm_campaign=None, utm_term=None):
+    def test(self, ads=None, utm_source=None, utm_medium=None, utm_campaign=None, utm_term=None, yclid=None):
 
         tmpl = lookup.get_template("landing_ver73.html")
 
