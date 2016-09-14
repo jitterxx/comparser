@@ -35,7 +35,7 @@ class ShowNotification(object):
 
     @cherrypy.expose
     def index(self, error=None, url=None):
-        tmpl = lookup.get_template("error.html")
+        tmpl = lookup.get_template("notification.html")
         if not url:
             url = "/"
         print str(error)
@@ -54,8 +54,8 @@ class Blog(object):
                 tmpl = self.lookup.get_template("blog_post_{}.html".format(post))
             except Exception as e:
                 print("Ошибка при получении поста для блога. {}".format(str(e)))
-                tmpl = lookup.get_template("error.html")
-                return tmpl.render(error="Статья не найдена.", url="/")
+                tmpl = self.lookup.get_template("blog_index.html")
+                return tmpl.render()
             else:
                 return tmpl.render()
         else:
@@ -163,7 +163,16 @@ class Root(object):
 
         return ShowNotification().index(error="Спасибо! Мы с вами свяжемся в ближайшее время.", url="/")
 
+
+# Генератор страниц по ошибке 404
+def error_page_404(status, message, traceback, version):
+    cherrypy.response.status = 404
+    tmpl = lookup.get_template("error.html")
+    return tmpl.render(error="Такой страницы не существует.", url="/")
+
+
 cherrypy.config.update("web_site_server.config")
+cherrypy.config.update({'error_page.404': error_page_404})
 
 if __name__ == '__main__':
     cherrypy.quickstart(Root(), '/', "web_site_app.config")
