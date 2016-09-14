@@ -166,6 +166,11 @@ class Root(object):
 
 # Генератор страниц по ошибке 404
 def error_page_404(status, message, traceback, version):
+    try:
+        print("Ошибка 404. {}, {}, {}, {}".format(status, message, traceback, version))
+    except Exception:
+        print("Ошибка 404. ")
+
     cherrypy.response.status = 404
     tmpl = lookup.get_template("error.html")
     return tmpl.render(error="Такой страницы не существует.", url="/")
