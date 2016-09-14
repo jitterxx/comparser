@@ -242,10 +242,41 @@ def exception(data):
             isexception = True
 
         if debug:
-            print "Addressess: ", addresses
+            print "Addresses: ", addresses
             print "Domains for check: ", re.split("|", CPO.CHECK_DOMAINS)
             print "Check result: ", not no_check
             print "EXCEPTION: ", isexception
+
+    # Исключаем переписку между внутренними ящиками указанных доменов
+    # Сообщение исключается, если в полях ОТ, Кому, Копия, присутствуют только адреса из указанных доменов. Если
+    # встречается адрес не относящийся к указанному домену, сообщение идет в обработку
+    if debug:
+        print "**** Исключение внутренней переписки доменов ****"
+
+    if CPO.EXCEPT_INTERNAL_MESSAGES_FOR_DOMAIN:
+        addresses = re.split(",", data["sender"]) + re.split(",", data["recipients"]) + re.split(",", data["cc"])
+        if debug:
+            print("Addresses: {}".format(addresses))
+
+        for domain in CPO.EXCEPT_INTERNAL_MESSAGES_FOR_DOMAIN:
+            address_list = addresses
+            i = len(address_list) - 1
+            while i >= 0:
+                if domain in address_list[i]:
+                    address_list.pop(i)
+                i -= 1
+
+            if len(address_list) == 0:
+                isexception = True
+
+            if debug:
+                print("Domain for check: {}".format(domain))
+                print("Check result: {}".format(not bool(address_list)))
+                print("EXCEPTION: {}".format(isexception))
+
+    # Исключаем переписку между 2 указанными адресами
+    # Сообщение исключается, если в полях ОТ, Кому, Копия, присутствуют только указанные адреса
+    # Адрес может быть полным или только доменная часть
 
     return isexception
 
