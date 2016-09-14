@@ -262,7 +262,7 @@ def exception(data):
             address_list = addresses
             i = len(address_list) - 1
             while i >= 0:
-                if domain in address_list[i]:
+                if domain in address_list[i] or "empty" == address_list[i]:
                     address_list.pop(i)
                 i -= 1
 
@@ -282,11 +282,11 @@ def exception(data):
 
 
 def broken(data):
-    #check for empty sender, recipient fields
+    # check for empty sender, recipient fields
     if (data['sender'] == '') or (data['recipients'] == ''):
         data['isbroken'] = 1
 
-    #check if message have only attachment
+    # check if message have only attachment
     return data
 
 parser = argparse.ArgumentParser(description="")
