@@ -2,7 +2,7 @@
 
 <%block name="title">
 <title>
-    Блог Conversation parser | 20 статистических показателей из customer service/experience
+    20 статистических показателей из customer experience | Блог Conversation parser
 </title>
 </%block>
 
@@ -22,9 +22,37 @@
         <div class="row">
             <div class="col-md-10 col-md-offset-1 blog-post">
                 <h1>
-                    20 статистических показателей из<br> customer service/experience
+                    20 статистических показателей <br> customer experience
                 </h1>
             </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 col-md-offset-2 blog-post" align="left">
+                <%
+                    # import code for encoding urls and generating md5 hashes
+                    import urllib, hashlib
+                    # Set your variables here
+                    email = "sergey@reshim.com"
+                    default = "/static/img/default_avatar.png"
+                    size = 40
+
+                    # construct the url
+                    gravatar_url = "https://www.gravatar.com/avatar/" + hashlib.md5(email.lower()).hexdigest() + "?"
+                    gravatar_url += urllib.urlencode({'d': default, 's': str(size)})
+
+                %>
+                <img src="${gravatar_url}" style="border-radius: 25px;">
+                Сергей Фомин
+
+            </div>
+            <div class="col-md-4 blog-post" align="right">
+                15 сентября 2016
+            </div>
+            <div style="margin-bottom: 5em;">&nbsp;</div>
+        </div>
+
+        <div class="row">
             <div class="col-md-8 col-md-offset-2 blog-post">
                 <p>
                     Многие руководители признают, что необходимо создавать у клиентов положительный опыт,

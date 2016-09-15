@@ -49,6 +49,7 @@ class Blog(object):
 
     @cherrypy.expose
     def index(self, post=None, ads=None, utm_source=None, utm_medium=None, utm_campaign=None, utm_term=None):
+
         if post:
             try:
                 tmpl = self.lookup.get_template("blog_post_{}.html".format(post))
