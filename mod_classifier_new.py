@@ -293,6 +293,42 @@ class ClassifierNew(object):
         else:
             return "conflict", "conflict-1:" + "-0.5:".join(pred) + "-0.5"
 
+    def classify_new2(self, data=None, debug=False):
+        """
+        Классификация образца классификатором.
+        Проверка результата классификации детектором аномалий.
+        Если детектор и классификатор определяют образец как аномалию (т.е. - conflict), соглашаемся.
+        Если детектор считаем аномалией, а классфикатор нет, возращаем результат детектора.
+
+        :return:
+        """
+
+        test = [data]
+        X_test = self.vectorizer.transform(test)
+
+        pred = list()
+        complex_pred = dict()
+        for one in [self.clf, self.clf2, self.clf3]:
+            p = one.predict(X_test)
+            pred.append(p)
+            if p[0] in complex_pred.keys():
+                complex_pred[p[0]] += 1
+            else:
+                complex_pred[p[0]] = 1
+
+        if self.debug:
+            print("Классификация: {}".format(pred))
+            print("Комплексный итог: {}".format(complex_pred))
+
+        for one in complex_pred.keys():
+            if complex_pred[one] >= 2:
+                return one, "{0}-1:{0}-1:{0}-1".format(one)
+
+        if (float(complex_pred) / 3) > 0.5:
+            return "normal", "normal-1:" + "-0.5:".join(pred) + "-0.5"
+        else:
+            return "conflict", "conflict-1:" + "-0.5:".join(pred) + "-0.5"
+
 
 def features_extractor(entry):
     """ Функция для получения признаков(features) из текста
