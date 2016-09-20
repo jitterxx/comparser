@@ -41,6 +41,14 @@ class ShowNotification(object):
         print str(error)
         return tmpl.render(error=error, url=url)
 
+    @cherrypy.expose
+    def error(self, error=None, url=None):
+        tmpl = lookup.get_template("error.html")
+        if not url:
+            url = "/"
+        print str(error)
+        return tmpl.render(error=error, url=url)
+
 
 class Blog(object):
 
@@ -142,7 +150,7 @@ class Root(object):
         if not customer_email and not customer_phone:
             text = "К сожалению, вы не указали ни email, ни телефон. <br>" \
                    "Сейчас я верну вас обратно, укажите пожалуйста ваши контакты."
-            return ShowNotification().index(error=text, url="/#price")
+            return ShowNotification().error(error=text, url="/#pilot")
 
         if not customer_email:
             customer_email = "не указан"
