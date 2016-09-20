@@ -78,7 +78,8 @@ class Root(object):
     blog = Blog()
 
     @cherrypy.expose
-    def index(self, ads=None, utm_source=None, utm_medium=None, utm_campaign=None, utm_term=None, yclid=None):
+    def index(self, ads=None, utm_source=None, utm_medium=None, utm_campaign=None, utm_term=None, yclid=None,
+              gclid=None):
         """
         Основная страница лендинга.
 
@@ -107,6 +108,11 @@ class Root(object):
             print("Метка Яндекс.Директ: {}".format(yclid))
         except Exception as e:
             print "Ошибка получения метки Яндекс.Директ. %s" % str(e)
+
+        try:
+            print("Метка Google AdWords: {}".format(gclid))
+        except Exception as e:
+            print "Ошибка получения метки AdWords. %s" % str(e)
 
         return tmpl.render(user_agent=user_agent, ads_code=ads)
 
