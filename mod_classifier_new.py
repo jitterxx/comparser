@@ -29,7 +29,7 @@ from sklearn.svm import LinearSVC
 from sklearn.linear_model import SGDClassifier
 from sklearn.linear_model import Perceptron
 from sklearn.linear_model import PassiveAggressiveClassifier
-from sklearn.naive_bayes import BernoulliNB, MultinomialNB
+from sklearn.naive_bayes import BernoulliNB, MultinomialNB, GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neighbors import NearestCentroid
 from sklearn.ensemble import RandomForestClassifier
@@ -94,7 +94,7 @@ class ClassifierNew(object):
                 print "Count for Anomaly Train: %s" % len(train_anom)
 
         # Готовим векторизатор
-        use_hashing = True
+        use_hashing = False
         t0 = time()
         if use_hashing:
             vectorizer = HashingVectorizer(stop_words=STOP_WORDS, analyzer='word', non_negative=True, n_features=60000,
@@ -185,7 +185,7 @@ class ClassifierNew(object):
                 print "Count Train: %s" % len(train)
 
         # Готовим векторизатор
-        use_hashing = False
+        use_hashing = True
         t0 = time()
         if use_hashing:
             #vectorizer = HashingVectorizer(stop_words=STOP_WORDS, analyzer='word', non_negative=True, n_features=60000,
@@ -209,92 +209,35 @@ class ClassifierNew(object):
             print "\n"
 
         # Создаем классификаторы
-        self.clf = Perceptron(n_iter=500, class_weight="balanced", alpha=1e-06, penalty="l2")
-        self.clf2 = Pipeline([
-            ('feature_selection',SelectFromModel(LinearSVC(penalty="l2", dual=False, tol=1e-3, class_weight="balanced"))),
-            ('classification', Perceptron(n_iter=50, class_weight="balanced", alpha=1e-06, penalty="l1"))
-        ])
-        self.clf3 = Pipeline([
-            ('feature_selection', SelectFromModel(ExtraTreesClassifier(n_estimators=15, random_state=0, class_weight="balanced"))),
-            ('classification', LinearSVC(penalty="l2", dual=False, tol=1e-3, class_weight="balanced"))
-        ])
+        self.clf = list()
+
+        self.clf.append(Perceptron(n_iter=1000, class_weight="balanced", alpha=1e-06, penalty="l1"))
+        self.clf.append(MultinomialNB(alpha=0.1))
+        self.clf.append(BernoulliNB(alpha=0.1, binarize=0.0))
+        """
+        self.clf.append(
+            Pipeline([
+                ('feature_selection',SelectFromModel(LinearSVC(penalty="l2", dual=False, tol=1e-3,
+                                                               class_weight="balanced"))),
+                ('classification', Perceptron(n_iter=50, class_weight="balanced", alpha=1e-06, penalty="l1"))
+            ])
+        )
+
+        self.clf.append(
+            Pipeline([
+                ('feature_selection', SelectFromModel(ExtraTreesClassifier(n_estimators=15, random_state=0,
+                                                                           class_weight="balanced"))),
+                ('classification', LinearSVC(penalty="l2", dual=False, tol=1e-3, class_weight="balanced"))
+            ])
+        )
+        """
         t0 = time()
         # Тренируем классификатор
-        for one in [self.clf, self.clf2, self.clf3]:
+        for one in self.clf:
             one.fit(X_train, answer)
         train_time = time() - t0
         if self.debug:
             print("train time: %0.3fs" % train_time)
-
-    def classify(self, data=None):
-        """
-        Классификация образца классификатором.
-        Проверка результата классификации детектором аномалий.
-        Если детектор и классификатор определяют образец как аномалию (т.е. - conflict), соглашаемся.
-        Если детектор считаем аномалией, а классфикатор нет, возращаем результат детектора.
-
-        :return:
-        """
-
-        # Загружаем тренировочные данные
-        # Готовим векторизатор
-        # Тренируем классификатор
-        # Тренируем определитель аномалий
-
-        test = [data.message_title + data.message_text]
-
-        X_test = self.vectorizer.transform(test)
-
-        pred = self.clf.predict(X_test)
-
-        outlier = self.outlier.predict(X_test)
-
-        if self.debug:
-            print "Классификация: %s" % pred
-            print "Детектор аномалий: %s" % outlier
-
-        if pred[0] == "conflict" and outlier[0] == 1:
-            return "normal" + "-1:" + pred[0] + "-" + str(outlier[0])
-
-        if pred[0] == "conflict" and outlier[0] == -1:
-            return pred[0] + "-1:" + pred[0] + "-0"
-
-        if pred[0] == "normal" and outlier[0] == -1:
-            return pred[0] + "-1:" + pred[0] + "-0"
-        
-        if pred[0] == "normal" and outlier[0] == 1:
-            return pred[0] + "-1:" + pred[0] + "-" + str(outlier[0])
-
-        return None
-
-    def classify_new(self, data=None, debug=False):
-        """
-        Классификация образца классификатором.
-        Проверка результата классификации детектором аномалий.
-        Если детектор и классификатор определяют образец как аномалию (т.е. - conflict), соглашаемся.
-        Если детектор считаем аномалией, а классфикатор нет, возращаем результат детектора.
-
-        :return:
-        """
-
-        test = [data]
-        X_test = self.vectorizer.transform(test)
-
-        pred = list()
-        complex_pred = 0
-        for one in [self.clf, self.clf2, self.clf3]:
-            p = one.predict(X_test)[0]
-            pred.append(p)
-            if p == 'normal':
-                complex_pred += 1
-
-        if self.debug:
-            print "Классификация: %s" % pred
-
-        if (float(complex_pred) / 3) > 0.5:
-            return "normal", "normal-1:" + "-0.5:".join(pred) + "-0.5"
-        else:
-            return "conflict", "conflict-1:" + "-0.5:".join(pred) + "-0.5"
 
     def classify_new2(self, data=None, debug=False):
         """
@@ -311,7 +254,7 @@ class ClassifierNew(object):
 
         pred = list()
         complex_pred = dict()
-        for one in [self.clf, self.clf2, self.clf3]:
+        for one in self.clf:
             p = one.predict(X_test)
             pred.append(p)
             if p[0] in complex_pred.keys():

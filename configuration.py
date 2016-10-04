@@ -11,7 +11,7 @@ db_user = "conparser"
 #db_user = "demo"
 db_pass = "Qazcde123"
 db_port = 3306
-db_name = "site_demo"
+db_name = "vipct"
 # db_name = "conparser_demo"
 
 TABLE_ARGS = {'mysql_engine': 'InnoDB',
