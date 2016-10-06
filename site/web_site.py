@@ -119,7 +119,7 @@ class Root(object):
     @cherrypy.expose
     def test(self, ads=None, utm_source=None, utm_medium=None, utm_campaign=None, utm_term=None, yclid=None):
 
-        tmpl = lookup.get_template("landing_ver73.html")
+        tmpl = lookup.get_template("landing_ver74.html")
 
         if not ads:
             ads = "organic"
