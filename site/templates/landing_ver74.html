@@ -446,7 +446,7 @@
             <div class="col-md-5 table-td-padding col-md-offset-2 hidden-md hidden-lg" align="center">
                 <div style="position: absolute; height: 100%;">
                     <div style="position: relative; top: 50%;" class="text-success">
-                        <span id="result" style="font-size: 4em;">0</span>
+                        <span id="result2" style="font-size: 4em;">0</span>
                         <span><i class="fa fa-rub fa-2x" aria-hidden="true"></i></span>
                     </div>
                 </div>
@@ -465,10 +465,12 @@ function Calculate_profit() {
     var client_base_up = parseInt(document.getElementById('client_base_up').value);
     var client_new = parseInt(document.getElementById('client_new').value);
     var result_element = document.getElementById('result');
+    var result_element2 = document.getElementById('result2');
 
     if (isNaN(av_check)||isNaN(client_base_up)||isNaN(client_new)) {
         console.log("Не указаны некоторые данные.");
         result_element.innerHTML = '0';
+        result_element2.innerHTML = '0';
     } else {
         console.log(av_check, client_base_up, client_new);
         var result = 0.0;
@@ -481,6 +483,7 @@ function Calculate_profit() {
         console.log(client_old, result);
 
         result_element.innerHTML = '&asymp; ' + Math.round(result).toLocaleString();
+        result_element2.innerHTML = '&asymp; ' + Math.round(result).toLocaleString();
 
     }
 
