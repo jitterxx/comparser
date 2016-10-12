@@ -140,7 +140,7 @@
         <div class="row">
             <div class="col-md-12">
                 <h1 style="font-size: 1.5em; font-weight: 700; text-transform: uppercase; line-height: 150%;">
-                    <span class="attention">Находим проблемы</span> при обслуживании клиентов,<br>
+                    <span class="attention">Находим&nbsp;проблемы</span> при&nbsp;обслуживании&nbsp;клиентов,<br>
                     из-за которых вы <span class="attention">теряете</span>&nbsp;<strong>деньги</strong>
                 </h1>
 
@@ -270,10 +270,11 @@
                 <div class="embed-responsive embed-responsive-16by9">
                     <iframe width="560" height="315"
                             src="https://www.youtube.com/embed/Z8h7VUFq4BQ?rel=0&amp;showinfo=0"
-                            frameborder="0" allowfullscreen>
+                            frameborder="0" allowfullscreen onclick="yaCounter38358350.reachGoal('start_video');">
                     </iframe>
                 </div>
 
+                <div style="margin-bottom: 3em;">&nbsp;</div>
             </div>
         </div>
 
@@ -493,12 +494,14 @@ function Calculate_profit() {
     var result_element = document.getElementById('result');
     var result_element2 = document.getElementById('result2');
 
+    yaCounter38358350.reachGoal('calculate_profit');
+
     if (isNaN(av_check)||isNaN(client_base_up)||isNaN(client_new)) {
-        console.log("Не указаны некоторые данные.");
+        //console.log("Не указаны некоторые данные.");
         result_element.innerHTML = '0';
         result_element2.innerHTML = '0';
     } else {
-        console.log(av_check, client_base_up, client_new);
+        //console.log(av_check, client_base_up, client_new);
         var result = 0.0;
         var client_old = 0;
 
@@ -506,7 +509,7 @@ function Calculate_profit() {
 
         result = av_check * (client_new / 4) + av_check * client_old * 0.02;
 
-        console.log(client_old, result);
+        //console.log(client_old, result);
 
         result_element.innerHTML = '&asymp; ' + Math.round(result).toLocaleString();
         result_element2.innerHTML = '&asymp; ' + Math.round(result).toLocaleString();
@@ -525,7 +528,7 @@ function Calculate_profit() {
                 <div style="margin-bottom: 2em;">&nbsp;</div>
                 <h2 class="section-subheader">
                     <!--Сохраняем клиентов <br>-->
-                    Поймайте проблему, сохраните клиента и деньги
+                    Поймайте проблемы, сохраните клиентов и деньги
                 </h2>
 
                 <div style="margin-left: 1em;">
@@ -566,8 +569,8 @@ function Calculate_profit() {
                                 <i class="fa fa-thumbs-o-up fa-4x text-success" aria-hidden="true"></i>
                             </td>
                             <td>
-                                <strong>отреагируйте на проблему вовремя</strong> и
-                        <span class="attention">сохраните клиентов</span>
+                                <strong>отреагируйте на проблемы вовремя</strong>,
+                        <span class="attention">сохраните клиентов и&nbsp;деньги</span>
                             </td>
                         </tr>
 
@@ -747,15 +750,19 @@ function Calculate_profit() {
             <div class="row">
                 <div class="col-md-12">
                     <p>
-                        Сервис готов к работе сразу после установки. <span class="attention">Не требуется</span>
+                        Сервис готов к работе через <span class="attention">1 день</span>.
+                    </p>
+
+                    <p>
+                        <span class="attention">Не требуется</span>
                         длительный сбор данных и подготовка.
                     </p>
                     <p>
                         По функционалу не отличается от коммерческой версии сервиса, но ограничен
                         временем или объемами обрабатываемых данных.</p>
                     <p>
-                        При запуске пилотного проекта делаем настройку системы, обучение и
-                        подключение к вашим сервисам (электронной почте, телефонии и т.д.).
+                        Во время пилотного проекта делаем настройку системы, обучение и
+                        подключение к вашим сервисам (электронной почте, мессенджерам, телефонии и т.д.).
                     </p>
                     <!--
                     <p>
