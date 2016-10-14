@@ -155,8 +155,13 @@
         <nav>
             <ul class="pagination">
                 <li>
-                    <a href="#" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
+                    <a href="#" aria-label="Previous"
+                       data-provide="datepicker-inline" id="datepicker-start"
+                       data-date-format="dd-mm-yyyy" data-date-language="ru" data-date-today-highlight="true"
+                       data-date-week-start="1">
+                        <!--<span aria-hidden="true">&laquo;</span>-->
+                        <i class="fa fa-calendar"></i>
+
                     </a>
                 </li>
                 <li>
@@ -175,9 +180,14 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" aria-label="Next">
+                    <!--
+                    <a href="#" aria-label="Next"
+                       data-provide="datepicker-inline" id="datepicker-end"
+                       data-date-format="dd-mm-yyyy" data-date-language="ru" data-date-today-highlight="true"
+                       data-date-week-start="1">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
+                    -->
                 </li>
           </ul>
         </nav>
@@ -345,7 +355,14 @@
 
 </%block>
 
-
-
+<%block name="custom_scripts">
+<script>
+    $('#datepicker-start, #datepicker-end').datepicker().on('changeDate', function (e) {
+            console.log('Выбран день: ', e.format());
+            window.location.href = '?day=' + e.format();
+        });
+</script>
+</%block>
 
 <%block name="footer"/>
+
