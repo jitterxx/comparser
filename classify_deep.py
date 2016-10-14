@@ -23,7 +23,7 @@ import logging
 import os
 from dd_client import DD
 
-logging.basicConfig(format='%(asctime)s.%(msecs)d %(levelname)s : %(message)s',
+logging.basicConfig(format='%(asctime)s.%(msecs)d %(levelname)s %(lineno)d : %(message)s',
                     datefmt='%d-%m-%Y %H:%M:%S',
                     level=logging.DEBUG,
                     filename='{}/{}.log'.format(os.path.expanduser("~"), os.path.basename(sys.argv[0])))
@@ -48,22 +48,23 @@ else:
 try:
     CPO.initial_configuration()
 except Exception as e:
-    logging.debug("Сlassify_deep(). Ошибка чтения настроек CPO.initial_configuration(). {}".format(str(e)))
+    logging.debug("Ошибка чтения настроек CPO.initial_configuration(). {}".format(str(e)))
     raise e
 
 
 # Проверяем готовность классификатора к работе. Если сервис не создан, создаем по настройкам.
 class Predictor():
-    desc = "yurburo"
-    host = CPO.predictor_hostname
-    dd = DD(CPO.predictor_hostname)
+    desc = CPO.CLIENT_NAME
+    host = CPO.PREDICT_SERVICE_HOSTNAME
+    dd = DD(host)
+
+    def __init__(self):
+        self.dd.set_return_format(self.dd.RETURN_PYTHON)
 
     def create(self, client_name='', service_name=''):
 
-        model_repo = "~/models/{}/{}".format(client_name, service_name)
+        model_repo = "/home/sergey/deep/models/{}/{}".format(client_name, service_name)
 
-        # dd global variables
-        self.dd.set_return_format(self.dd.RETURN_PYTHON)
 
         # setting up the ML service
         sname = "{}_{}".format(client_name, service_name)
@@ -93,46 +94,85 @@ class Predictor():
         logging.debug("*** Создаем сервис ***")
         logging.debug("### {} ###".format(sname))
 
-        result = self.dd.put_service(sname, model, description, mllib, parameters_input, parameters_mllib, parameters_output)
-
-        if result['status']['code'] != 201:
-            logging.error("Ошибка создания сервиса {}_{}".format(client_name, service_name))
-            e = Exception()
-            e.message = "Ошибка создания сервиса {}_{}".format(client_name, service_name)
-            raise e
+        try:
+            result = self.dd.put_service(sname, model, description, mllib, parameters_input, parameters_mllib, {})
+        except Exception as e:
+            logging.error("Ошибка обращения к серверу DeepDetect. {}".format(str(e)))
+            # Нужно делать уведомления на почту разработчика о таких ошибках
+            exit()
         else:
-            logging.debug("*** Сервис создан ***")
             logging.debug(result)
+            if result['status']['code'] != 201:
+                logging.error("Ошибка создания сервиса {}_{}".format(client_name, service_name))
+                e = Exception()
+                e.message = "Ошибка создания сервиса {}_{}".format(client_name, service_name)
+                raise e
+            else:
+                logging.debug("*** Сервис создан ***")
 
     def check(self, sname=''):
         logging.debug("*** Проверка сервиса {} ***".format(sname))
 
-        self.dd.set_return_format(self.dd.RETURN_PYTHON)
-        result = self.dd.get_service(sname)
-        if result ['status']['code'] != 200:
-            logging.debug("*** Сервиса нет ***")
-            logging.debug(result)
-            return False
+        try:
+            result = self.dd.info()
+        except Exception as e:
+            logging.error("Ошибка обращения к серверу DeepDetect. {}".format(str(e)))
+            # Нужно делать уведомления на почту разработчика о таких ошибках
+            exit()
         else:
-            logging.debug("*** Сервис существует ***")
             logging.debug(result)
-            return True
+            if result['status']['code'] == 200:
+                for one in result['head']['services']:
+                    if one.get('name') == sname:
+                        logging.debug("*** Сервис существует ***")
+                        return True
+
+                logging.debug("*** Сервиса нет ***")
+                return False
 
     def classify(self, data=None, sname=None):
+
+        if not isinstance(data, list):
+            data = [data]
+
         self.dd.set_return_format(self.dd.RETURN_PYTHON)
 
         parameters_output = {'best': 3}
+        logging.debug("*** Классификация ***")
 
-        classif = self.dd.post_predict(sname, data, {}, {}, parameters_output)
-        logging.debug("Service: {}\n Answer: {}\n {} \n".format(sname, classif, "*"*30))
+        try:
+            result = self.dd.post_predict(sname, data, {}, {}, parameters_output)
+        except Exception as e:
+            logging.error("Ошибка обращения к серверу DeepDetect. {}".format(str(e)))
+            # Нужно делать уведомления на почту разработчика о таких ошибках
+            raise e
+        else:
+            logging.debug("Service: {}".format(sname))
+            logging.debug("Answer: {}".format(result))
+            short = None
+            full = ''
 
-        short_answer = ''
-        answer = ''
+            try:
+                for one in result['body']['predictions'][0]['classes']:
+                    if not short:
+                        short = one['cat']
+                    if one.get('last'):
+                        full += '{}-{}'.format(one['cat'], one['prob'])
+                    else:
+                        full += '{}-{}:'.format(one['cat'], one['prob'])
+            except Exception as e:
+                logging.error("Ошибка обработки результата классификации. {}".format(str(e)))
+                # Нужно делать уведомления на почту разработчика о таких ошибках
+                raise e
 
-        return short_answer, answer
+            return short, full
 
 
 predictor = Predictor()
+check = predictor.check(sname="{}_{}".format(CPO.CLIENT_NAME, CPO.PREDICT_SERVICE_NAME[0]))
+
+if not check:
+    predictor.create(client_name=CPO.CLIENT_NAME, service_name=CPO.PREDICT_SERVICE_NAME[0])
 
 # Получаем реальные данные
 session = CPO.Session()
@@ -140,28 +180,29 @@ session = CPO.Session()
 try:
     clear = session.query(CPO.Msg).filter(CPO.Msg.isclassified == 0).limit(args.limit)
 except sqlalchemy.orm.exc.NoResultFound as e:
-    logging.debug('Новых сообщений нет.')
+    logging.debug('*** Новых сообщений нет. ***')
 except Exception as e:
     logging.error("Ошибка при получении очищенных сообщений. {}".format(str(e)))
     raise e
 else:
     for row in clear:
-        if args.debug:
-            logging.debug('*'*100, '\n')
-            logging.debug("MSGID: {}, ID: {}".format(row.message_id, row.id))
-            logging.debug('От: {}\nКому: {}\nТема: {}'.format(row.sender, row.recipients, row.message_title))
-            logging.debug('Текст: \n', row.message_text, '\n')
+        logging.debug('{}'.format('*'*100))
+        logging.debug("MSGID: {}, ID: {}".format(row.message_id, row.id))
+        logging.debug('\nОт: {}\nКому: {}\nТема: {} \nТекст: \n{}\n'.format(row.sender, row.recipients,
+                                                                            row.message_title, row.message_text))
 
         # классификация
         try:
-            data = ""  # готовим данные из row
-            short_answer, answer = predictor.classify(data=data)
+            data = row.message_title + row.message_text  # готовим данные из row
+            short_answer, answer = predictor.classify(data=data,
+                                                      sname="{}_{}".format(CPO.CLIENT_NAME, CPO.PREDICT_SERVICE_NAME[0]))
         except Exception as e:
             logging.error("Ошибка классфикации для записи. MSGID: {}, ID: {}. \n {}".format(row.message_id,
                                                                                             row.id, str(e)))
         else:
-            logging.debug("Категория: ", answer)
-            logging.debug('*'*100, '\n')
+            logging.debug("Категория: {}".format(answer))
+            logging.debug('{}'.format('*'*100))
+
 
             # Обновляем запись в clearDB
             try:
@@ -185,20 +226,19 @@ else:
                     session.add(new)
                     session.commit()
                 except Exception as e:
-                    logging.error("Ошибка записи в TRAIN_API.", str(e))
+                    logging.error("Ошибка записи в TRAIN_API. {}".format(str(e)))
 
     # обновляем статистику после классификации
-    if clear and PRODUCTION_MODE:
+    if clear and CPO.PRODUCTION_MODE:
         logging.debug("Считаем дневную статистику по основным показателям.")
         try:
             CPO.violation_stat_daily()
         except Exception as e:
-            logging.error("Ошибка вычисления статистики. ", str(e))
+            logging.error("Ошибка вычисления статистики. {}".format(str(e)))
     else:
         logging.debug("*** Система находится в режиме обучения ***")
         logging.debug("*** Статистика не рассчитывается ***")
-        logging.debug("clear:", type(clear))
-        logging.debug("PRODUCTION_MODE: ", PRODUCTION_MODE)
+        logging.debug("PRODUCTION_MODE: {}".format(CPO.PRODUCTION_MODE))
 
 finally:
     session.close()
