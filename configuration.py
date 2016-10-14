@@ -123,10 +123,6 @@ PHONE_CALL_DURATION_FOR_RECOGNIZE = 15
 # Исключать внутреннюю переписку для следующих доменов
 # Если ничего не надо, список должен быть пустой или переменная = None
 EXCEPT_INTERNAL_MESSAGES_FOR_DOMAIN = []
-
 CLIENT_NAME = 'yurburo'
 PREDICT_SERVICE_HOSTNAME = 'localhost'
 PREDICT_SERVICE_NAME = ['default']
-
-
-

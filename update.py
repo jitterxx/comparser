@@ -11,6 +11,7 @@ sys.setdefaultencoding("utf-8")
 
 import objects as CPO
 import datetime
+import configuration as CONF
 
 sql = list()
 # 0
@@ -282,6 +283,28 @@ except Exception as e:
 else:
     print result
 
+try:
+    with open('configuration.py', 'a') as file:
+        if not hasattr(CONF, 'CLIENT_NAME'):
+            temp = raw_input("Input CLIENT_NAME for prediction services: ")
+            if not temp:
+                temp = CONF.db_name
+            file.writelines("CLIENT_NAME = '{}'\n".format(temp))
+            print "CONF.CLIENT_NAME - added to configuration"
+
+        if not hasattr(CONF, 'PREDICT_SERVICE_HOSTNAME'):
+            file.writelines("PREDICT_SERVICE_HOSTNAME = 'localhost'\n")
+            print "CONF.PREDICT_SERVICE_HOSTNAME - added to configuration"
+        if not hasattr(CONF, 'PREDICT_SERVICE_NAME'):
+            file.writelines("PREDICT_SERVICE_NAME = ['default']\n")
+            print "CONF.PREDICT_SERVICE_NAME - added to configuration"
+
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
+finally:
+    file.close()
 
 connection.close()
 
