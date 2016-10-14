@@ -26,34 +26,31 @@ lookup = TemplateLookup(directories=["./templates"], output_encoding="utf-8",
 
 class ShowNotification(object):
 
+    """
     def _cp_dispatch(self, vpath):
-        """
-        Обработка REST URL
-        """
+
+        # Обработка REST URL
+
         print "ShowNotification"
         print vpath
         return self
+    """
 
     @cherrypy.expose
     def index(self, error=None, url=None):
         tmpl = lookup.get_template("error.html")
         if not url:
-            url = "/demo"
-        print str(error)
+            url = "/"
+        print("ShowNotification.index(). {}".format(str(error)))
         return tmpl.render(error=error, url=url)
 
 
+"""
 class UserTrain(object):
-    def _cp_dispatch(self, vpath):
-        """
-        Обработка REST URL
-        """
-        print "UserTrain"
-        print vpath
-        return self
 
     @cherrypy.expose
-    def index(self, uuid=None, category=None):
+    def index(self, uuid=None, category=None, request_type=None):
+
         if uuid and category:
             # 1. записать указанный емайл и категорию в пользовательские тренировочные данные
             # 2. Пометить в таблице train_api ответ.
@@ -61,10 +58,26 @@ class UserTrain(object):
             try:
                 status = CPO.set_user_train_data(uuid, category)
             except Exception as e:
-                print str(e)
-                return ShowNotification().index("Api.UserTrain(). Произошла внутренняя ошибка. "
-                                                "Пожалуйста, сообщите о ней администратору.")
+                err_text = "Api.UserTrain(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору."
+                print err_text, str(e)
+                if request_type == "js":
+                    cherrypy.response.status = 500
+                    cherrypy.response.body = [err_text]
+                    return err_text
+                else:
+                    return ShowNotification().index(error=err_text)
             else:
+                # Сообщени уже проверено или его не существует
+                if not status[0]:
+                    err_text = "Api.UserTrain(). " + status[1]
+                    print("Req type: {}. {}".format(request_type, err_text))
+                    if request_type == "js":
+                        cherrypy.response.status = 200
+                        cherrypy.response.body = [err_text]
+                        return err_text
+                    else:
+                        return ShowNotification().index(error=err_text)
+
                 # Если категория после проверки в WARNING_CAT и ответ новый, то создаем задачу
                 if status[0] and category in WARNING_CATEGORY:
 
@@ -100,20 +113,29 @@ class UserTrain(object):
                     try:
                         CPO.add_msg_members(msg_id_list=api_rec.message_id)
                     except Exception as e:
-                        print "api.UserTrain(). Ошибка добавления адресотов DialogMembers. %s" % str(e)
+                        print "api.UserTrain(). Ошибка добавления адресатов DialogMembers. %s" % str(e)
 
-                tmpl = lookup.get_template("usertrain_page.html")
-                return tmpl.render(status=status)
+                if request_type == "js":
+                    cherrypy.response.status = 200
+                    cherrypy.response.body = ['ok']
+                    return 'ok'
+                else:
+                    tmpl = lookup.get_template("usertrain_page.html")
+                    return tmpl.render(status=status)
+
+"""
 
 
+"""
 class API(object):
 
-    def _cp_dispatch(self, vpath):
-        """
-        Обработка REST URL
-        """
+    def _cp_dispatch(self, vpath, request_type=None):
+
+        #Обработка REST URL
+
         print len(vpath)
         print vpath
+        print request_type
 
         if len(vpath) == 3 and vpath[0] == "message":
             cherrypy.request.params['uuid'] = vpath[1]
@@ -130,6 +152,98 @@ class API(object):
     @cherrypy.expose
     def index(self):
         return ShowNotification().index("Неверный адрес api.")
+"""
+
+class API_v2(object):
+
+    @cherrypy.expose
+    def default(self, api_part=None, uuid=None, category=None, request_type=None):
+        print "API v2 :", api_part, uuid, category, request_type
+
+        if api_part == "message" and uuid and category:
+
+            # 1. записать указанный емайл и категорию в пользовательские тренировочные данные
+            # 2. Пометить в таблице train_api ответ.
+
+            try:
+                status = CPO.set_user_train_data(uuid, category)
+            except Exception as e:
+                err_text = "Api.UserTrain(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору."
+                print err_text, str(e)
+                if request_type == "js":
+                    cherrypy.response.status = 500
+                    cherrypy.response.body = [err_text]
+                    return err_text
+                else:
+                    return ShowNotification().index(error=err_text)
+            else:
+                print("Req type: {}. {}. {}".format(request_type, status[0], status[1]))
+
+                # Сообщени уже проверено или его не существует
+                if not status[0]:
+                    err_text = "Api.UserTrain(). " + status[1]
+                    if request_type == "js":
+                        cherrypy.response.status = 200
+                        cherrypy.response.body = [err_text]
+                        return err_text
+                    else:
+                        return ShowNotification().index(error=err_text)
+
+                # Если категория после проверки в WARNING_CAT и ответ новый, то создаем задачу
+                if status[0] and category in WARNING_CATEGORY:
+
+                    try:
+                        api_rec = CPO.get_train_record(uuid=uuid)
+                    except Exception as e:
+                        print "api.UserTrain(). Ошибка получения записи TrainAPI. %s" % str(e)
+                        api_rec = None
+
+                    # создаем задачу
+                    try:
+                        # ответственный за закрытие задачи - проверяющий
+                        if cherrypy.session.get('session_context'):
+                            responsible = cherrypy.session['session_context'].get("user")
+                            task_uuid = CPO.create_task(responsible=responsible.uuid, message_id=api_rec.message_id)
+                            text = u"Создана автоматически после проверки. Пользователь: %s %s." % \
+                                   (responsible.name, responsible.surname)
+
+                        else:
+                            task_uuid = CPO.create_task(responsible=None, message_id=api_rec.message_id)
+                            text = "Создана автоматически после проверки. Пользователь неизвестен."
+
+                        # Формируем сообщение
+                        try:
+                            CPO.add_task_comment(task_uuid=task_uuid, comment=text)
+                        except Exception as e:
+                            print "api.UserTrain(). Ошибка добавления комментария. %s" % str(e)
+
+                    except Exception as e:
+                        print "api.UserTrain(). Ошибка создания Задачи. %s" % str(e)
+
+                    # добавляем адресатов в DialogMembers
+                    try:
+                        CPO.add_msg_members(msg_id_list=api_rec.message_id)
+                    except Exception as e:
+                        print "api.UserTrain(). Ошибка добавления адресатов DialogMembers. %s" % str(e)
+
+                if request_type == "js":
+                    cherrypy.response.status = 200
+                    cherrypy.response.body = ['ok']
+                    return 'ok'
+                else:
+                    tmpl = lookup.get_template("usertrain_page.html")
+                    return tmpl.render(status=status)
+
+        else:
+            print "API_v2(). Incorrect REST URL.", cherrypy.request
+            if request_type == "js":
+                cherrypy.response.status = 500
+                cherrypy.response.body = "API_v2(). Incorrect REST URL."
+                return "error"
+            else:
+                return ShowNotification().index(error="Указан неверный адрес. Обратитесь к администратору.")
+
+
 
 
 class Settings(object):
@@ -631,7 +745,7 @@ class Dialogs(object):
         tmpl = self.lookup.get_template("control_center_dialogs_default.html")
         return tmpl.render(session_context=session_context, dialog=text, active_cat=None,
                            today=today, cur_day=cur_day, delta=delta_1, main_link=main_link,
-                           category=cat_dict, task_status=CPO.TASK_STATUS,
+                           category=cat_dict, task_status=CPO.TASK_STATUS, warn_cat=CPO.WARNING_CATEGORY,
                            task_list=task_list, message_list=message_list, unchecked=unchecked,
                            api_list=api_list, checked_with_task=task_list2, message_id_list=message_id_list)
 
@@ -1265,7 +1379,8 @@ class Root(object):
         Основой сервис для запуска API и центров управления
     """
 
-    api = API()
+    # api = API()
+    api = API_v2()
     control_center = ControlCenter()
 
     @cherrypy.expose

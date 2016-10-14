@@ -155,8 +155,13 @@
         <nav>
             <ul class="pagination">
                 <li>
-                    <a href="#" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
+                    <a href="#" aria-label="Previous"
+                       data-provide="datepicker-inline" id="datepicker-start"
+                       data-date-format="dd-mm-yyyy" data-date-language="ru" data-date-today-highlight="true"
+                       data-date-week-start="1">
+                        <!--<span aria-hidden="true">&laquo;</span>-->
+                        <i class="fa fa-calendar"></i>
+
                     </a>
                 </li>
                 <li>
@@ -175,9 +180,14 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" aria-label="Next">
+                    <!--
+                    <a href="#" aria-label="Next"
+                       data-provide="datepicker-inline" id="datepicker-end"
+                       data-date-format="dd-mm-yyyy" data-date-language="ru" data-date-today-highlight="true"
+                       data-date-week-start="1">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
+                    -->
                 </li>
           </ul>
         </nav>
@@ -206,7 +216,7 @@
             <div class="well well-sm">
                 %for one in range(0, len(unchecked)):
                 <p>
-                    <a href="#${unchecked[one]}">
+                    <a href="#${unchecked[one][1:-1]}_anchor">
                     ${message_list[unchecked[one]].message_title}
                     </a>
                 </p>
@@ -217,7 +227,7 @@
             <div class="well well-sm">
                 %for one in checked_with_task.keys():
                 <p>
-                    <a href="#${one}">
+                    <a href="#${one[1:-1]}_anchor">
                     ${message_list[one].message_title}
                     </a>
                 </p>
@@ -234,12 +244,12 @@
         one = message_list[id]
     %>
     <div class="row">
-        <a id="${one.message_id}"></a>
+        <a id="${one.message_id[1:-1]}_anchor"></a>
         <div class="col-sm-12 col-md-12" align="left">
             %if api_list[one.message_id].user_action:
-            <div class="panel panel-danger">
+            <div class="panel panel-danger" id="message_${one.message_id[1:-1]}">
             %else:
-            <div class="panel panel-warning">
+            <div class="panel panel-warning" id="message_${one.message_id[1:-1]}">
             %endif
                 <div class="panel-heading" align="left">
                     <div class="row">
@@ -295,7 +305,19 @@
                                     </td>
                                     %else:
                                     <td width="95%" align="left">
-                                        <span>
+                                        <span id="${one.message_id[1:-1]}_category">
+                                        % for key in category.keys():
+                                            <a href="#"
+                                               class="btn btn-${category_color_style.get(key)}"
+                                               onclick="user_check_category('${key in warn_cat}',
+                                               '${one.message_id[1:-1]}', '${key}',
+                                               '${category[key].category}', '${main_link}',
+                                               '${api_list[one.message_id].uuid}',
+                                               '${category_color_style[key]}');  return false;">
+                                                ${category[key].category}
+                                            </a>
+                                        % endfor
+                                            <!--
                                             <a href="${main_link}${api_list[one.message_id].uuid}/${category.keys()[0]}"
                                              target="_blank" class="btn btn-${category_color_style.get(category.keys()[0])}">
                                                 ${category.values()[0].category}
@@ -304,6 +326,7 @@
                                              target="_blank" class="btn btn-${category_color_style.get(category.keys()[1])}">
                                                 ${category.values()[1].category}
                                             </a>
+                                            -->
                                         </span>
                                         </td>
                                     %endif
@@ -345,7 +368,15 @@
 
 </%block>
 
-
-
+<%block name="custom_scripts">
+<script>
+    $('#datepicker-start, #datepicker-end').datepicker().on('changeDate', function (e) {
+            console.log('Выбран день: ', e.format());
+            window.location.href = '?day=' + e.format();
+        });
+</script>
+<script src="/static/js/control-center.js" rel="script"></script>
+</%block>
 
 <%block name="footer"/>
+
