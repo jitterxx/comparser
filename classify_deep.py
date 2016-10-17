@@ -56,7 +56,7 @@ except Exception as e:
 class Predictor():
     desc = CPO.CLIENT_NAME
     host = CPO.PREDICT_SERVICE_HOSTNAME
-    port = CPO.PREDICT_SERVICE_PORT
+    port = int(CPO.PREDICT_SERVICE_PORT)
     dd = DD(host=host, port=port)
 
     def __init__(self):
