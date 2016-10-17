@@ -298,6 +298,9 @@ try:
         if not hasattr(CONF, 'PREDICT_SERVICE_NAME'):
             file.writelines("PREDICT_SERVICE_NAME = ['default']\n")
             print "CONF.PREDICT_SERVICE_NAME - added to configuration"
+        if not hasattr(CONF, 'PREDICT_SERVICE_MODEL_REPO'):
+            file.writelines("PREDICT_SERVICE_MODEL_REPO = '/home/deepdetect/service/models'\n")
+            print "CONF.PREDICT_SERVICE_MODEL_REPO - added to configuration"
 
 except Exception as e:
     print e.message, e.args

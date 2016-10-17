@@ -124,5 +124,7 @@ PHONE_CALL_DURATION_FOR_RECOGNIZE = 15
 # Если ничего не надо, список должен быть пустой или переменная = None
 EXCEPT_INTERNAL_MESSAGES_FOR_DOMAIN = []
 CLIENT_NAME = 'yurburo'
-PREDICT_SERVICE_HOSTNAME = 'localhost'
+PREDICT_SERVICE_HOSTNAME = 'localhost:11111'
 PREDICT_SERVICE_NAME = ['default']
+PREDICT_SERVICE_MODEL_REPO = '/home/deepdetect/service/models'
+

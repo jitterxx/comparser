@@ -63,8 +63,7 @@ class Predictor():
 
     def create(self, client_name='', service_name=''):
 
-        model_repo = "/home/sergey/deep/models/{}/{}".format(client_name, service_name)
-
+        model_repo = "{}/{}/{}".format(CPO.PREDICT_SERVICE_MODEL_REPO, client_name, service_name)
 
         # setting up the ML service
         sname = "{}_{}".format(client_name, service_name)
