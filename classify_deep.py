@@ -169,10 +169,12 @@ class Predictor():
 
 
 predictor = Predictor()
-check = predictor.check(sname="{}_{}".format(CPO.CLIENT_NAME, CPO.PREDICT_SERVICE_NAME[0]))
 
-if not check:
-    predictor.create(client_name=CPO.CLIENT_NAME, service_name=CPO.PREDICT_SERVICE_NAME[0])
+for service_name in CPO.PREDICT_SERVICE_NAME:
+    check = predictor.check(sname="{}_{}".format(CPO.CLIENT_NAME, service_name))
+
+    if not check:
+        predictor.create(client_name=CPO.CLIENT_NAME, service_name=service_name)
 
 # Получаем реальные данные
 session = CPO.Session()
@@ -194,8 +196,15 @@ else:
         # классификация
         try:
             data = row.message_title + row.message_text  # готовим данные из row
-            short_answer, answer = predictor.classify(data=data,
-                                                      sname="{}_{}".format(CPO.CLIENT_NAME, CPO.PREDICT_SERVICE_NAME[0]))
+            for service_name in CPO.PREDICT_SERVICE_NAME:
+                sname = "{}_{}".format(CPO.CLIENT_NAME, service_name)
+                a, b = predictor.classify(data=data, sname=sname)
+                logging.debug("### Service:{}, R_ID:{}, Answer:{}, FullAnswer:{}".format(sname, row.id, a, b))
+
+                if service_name == 'default':
+                    short_answer = a
+                    answer = b
+
         except Exception as e:
             logging.error("Ошибка классфикации для записи. MSGID: {}, ID: {}. \n {}".format(row.message_id,
                                                                                             row.id, str(e)))
