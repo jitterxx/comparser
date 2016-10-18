@@ -21,7 +21,7 @@ logging.basicConfig(format='%(message)s',
                     filename='train_classify_deep.log')
 
 
-def finetune(training_repo=None, model_repo=None):
+def finetune(training_repo=None, model_repo=None, sname="Finetune"):
     host = "localhost"
 
     # dd global variables
@@ -29,7 +29,6 @@ def finetune(training_repo=None, model_repo=None):
     dd.set_return_format(dd.RETURN_PYTHON)
 
     # setting up the ML service
-    sname = 'Finetune'
     description = 'classification'
     mllib = 'caffe'
     sequence = 50
@@ -113,6 +112,14 @@ def finetune(training_repo=None, model_repo=None):
 
 
 if __name__ == '__main__':
-    finetune(training_repo="/home/sergey/deep/yurburo/yurburo_train_data",
-             model_repo="/home/sergey/deep/yurburo/models/yurburo/default")
+    #finetune(training_repo="/home/sergey/deep/yurburo/yurburo_train_data",
+    #         model_repo="/home/sergey/deep/yurburo/models/yurburo/default")
+
+    finetune(training_repo="/home/sergey/deep/yurburo2/yurburo_train_data",
+             model_repo="/home/sergey/deep/yurburo2/models/yurburo/unbalanced_110",
+             sname="unbalanced_110")
+
+    finetune(training_repo="/home/sergey/deep/yurburo3/yurburo_train_data",
+             model_repo="/home/sergey/deep/yurburo3/models/yurburo/reversed_category",
+             sname="reverse_category")
 

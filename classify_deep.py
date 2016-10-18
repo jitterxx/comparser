@@ -195,20 +195,22 @@ else:
 
         # классификация
         try:
+            a1 = list()
             data = row.message_title + row.message_text  # готовим данные из row
             for service_name in CPO.PREDICT_SERVICE_NAME:
                 sname = "{}_{}".format(CPO.CLIENT_NAME, service_name)
                 a, b = predictor.classify(data=data, sname=sname)
                 logging.debug("### Service:{}, R_ID:{}, Answer:{}, FullAnswer:{}".format(sname, row.id, a, b))
+                a1.append(b)
 
                 if service_name == 'default':
                     short_answer = a
-                    answer = b
 
         except Exception as e:
             logging.error("Ошибка классфикации для записи. MSGID: {}, ID: {}. \n {}".format(row.message_id,
                                                                                             row.id, str(e)))
         else:
+            answer = ":".join(a1)
             logging.debug("Категория: {}".format(answer))
             logging.debug('{}'.format('*'*100))
 
