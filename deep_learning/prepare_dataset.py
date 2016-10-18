@@ -25,7 +25,7 @@ __author__ = 'sergey'
 
 
 session = CPO.Session()
-PATH = "./{}_train_data".format(sys.argv[1])
+PATH = "{}/{}_train_data".format(sys.argv[2], sys.argv[1])
 
 cats = CPO.GetCategory().keys()
 
