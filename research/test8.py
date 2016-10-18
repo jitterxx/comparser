@@ -2,9 +2,9 @@
 
 
 """
-    Скрипт подготовки данных для обучения нейронной сети клиента.
+    Скрипт подготовки дополнительных данных для обучения нейронной сети клиента.
     Выгружает данные в виде текстовых файлов, подготовленных для тренировки сети в DeepDetect.
-    Обучение происходит на отдельной машине с достаточным количеством RAM и CPU.
+    Третий параметр - категория из которой надо выгружать данные. Лимит - 50 образцов.
 """
 
 
@@ -39,7 +39,7 @@ PATH = "{}/{}_train_data".format(sys.argv[2], sys.argv[1])
 
 session = CPO.Session()
 
-for current_cat in ['normal']:
+for current_cat in [sys.argv[3]]:
     print("Готовим категорию: {}".format(current_cat))
     try:
         count = session.query(CPO.UserTrainData).filter(CPO.UserTrainData.category == current_cat).limit(limit).count()
