@@ -2,8 +2,12 @@
 
 
 """
-
+    Скрипт подготовки данных для обучения нейронной сети клиента.
+    Выгружает данные в виде текстовых файлов, подготовленных для тренировки сети в DeepDetect.
+    Обучение происходит на отдельной машине с достаточным количеством RAM и CPU.
 """
+
+
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -21,20 +25,29 @@ __author__ = 'sergey'
 
 
 session = CPO.Session()
-PATH = "./conparser_train_data"
+PATH = "./{}_train_data".format(sys.argv[1])
 
 cats = CPO.GetCategory().keys()
 
+limit = 20
 
 try:
-    count = session.query(CPO.TrainData.category, func.count(CPO.TrainData.category)).\
+    resp = session.query(CPO.TrainData.category, func.count(CPO.TrainData.category)).\
         group_by(CPO.TrainData.category).\
         all()
 except Exception as e:
     print(str(e))
     raise e
 else:
-    print count
+    cat_min = 0
+    for cat, count in resp:
+        if int(count) > cat_min:
+            cat_min = int(count)
+    if cat_min != 0:
+        limit = cat_min
+    else:
+        print("Недостаточно данных для формирования обучающей выборки. В одной из категорий - {} примеров".format(cat_min))
+        exit()
 
 exit()
 
