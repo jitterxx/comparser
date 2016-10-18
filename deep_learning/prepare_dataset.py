@@ -24,7 +24,14 @@ import shutil
 __author__ = 'sergey'
 
 
-session = CPO.Session()
+# Инициализация переменных и констант
+try:
+    CPO.initial_configuration()
+except Exception as e:
+    print("Ошибка чтения настроек CPO.initial_configuration(). {}".format(str(e)))
+    raise e
+
+
 PATH = "{}/{}_train_data".format(sys.argv[2], sys.argv[1])
 
 cats = CPO.GetCategory().keys()
@@ -32,6 +39,8 @@ cats = CPO.GetCategory().keys()
 limit = 20
 
 train_data_ready = False
+
+session = CPO.Session()
 
 try:
     resp = session.query(CPO.UserTrainData.category, func.count(CPO.UserTrainData.category)).\
