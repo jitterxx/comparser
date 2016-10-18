@@ -11,7 +11,7 @@ sys.path.extend(['..'])
 
 
 import objects as CPO
-import cherrypy
+from sqlalchemy import func
 import re
 import os
 import uuid
@@ -21,9 +21,23 @@ __author__ = 'sergey'
 
 
 session = CPO.Session()
-PATH = "./conparser_data"
+PATH = "./conparser_train_data"
 
 cats = CPO.GetCategory().keys()
+
+
+try:
+    count = session.query(CPO.TrainData.category, func.count(CPO.TrainData.category)).\
+        group_by(CPO.TrainData.category).\
+        all()
+except Exception as e:
+    print(str(e))
+    raise e
+else:
+    print count
+
+exit()
+
 
 for current_cat in cats:
     print("Готовим категорию: {}".format(current_cat))
@@ -41,7 +55,7 @@ for current_cat in cats:
             print("Удаляем каталог и старые данные")
             shutil.rmtree(CAT_PATH)
 
-        print("Создаем новый...")
+        print("Создаем новый: {}".format(CAT_PATH))
         os.makedirs(CAT_PATH)
         for one in resp:
             filename = uuid.uuid4().__str__()
