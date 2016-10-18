@@ -10,6 +10,7 @@
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
+sys.path.extend(['..'])
 
 import objects as CPO
 import logging

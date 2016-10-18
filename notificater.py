@@ -84,7 +84,8 @@ def notify():
                 print "Notificater(). Адресаты уведомления: ", notify_list
 
                 # отправляем уведомления
-                send_email(category=categoryll, orig_msg=msg, msg_uuid=msg_uuid, notify_list=notify_list)
+                if PRODUCTION_MODE:
+                    send_email(category=categoryll, orig_msg=msg, msg_uuid=msg_uuid, notify_list=notify_list)
             except Exception as e:
                 print "Notificater(). Ошибка отправки сообщения. Ошибка: ", str(e)
                 raise e
@@ -107,7 +108,8 @@ def notify():
                 print "Notificater(). Адресаты уведомления: ", notify_list
 
                 # отправляем уведомления
-                send_email(category=categoryll, orig_msg=msg, msg_uuid=msg_uuid, notify_list=notify_list)
+                if PRODUCTION_MODE:
+                    send_email(category=categoryll, orig_msg=msg, msg_uuid=msg_uuid, notify_list=notify_list)
             except Exception as e:
                 print "Notificater(). Ошибка отправки сообщения. Ошибка: ", str(e)
                 raise e
@@ -252,11 +254,10 @@ def send_email(category=None, orig_msg=None, msg_uuid=None, notify_list=None):
         smtp.quit()
 
 if __name__ == '__main__':
-    if PRODUCTION_MODE:
-        notify()
-    else:
-        print "*** Система находится в режиме обучения ***"
-        print "*** Уведомления не отправляются ***"
-        print "PRODUCTION_MODE: ", PRODUCTION_MODE
+    print "*** Система находится в режиме обучения ***"
+    print "*** Уведомления не отправляются ***"
+    print "PRODUCTION_MODE: ", PRODUCTION_MODE
+    notify()
+
 
 
