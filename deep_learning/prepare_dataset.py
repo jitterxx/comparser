@@ -56,20 +56,20 @@ exit()
 for current_cat in cats:
     print("Готовим категорию: {}".format(current_cat))
     try:
-        count = session.query(CPO.TrainData).filter(CPO.TrainData.category == current_cat).count()
+        count = session.query(CPO.TrainData).filter(CPO.TrainData.category == current_cat).limit(limit).count()
 
-        resp = session.query(CPO.TrainData).filter(CPO.TrainData.category == current_cat).all()
+        resp = session.query(CPO.TrainData).filter(CPO.TrainData.category == current_cat).limit(limit)
     except Exception as e:
         print(str(e))
     else:
-        print(count)
+        print("{} - сообщений".format(count))
         CAT_PATH = "{}/{}".format(PATH, current_cat)
 
         if os.path.exists(CAT_PATH):
             print("Удаляем каталог и старые данные")
             shutil.rmtree(CAT_PATH)
 
-        print("Создаем новый: {}".format(CAT_PATH))
+        print("Создаем новый каталог: {}".format(CAT_PATH))
         os.makedirs(CAT_PATH)
         for one in resp:
             filename = uuid.uuid4().__str__()
@@ -80,12 +80,11 @@ for current_cat in cats:
             f.write("\n\n")
             f.close()
 
-        print("Информация о категории...")
+        print("Записываем информация о категории в class.nfo")
         f = file("{}/{}".format(CAT_PATH, "class.nfo"), "w")
         f.write("Name: {}\n".format(current_cat))
         f.write("Size: {}\n".format(count))
         f.close()
-
 
 session.close()
 
