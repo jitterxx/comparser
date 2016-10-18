@@ -39,6 +39,7 @@ try:
         all()
 except Exception as e:
     print(str(e))
+    session.close()
     raise e
 else:
     cat_min = 100000
@@ -61,6 +62,8 @@ else:
         except Exception as e:
             print(str(e))
             train_data_ready = False
+            session.close()
+            raise e
         else:
             print("{} - сообщений".format(count))
             CAT_PATH = "{}/{}".format(PATH, current_cat)
@@ -88,10 +91,6 @@ else:
 
             train_data_ready = True
 
-finally:
-    session.close()
-
-
 
 if train_data_ready:
     print("# Примеров для работы достаточно. Ошибок не обнаружено. \n Копируем данные...")
@@ -104,7 +103,6 @@ if train_data_ready:
         raise e
 
     # переносим записи из user_train_data в train_data
-    session = CPO.Session()
     for one in resp:
         new = CPO.TrainData()
         new.message_id = one.message_id
@@ -140,5 +138,6 @@ if train_data_ready:
         session.close()
 else:
     print("# Примеров для работы НЕ достаточно. Добавьте недостающие данные.")
+    session.close()
 
 
