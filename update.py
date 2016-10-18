@@ -295,12 +295,19 @@ try:
         if not hasattr(CONF, 'PREDICT_SERVICE_HOSTNAME'):
             file.writelines("PREDICT_SERVICE_HOSTNAME = 'localhost'\n")
             print "CONF.PREDICT_SERVICE_HOSTNAME - added to configuration"
+
         if not hasattr(CONF, 'PREDICT_SERVICE_PORT'):
             file.writelines("PREDICT_SERVICE_PORT = '11111'\n")
             print "CONF.PREDICT_SERVICE_PORT - added to configuration"
+
         if not hasattr(CONF, 'PREDICT_SERVICE_NAME'):
             file.writelines("PREDICT_SERVICE_NAME = ['default']\n")
             print "CONF.PREDICT_SERVICE_NAME - added to configuration"
+
+        if not hasattr(CONF, 'PREDICT_SERVICE_NAME_DEFAULT'):
+            file.writelines("PREDICT_SERVICE_NAME_DEFAULT = 'default'\n")
+            print "CONF.PREDICT_SERVICE_NAME_DEFAULT - added to configuration"
+
         if not hasattr(CONF, 'PREDICT_SERVICE_MODEL_REPO'):
             file.writelines("PREDICT_SERVICE_MODEL_REPO = '/home/deepdetect/service/models'\n")
             print "CONF.PREDICT_SERVICE_MODEL_REPO - added to configuration"

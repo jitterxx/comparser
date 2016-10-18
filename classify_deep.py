@@ -203,7 +203,7 @@ else:
                 logging.debug("### Service:{}, R_ID:{}, Answer:{}, FullAnswer:{}".format(sname, row.id, a, b))
                 a1.append(b)
 
-                if service_name == 'default':
+                if service_name == CPO.PREDICT_SERVICE_NAME_DEFAULT:
                     short_answer = a
 
         except Exception as e:
