@@ -39,9 +39,9 @@ except Exception as e:
     print(str(e))
     raise e
 else:
-    cat_min = 0
+    cat_min = 100000
     for cat, count in resp:
-        if int(count) > cat_min:
+        if int(count) < cat_min:
             cat_min = int(count)
     if cat_min != 0:
         limit = cat_min
