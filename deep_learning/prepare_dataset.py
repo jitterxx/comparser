@@ -45,6 +45,7 @@ else:
             cat_min = int(count)
     if cat_min != 0:
         limit = cat_min
+        print("Будет сформирована выборка из - {} примеров в каждой категории.".format(cat_min))
     else:
         print("Недостаточно данных для формирования обучающей выборки. В одной из категорий - {} примеров".format(cat_min))
         exit()
