@@ -36,9 +36,9 @@ else:
 logging.basicConfig(format='%(asctime)s.%(msecs)d %(levelname)s %(lineno)d : %(message)s',
                     datefmt='%d-%m-%Y %H:%M:%S',
                     level=logging.DEBUG,
-                    filename='{}{}.log'.format(CPO.LOG_PATH, os.path.basename(sys.argv[0])))
+                    filename='{}/{}{}.log'.format(os.path.expanduser("~"), CPO.LOG_PATH, os.path.basename(sys.argv[0])))
 
-print("Лог работы находится в {}{}.log".format(CPO.LOG_PATH, os.path.basename(sys.argv[0])))
+print("Лог работы находится в {}{}.log".format(os.path.expanduser("~"), CPO.LOG_PATH, os.path.basename(sys.argv[0])))
 
 
 # Инициализация переменных и констант

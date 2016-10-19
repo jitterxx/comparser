@@ -26,7 +26,7 @@ from dd_client import DD
 logging.basicConfig(format='%(asctime)s.%(msecs)d %(levelname)s %(lineno)d : %(message)s',
                     datefmt='%d-%m-%Y %H:%M:%S',
                     level=logging.DEBUG,
-                    filename='{}/{}.log'.format(os.path.expanduser("~"), os.path.basename(sys.argv[0])))
+                    filename='{}/{}{}.log'.format(os.path.expanduser("~"), CPO.LOG_PATH, os.path.basename(sys.argv[0])))
 
 
 parser = argparse.ArgumentParser(description="Если -с не указано, происходит определение всех "
@@ -209,6 +209,7 @@ else:
         except Exception as e:
             logging.error("Ошибка классфикации для записи. MSGID: {}, ID: {}. \n {}".format(row.message_id,
                                                                                             row.id, str(e)))
+
         else:
             answer = ":".join(a1)
             logging.debug("Категория: {}".format(answer))
