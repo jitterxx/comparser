@@ -319,6 +319,22 @@ else:
 finally:
     file.close()
 
+try:
+    with open('configuration.py', 'a') as file:
+        if not hasattr(CONF, 'LOG_PATH'):
+            file.writelines("LOG_PATH = ''\n")
+            print "CONF.LOG_PATH - added to configuration"
+
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
+finally:
+    file.close()
+
+
+
+
 connection.close()
 
 
