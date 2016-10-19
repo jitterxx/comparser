@@ -79,9 +79,11 @@ class Predictor():
         parameters_input = {
             'connector': 'txt',
             'characters': True,
-            'alphabet': u'!\“#%&’*+,-./0123456789:;<=>?@^_abcdefghijklmnopqrstuvwxyz«»абвгдежзийклмнопрстуфхцчшщъыьэюяёєі“”',
+            'alphabet': u'!\“#%&’*+,-./0123456789:;<=>?@^_abcdefghijklmnopqrstuvwxyz'
+                        u'«»абвгдежзийклмнопрстуфхцчшщъыьэюяёєі“”()[]{}',
             'sequence': sequence
         }
+
 
         parameters_mllib = {
             'nclasses': 2,
@@ -196,7 +198,7 @@ else:
         # классификация
         try:
             a1 = list()
-            data = row.message_title + row.message_text  # готовим данные из row
+            data = str(row.message_title) + str(row.message_text)  # готовим данные из row
             for service_name in CPO.PREDICT_SERVICE_NAME:
                 sname = "{}_{}".format(CPO.CLIENT_NAME, service_name)
                 a, b = predictor.classify(data=data, sname=sname)
