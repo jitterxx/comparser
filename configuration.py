@@ -24,9 +24,9 @@ maildir_path = "/home/sergey/Maildir"
 main_link = "http://localhost:8585/api/message/"
 
 # Параметры аккаунта откуда будут забираться сообщения для доставки в каталог.
-smtp_email = "vipct@conparser.ru"
+smtp_email = "info@conparser.ru"
 smtp_server = "smtp.yandex.ru"
-smtp_pass = "Qazcde123"
+smtp_pass = "Cthutq123"
 
 # Кому будут направляться сообщения о классификации от имени аккаунта анализатора. см. выше.
 # Список получателей собирается автоматически из настроек уведомлений (class Watch)
@@ -83,7 +83,7 @@ DIALOG_MEMBER_TYPE = {0: "employee", 1: "client"}
 
 # Режим работы системы. True - рабочий режим (ведем статистику и шлем уведомления),
 # False - режим обучения (не ведется статистика, не отправляются уведомления)
-PRODUCTION_MODE = False
+PRODUCTION_MODE = True
 
 
 # Ключ доступа к API провайдера телефонии
@@ -129,3 +129,6 @@ PREDICT_SERVICE_PORT = '11111'
 PREDICT_SERVICE_NAME = ['default']
 PREDICT_SERVICE_MODEL_REPO = '/home/deepdetect/service/models'
 PREDICT_SERVICE_NAME_DEFAULT = 'default'
+
+LOG_PATH = ''
+

@@ -61,7 +61,9 @@ def notify():
     try:
         resp = session.query(CPO.Msg, CPO.TrainAPIRecords.uuid, CPO.TrainAPIRecords.auto_cat).\
             join(CPO.TrainAPIRecords, CPO.Msg.message_id == CPO.TrainAPIRecords.message_id).\
-            filter(and_(CPO.Msg.isclassified == 1, CPO.Msg.notified == 0)).limit(limit)
+            filter(and_(CPO.Msg.isclassified == 1, CPO.Msg.notified == 0,
+                        CPO.TrainAPIRecords.user_action == 0)).\
+            limit(limit)
     except Exception as e:
         logging.error("Ошибка доступа к БД с результатами классификации. {}".format(str(e)))
         raise e
@@ -329,12 +331,12 @@ def send_email(category=None, orig_msg=None, msg_uuid=None, notify_list=None):
     else:
         logging.debug("HTML - Сообщение сформировано.")
 
-
     smtp = SMTP_SSL()
     logging.debug("*** Отправка сообщений ***")
     try:
         logging.debug("### Подключение к серверу - {} ###".format(CPO.smtp_server))
-        smtp.connect(CPO.smtp_server)
+        smtp.connect(host=CPO.smtp_server)
+
         logging.debug("### Авторизация - {} ###".format(from_addr))
         smtp.login(from_addr, CPO.smtp_pass)
     except Exception as e:
