@@ -258,9 +258,9 @@ def send_email(category=None, orig_msg=None, msg_uuid=None, notify_list=None):
 
 if __name__ == '__main__':
     if not CPO.PRODUCTION_MODE:
-        print "*** Система находится в режиме обучения ***"
-        print "*** Уведомления не отправляются ***"
-        print "PRODUCTION_MODE: ", CPO.PRODUCTION_MODE
+        logging.debug("*** Система находится в режиме обучения ***")
+        logging.debug("*** Уведомления не отправляются ***")
+        logging.debug("PRODUCTION_MODE: {}".format(CPO.PRODUCTION_MODE))
     notify()
 
 
