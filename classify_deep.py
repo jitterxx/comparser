@@ -139,7 +139,7 @@ class Predictor():
 
         parameters_output = {'best': 3}
         logging.debug("*** Классификация ***")
-
+        logging.debug('classify() - sname = {}'.format(sname))
         try:
             result = self.dd.post_predict(sname, data, {}, {}, parameters_output)
         except Exception as e:
