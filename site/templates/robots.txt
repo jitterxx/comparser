@@ -3,4 +3,5 @@ User-Agent: *
 Disallow: /demo_request
 Host: www.conparser.ru
 Sitemap: http://conparser.ru/sitemap.xml
+Sitemap: http://www.conparser.ru/sitemap.xml
 

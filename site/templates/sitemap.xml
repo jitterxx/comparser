@@ -3,7 +3,29 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
    <url>
+      <loc>http://www.conparser.ru/</loc>
 
+      <lastmod>2016-10-06</lastmod>
+
+      <changefreq>weekly</changefreq>
+
+      <priority>0.8</priority>
+
+   </url>
+
+   <url>
+
+       <loc>http://www.conparser.ru/blog</loc>
+
+       <lastmod>2016-10-19</lastmod>
+
+       <changefreq>weekly</changefreq>
+
+       <priority>0.8</priority>
+
+   </url>
+
+   <url>
       <loc>http://conparser.ru/</loc>
 
       <lastmod>2016-10-06</lastmod>
@@ -18,7 +40,7 @@
 
        <loc>http://conparser.ru/blog</loc>
 
-       <lastmod>2016-10-04</lastmod>
+       <lastmod>2016-10-19</lastmod>
 
        <changefreq>weekly</changefreq>
 
