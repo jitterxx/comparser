@@ -333,7 +333,9 @@ def send_email(category=None, orig_msg=None, msg_uuid=None, notify_list=None):
     smtp = SMTP_SSL()
     logging.debug("*** Отправка сообщений ***")
     try:
+        logging.debug("### Подключение к серверу - {} ###".format(CPO.smtp_server))
         smtp.connect(CPO.smtp_server)
+        logging.debug("### Авторизация - {} ###".format(from_addr))
         smtp.login(from_addr, CPO.smtp_pass)
     except Exception as e:
         logging.error("Ошибка подключения к серверу {} с логином {}.".format(CPO.smtp_server, from_addr))
