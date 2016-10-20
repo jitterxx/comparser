@@ -38,12 +38,19 @@ class ShowNotification(object):
 
     @cherrypy.expose
     def index(self, error=None, url=None):
-        tmpl = lookup.get_template("error.html")
+        tmpl = lookup.get_template("message.html")
         if not url:
             url = "/"
         print("ShowNotification.index(). {}".format(str(error)))
-        return tmpl.render(error=error, url=url)
+        return tmpl.render(text=error, url=url)
 
+    @cherrypy.expose
+    def error(self, text=None, url=None):
+        tmpl = lookup.get_template("error.html")
+        if not url:
+            url = "/"
+        print("ShowNotification.error(). {}".format(str(text)))
+        return tmpl.render(error=text, url=url)
 
 """
 class UserTrain(object):
@@ -175,19 +182,18 @@ class API_v2(object):
                     cherrypy.response.body = [err_text]
                     return err_text
                 else:
-                    return ShowNotification().index(error=err_text)
+                    return ShowNotification().error(text=err_text)
             else:
                 print("Req type: {}. {}. {}".format(request_type, status[0], status[1]))
 
                 # Сообщени уже проверено или его не существует
                 if not status[0]:
-                    err_text = "Api.UserTrain(). " + status[1]
                     if request_type == "js":
                         cherrypy.response.status = 200
-                        cherrypy.response.body = [err_text]
-                        return err_text
+                        cherrypy.response.body = [status[1]]
+                        return status[1]
                     else:
-                        return ShowNotification().index(error=err_text)
+                        return ShowNotification().index(error=status[1])
 
                 # Если категория после проверки в WARNING_CAT и ответ новый, то создаем задачу
                 if status[0] and category in WARNING_CATEGORY:
@@ -195,7 +201,7 @@ class API_v2(object):
                     try:
                         api_rec = CPO.get_train_record(uuid=uuid)
                     except Exception as e:
-                        print "api.UserTrain(). Ошибка получения записи TrainAPI. %s" % str(e)
+                        print "api.UserTrain(). Ошибка получения записи TrainAPI UUID = {}. {}".format(uuid, str(e))
                         api_rec = None
 
                     # создаем задачу
@@ -215,24 +221,28 @@ class API_v2(object):
                         try:
                             CPO.add_task_comment(task_uuid=task_uuid, comment=text)
                         except Exception as e:
-                            print "api.UserTrain(). Ошибка добавления комментария. %s" % str(e)
+                            print "api.UserTrain(). Ошибка добавления комментария TASK_UUID = {}. {}".\
+                                format(task_uuid, str(e))
 
                     except Exception as e:
-                        print "api.UserTrain(). Ошибка создания Задачи. %s" % str(e)
+                        print "api.UserTrain(). Ошибка создания Задачи для MSG_ID = {}. {}".\
+                            format(api_rec.message_id, str(e))
 
                     # добавляем адресатов в DialogMembers
                     try:
                         CPO.add_msg_members(msg_id_list=api_rec.message_id)
                     except Exception as e:
-                        print "api.UserTrain(). Ошибка добавления адресатов DialogMembers. %s" % str(e)
+                        print "api.UserTrain(). Ошибка добавления адресатов DialogMembers для MSG_ID = {}.  {}".\
+                            format(api_rec.message_id, str(e))
 
                 if request_type == "js":
                     cherrypy.response.status = 200
                     cherrypy.response.body = ['ok']
                     return 'ok'
                 else:
-                    tmpl = lookup.get_template("usertrain_page.html")
-                    return tmpl.render(status=status)
+                    # tmpl = lookup.get_template("usertrain_page.html")
+                    # return tmpl.render(status=status)
+                    return ShowNotification.index(error=status[1])
 
         else:
             print "API_v2(). Incorrect REST URL.", cherrypy.request
@@ -241,7 +251,7 @@ class API_v2(object):
                 cherrypy.response.body = "API_v2(). Incorrect REST URL."
                 return "error"
             else:
-                return ShowNotification().index(error="Указан неверный адрес. Обратитесь к администратору.")
+                return ShowNotification().error(text="Указан неверный адрес. Обратитесь к администратору.")
 
 
 
