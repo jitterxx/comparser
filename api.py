@@ -242,7 +242,7 @@ class API_v2(object):
                 else:
                     # tmpl = lookup.get_template("usertrain_page.html")
                     # return tmpl.render(status=status)
-                    return ShowNotification.index(error=status[1])
+                    return ShowNotification().index(error=status[1])
 
         else:
             print "API_v2(). Incorrect REST URL.", cherrypy.request
