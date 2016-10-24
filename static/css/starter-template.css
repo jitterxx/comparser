@@ -2,6 +2,7 @@ body {
   padding-top: 50px;
   font-size: 1.8em;
   background: #f1f4f7;
+  height: 100%;
 }
 
 .table-padding {
@@ -31,7 +32,9 @@ hr {
   text-align: center;
 }
 
-.section-a {}
+.section-a {
+    background-color: #ffffff;
+}
 
 .section-b {
     background-color: #eee;
@@ -46,6 +49,16 @@ hr {
     height: 40em;
 
 
+}
+
+.header-message {
+    padding-top: 3em;
+    padding-bottom: 7em;
+    text-align: center;
+
+    background-size: cover;
+    background-color: #ffffff;
+    height: 40em;
 }
 
 .header-phrase {
