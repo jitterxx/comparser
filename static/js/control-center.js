@@ -69,9 +69,44 @@ function user_check_category(page, msg_id, cat_key, cat_name, main_link, msg_uui
             on_error(cat_span, old_cat_span);
         } else {
             // Все нормально
-            // console.log(xhr.status + ' : ' + xhr.statusText);
+            console.log(xhr.status + ' : ' + xhr.statusText);
             on_success(page, cat_span, color, cat_name, msg_id);
-            if (page == 'True') { $('#modal_' + msg_uuid).modal('toggle');}
+
+            if (page == 'True') {
+                $('#problem_modal').modal('toggle');
+                var modal_data = JSON.parse(xhr.responseText);
+                var modal_element = document.getElementById('problem_list_modal');
+                console.log('modal_data : ', modal_data)
+
+                var text = '<div class="row" style="margin: 2px;"><div class="col-md-6 col-md-offset-3">';
+                for (var i=0; i<modal_data[3].length; i++) {
+                    text += '<a class=\"btn btn-warning btn-lg btn-block\" onclick="problem_choice(\'';
+                    text += msg_uuid + '\', \'' + modal_data[3][i].uuid + '\', this); return false;\">';
+                    text += `${modal_data[3][i].title}` + '</a>';
+                };
+
+                text += '</div></div><div class="row"><div class="col-md-12" align="center"><br>или<br></div></div>';
+                console.log(text);
+
+                text += '<div class=\"row\"><div class=\"col-md-6 col-md-offset-3\" align=\"left\">';
+                text += '<form method=\"POST\" action=\"/api/problem/create/uuid\" style=\"margin-bottom: 3em;\">';
+                text += '<input type="hidden" name="request_type" value="js">';
+                text += '<div class=\"form-group\"><input type=\"hidden\" name=\"msg_uuid\" value=\"';
+                text += msg_uuid + '\"><textarea class="form-control" id="new_problem_title" name="new_problem_title" cols="30" rows="3"';
+                text += 'placeholder="опишите новую проблему..."></textarea></div><br><p align="center">';
+                text += 'Ответственный</p><div class="form-group form-inline">';
+                for (var i=0; i<modal_data[1].length; i++) {
+                    text += '<div class="radio"><label><input type="radio" name="responsible" id="responsible" value="';
+                    text += modal_data[1][i].uuid + '">';
+                    text += modal_data[1][i].name + ' ' + modal_data[1][i].surname;
+                    text += '</label></div>';
+                }
+                 text += '</div><input class="btn btn-success btn-block" value="Создать" onclick=""></form>';
+                 text += '</div></div>';
+
+                modal_element.innerHTML = text;
+
+            }
         };
     };
 
@@ -127,7 +162,7 @@ function problem_choice (msg_uuid, problem_uuid, modal_obj) {
         } else {
             // Все нормально
             console.log(xhr.status + ' : ' + xhr.statusText);
-            $('#modal_' + msg_uuid).modal('toggle');
+            $('#problem_modal').modal('toggle');
         };
     };
 

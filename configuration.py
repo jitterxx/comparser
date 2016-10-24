@@ -135,3 +135,6 @@ LOG_PATH = ''
 
 PROBLEM_STATUS = ["Новая", "В работе", "Закрыта"]
 PROBLEM_CLOSED_STATUS = 2
+
+# Список технологических пользователей. Не учавствуют в показе в интерфейсе
+HIDDEN_USERS = ['admin-uuid']

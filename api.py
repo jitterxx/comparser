@@ -15,6 +15,7 @@ from bs4 import BeautifulSoup
 from mako.lookup import TemplateLookup
 from user_agents import parse
 import datetime
+import json
 from auth import AuthController, require, member_of, name_is, all_of, any_of
 
 
@@ -59,7 +60,7 @@ class API_v2(object):
     def problem(self, action=None, problem_uuid=None, msg_uuid=None, request_type=None, new_problem_title=None,
                 responsible=None):
         print "Problem API v2 :", action, problem_uuid, msg_uuid, request_type
-
+        print("{} {}".format(new_problem_title, responsible))
         if action == 'link' and problem_uuid and msg_uuid:
             print "Линкуем"
             try:
@@ -90,11 +91,10 @@ class API_v2(object):
 
         elif action == 'create' and new_problem_title and msg_uuid and responsible:
             print "Создаем новую проблему"
+
             try:
                 check = CPO.problem_api_check(msg_uuid=msg_uuid)
-                if check[0]:
-                    return ShowNotification().index(error=check[1])
-                status = CPO.create_problem(responsible=responsible, title=new_problem_title, message_uuid=msg_uuid)
+
             except Exception as e:
                 err_text = "Api.Problem(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору."
                 print err_text, str(e)
@@ -105,7 +105,28 @@ class API_v2(object):
                 else:
                     return ShowNotification().error(text=err_text)
             else:
-                return ShowNotification().index(error=status[1])
+                if check[0]:
+                    status = CPO.create_problem(responsible=responsible, title=new_problem_title, message_uuid=msg_uuid)
+
+                    if request_type == "js":
+                        if status[0]:
+                            cherrypy.response.status = 200
+                        else:
+                            cherrypy.response.status = 500
+                        cherrypy.response.body = [status[1]]
+                        return status[1]
+                    else:
+                        if status[0]:
+                            return ShowNotification().index(error=status[1])
+                        else:
+                            return ShowNotification().error(text=status[1])
+                else:
+                    if request_type == "js":
+                        cherrypy.response.status = 500
+                        cherrypy.response.body = [check[1]]
+                        return check[1]
+                    else:
+                        return ShowNotification().error(text=check[1])
 
         else:
             print "API_v2(). Incorrect REST URL.", cherrypy.request
@@ -200,31 +221,49 @@ class API_v2(object):
                             format(api_rec.message_id, str(e))
                     """
 
+                    # Связывание или создание проблемы
+                    print "Собираем данные для связывания или создания проблемы..."
+                    cur_user = ""
+                    responsible_list = list()
+                    problem_list = tuple()
+                    user_list = list()
+                    try:
+                        if cherrypy.session.get('session_context'):
+                            cur_user = cherrypy.session['session_context'].get("user")
+                        responsible_list = CPO.get_watchers_uuid_for_email(message_id=api_rec.message_id)
+                        user_list = CPO.get_all_users_dict()
+                        problem_list = CPO.get_problems(status='not closed', sort='frequency')
+
+                    except Exception as e:
+                        print "api.UserTrain(). Ошибка получения данных создания/связывания проблемы для MSG_ID = {}. {}".\
+                            format(api_rec.message_id, str(e))
+
+                    print cur_user
+                    print responsible_list
+                    print problem_list
+                    print user_list
+
                     # в js надо запросить к какой проблеме отнести сообщение или создать новую
                     if request_type == "js":
                         cherrypy.response.status = 200
                         cherrypy.response.body = ['ok']
-                        return 'ok'
+
+                        response = list()
+                        response.append(cur_user.uuid)
+                        response.append(list())
+                        for one in responsible_list:
+                            if one not in CPO.HIDDEN_USERS:
+                                response[1].append({'uuid': one, 'name': user_list.get(one).name,
+                                                    'surname': user_list.get(one).surname})
+
+                        response.append(api_rec.uuid)
+                        response.append(list())
+                        for one, count in problem_list:
+                            response[3].append({'uuid': one.uuid, 'title': one.title, 'count': count})
+
+
+                        return json.dumps(response)
                     else:
-                        # Создаем проблему
-                        print "Создаем проблему..."
-                        cur_user = ""
-                        responsible_list = list()
-                        problem_list = tuple()
-                        try:
-                            if cherrypy.session.get('session_context'):
-                                cur_user = cherrypy.session['session_context'].get("user")
-                            responsible_list = CPO.get_watchers_uuid_for_email(message_id=api_rec.message_id)
-                            user_list = CPO.get_all_users_dict()
-                            problem_list = CPO.get_problems(status='not closed', sort='frequency')
-
-                        except Exception as e:
-                            print "api.UserTrain(). Ошибка создания Проблемы для MSG_ID = {}. {}".\
-                                format(api_rec.message_id, str(e))
-
-                        print cur_user
-                        print responsible_list
-                        print problem_list
 
                         print "Выводим страницу создания проблемы..."
                         # ответ через уведомление, надо запросить к какой проблеме отнести сообщение или создать новую
@@ -1177,8 +1216,6 @@ class Statistics(object):
             data["datasets"][2]["data"] = closed
 
             # print "Line data:", data
-
-        import json
 
         return json.dumps(data)
 
