@@ -63,7 +63,8 @@ class API_v2(object):
         if action == 'link' and problem_uuid and msg_uuid:
             print "Линкуем"
             try:
-                status = CPO.link_problem_to_message(problem_uuid=problem_uuid, msg_uuid=msg_uuid)
+                # status = CPO.link_problem_to_message(problem_uuid=problem_uuid, msg_uuid=msg_uuid)
+                status = [True, "test"]
             except Exception as e:
                 err_text = "Api.Problem(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору."
                 print err_text, str(e)
@@ -74,10 +75,18 @@ class API_v2(object):
                 else:
                     return ShowNotification().error(text=err_text)
             else:
-                if status[0]:
-                    return ShowNotification().index(error=status[1])
+                if request_type == "js":
+                    if status[0]:
+                        cherrypy.response.status = 200
+                    else:
+                        cherrypy.response.status = 500
+                    cherrypy.response.body = [status[1]]
+                    return status[1]
                 else:
-                    return ShowNotification().error(text=status[1])
+                    if status[0]:
+                        return ShowNotification().index(error=status[1])
+                    else:
+                        return ShowNotification().error(text=status[1])
 
         elif action == 'create' and new_problem_title and msg_uuid and responsible:
             print "Создаем новую проблему"
@@ -191,32 +200,32 @@ class API_v2(object):
                             format(api_rec.message_id, str(e))
                     """
 
-                    # Создаем проблему
-                    print "Создаем проблему..."
-                    cur_user = ""
-                    responsible_list = list()
-                    problem_list = tuple()
-                    try:
-                        if cherrypy.session.get('session_context'):
-                            cur_user = cherrypy.session['session_context'].get("user")
-                        responsible_list = CPO.get_watchers_uuid_for_email(message_id=api_rec.message_id)
-                        user_list = CPO.get_all_users_dict()
-                        problem_list = CPO.get_problems(status='not closed', sort='frequency')
-
-                    except Exception as e:
-                        print "api.UserTrain(). Ошибка создания Проблемы для MSG_ID = {}. {}".\
-                            format(api_rec.message_id, str(e))
-
-                    print cur_user
-                    print responsible_list
-                    print problem_list
-
                     # в js надо запросить к какой проблеме отнести сообщение или создать новую
                     if request_type == "js":
                         cherrypy.response.status = 200
                         cherrypy.response.body = ['ok']
                         return 'ok'
                     else:
+                        # Создаем проблему
+                        print "Создаем проблему..."
+                        cur_user = ""
+                        responsible_list = list()
+                        problem_list = tuple()
+                        try:
+                            if cherrypy.session.get('session_context'):
+                                cur_user = cherrypy.session['session_context'].get("user")
+                            responsible_list = CPO.get_watchers_uuid_for_email(message_id=api_rec.message_id)
+                            user_list = CPO.get_all_users_dict()
+                            problem_list = CPO.get_problems(status='not closed', sort='frequency')
+
+                        except Exception as e:
+                            print "api.UserTrain(). Ошибка создания Проблемы для MSG_ID = {}. {}".\
+                                format(api_rec.message_id, str(e))
+
+                        print cur_user
+                        print responsible_list
+                        print problem_list
+
                         print "Выводим страницу создания проблемы..."
                         # ответ через уведомление, надо запросить к какой проблеме отнести сообщение или создать новую
                         tmpl = lookup.get_template("warning_cat_create_problem.html")
@@ -742,12 +751,19 @@ class Dialogs(object):
         cat_dict = CPO.GetCategory()
         text = "Проверенные и не проверенные сообщения на которые надо обратить внимание."
 
+        try:
+            problem_list = CPO.get_problems()
+        except Exception as e:
+            print("Dialogs().warning(). Ошибка получения списка проблем. {}".format(str(e)))
+            problem_list = []
+
         tmpl = self.lookup.get_template("control_center_dialogs_default.html")
         return tmpl.render(session_context=session_context, dialog=text, active_cat=None,
                            today=today, cur_day=cur_day, delta=delta_1, main_link=main_link,
                            category=cat_dict, task_status=CPO.TASK_STATUS, warn_cat=CPO.WARNING_CATEGORY,
                            task_list=task_list, message_list=message_list, unchecked=unchecked,
-                           api_list=api_list, checked_with_task=task_list2, message_id_list=message_id_list)
+                           api_list=api_list, checked_with_task=task_list2, message_id_list=message_id_list,
+                           problem_list=problem_list)
 
 
 class Tasks(object):

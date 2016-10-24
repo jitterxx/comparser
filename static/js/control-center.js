@@ -71,10 +71,12 @@ function user_check_category(page, msg_id, cat_key, cat_name, main_link, msg_uui
             // Все нормально
             // console.log(xhr.status + ' : ' + xhr.statusText);
             on_success(page, cat_span, color, cat_name, msg_id);
+            if (page == 'True') { $('#modal_' + msg_uuid).modal('toggle');}
         };
     };
 
     xhr.send('');
+
     return false;
 };
 
@@ -96,11 +98,41 @@ function on_success(page, cat_span, color, cat_name, msg_id) {
         // console.log(msg.classList);
         msg.classList.remove('panel-warning');
         msg.classList.add('panel-' + color);
+
     } else {
         var msg = document.getElementById('message_' + msg_id);
         //console.log(msg.classList);
         msg.classList.add('hidden');
     }
+
+    return false;
+
+}
+
+function problem_choice (msg_uuid, problem_uuid, modal_obj) {
+
+    // Формирвем запрос
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/problem/link/' + problem_uuid + '/' + msg_uuid + '/js', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = function() {
+
+        // console.log(page, cat_name, color, msg_id);
+
+        if (xhr.readyState != 4) return false;
+        if (xhr.status != 200) {
+            // Ошибка
+            console.log(xhr.status + ' : ' + xhr.statusText);
+
+        } else {
+            // Все нормально
+            console.log(xhr.status + ' : ' + xhr.statusText);
+            $('#modal_' + msg_uuid).modal('toggle');
+        };
+    };
+
+    xhr.send('');
+
     return false;
 
 }

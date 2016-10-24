@@ -328,6 +328,7 @@
                                             </a>
                                             -->
                                         </span>
+
                                         </td>
                                     %endif
                                 </tr>
@@ -356,6 +357,29 @@
                                     </td>
                                 </tr>
                             </table>
+                            <div class="modal fade" tabindex="-1" role="dialog" id="modal_${api_list[one.message_id].uuid}">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title">связано с проблемой</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            % for problem, freq in problem_list:
+                                            <div class="row"  style="margin: 2px;">
+                                            <div class="col-md-6 col-md-offset-3">
+                                            <a class="btn btn-warning btn-lg btn-block" id="button_problem_${problem.uuid}"
+                                               onclick="problem_choice('${api_list[one.message_id].uuid}',
+                                               '${problem.uuid}', this); return false;">
+                                                ${problem.title}
+                                            </a>
+                                            </div>
+                                            </div>
+                                            % endfor
+
+                                        </div>
+                                    </div><!-- /.modal-content -->
+                                </div><!-- /.modal-dialog -->
+                            </div><!-- /.modal -->
                         </div>
                     </div>
                 </div>
