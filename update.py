@@ -126,12 +126,14 @@ sql_update_19 = "ALTER TABLE `email_raw_data` CHANGE COLUMN `message_text` `mess
 
 
 # Создаем новые таблицы
+print("Создаем новые таблицы в БД.")
 CPO.create_tables()
 
 connection = CPO.Engine.connect()
 result = None
 
 # Обновляем базу
+print("Обновление SQL №1.\n")
 try:
     result = connection.execute(sql[0])
 except Exception as e:
@@ -139,6 +141,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №2.\n")
 try:
     result = connection.execute(sql[1])
 except Exception as e:
@@ -146,6 +149,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №3.\n")
 try:
     result = connection.execute(sql[2])
 except Exception as e:
@@ -153,6 +157,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №4.\n")
 try:
     result = connection.execute(sql[3])
 except Exception as e:
@@ -160,6 +165,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №5.\n")
 try:
     result = connection.execute(sql[4])
 except Exception as e:
@@ -167,6 +173,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №6.\n")
 try:
     if CPO.CURRENT_TRAIN_EPOCH == 0:
         result = connection.execute(sql[5])
@@ -175,6 +182,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №7.\n")
 try:
     if CPO.CURRENT_TRAIN_EPOCH == 0:
         result = connection.execute(sql[6])
@@ -183,7 +191,7 @@ except Exception as e:
 else:
     print result
 
-
+print("Обновление SQL №8.\n")
 try:
     result = connection.execute(sql[7])
 except Exception as e:
@@ -191,6 +199,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №9.\n")
 try:
     result = connection.execute(sql[8])
 except Exception as e:
@@ -198,6 +207,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №10.\n")
 try:
     result = connection.execute(sql[9])
 except Exception as e:
@@ -205,7 +215,7 @@ except Exception as e:
 else:
     print result
 
-
+print("Обновление SQL №11.\n")
 try:
     result = connection.execute(sql[10])
 except Exception as e:
@@ -213,6 +223,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №12.\n")
 try:
     result = connection.execute(sql[11])
 except Exception as e:
@@ -220,7 +231,7 @@ except Exception as e:
 else:
     print result
 
-
+print("Обновление SQL №13.\n")
 try:
     result = connection.execute(sql[12])
     update_12()
@@ -229,8 +240,9 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №13.\n")
 try:
-    print "# Обновление №13. Добавление администратора по умолчанию."
+    print "\t#Добавление администратора по умолчанию."
     result = connection.execute("SELECT count(*) FROM `users`;").fetchone()
     if not result:
             result = connection.execute(sql[13])
@@ -240,14 +252,14 @@ else:
     print result
 
 try:
-    print "# Обновление №14. Расчет статистики по старым данным."
+    print "Обновление №14. \n\tРасчет статистики по старым данным."
     #   update_14()
 except Exception as e:
     print e.message, e.args
 else:
     print result
 
-
+print("Обновление SQL №15.\n")
 try:
     result = connection.execute(sql_update_15)
 except Exception as e:
@@ -255,6 +267,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №16.\n")
 try:
     result = connection.execute(sql_update_16)
 except Exception as e:
@@ -262,6 +275,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №17.\n")
 try:
     result = connection.execute(sql_update_17)
 except Exception as e:
@@ -269,6 +283,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №18.\n")
 try:
     result = connection.execute(sql_update_18)
 except Exception as e:
@@ -276,6 +291,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление SQL №19.\n")
 try:
     result = connection.execute(sql_update_19)
 except Exception as e:
@@ -283,6 +299,7 @@ except Exception as e:
 else:
     print result
 
+print("Обновление №20.\n")
 try:
     with open('configuration.py', 'a') as file:
         if not hasattr(CONF, 'CLIENT_NAME'):
@@ -319,6 +336,7 @@ else:
 finally:
     file.close()
 
+print("Обновление №21.\n")
 try:
     with open('configuration.py', 'a') as file:
         if not hasattr(CONF, 'LOG_PATH'):
@@ -332,7 +350,35 @@ else:
 finally:
     file.close()
 
+#20
+sql_update_22 = "ALTER TABLE `train_api`" \
+                "ADD COLUMN `problem_uuid` VARCHAR(50) NULL DEFAULT NULL AFTER `train_epoch`;"
+print("Обновление SQL №22.\n Добавляем столбец problem_uuid к train_api...")
+try:
+    result = connection.execute(sql_update_22)
+except Exception as e:
+    print e.message, e.args
+else:
+    print result
+    print("Обновление SQL №20 - SUCCESS.\n")
 
+print("Обновление №23.\n\tНовые переменные в конфигурации.")
+try:
+    with open('configuration.py', 'a') as file:
+        if not hasattr(CONF, 'PROBLEM_STATUS'):
+            file.writelines('PROBLEM_STATUS = ["Новая", "В работе", "Закрыта"]\n')
+            print "\tCONF.PROBLEM_STATUS - added to configuration\n"
+        if not hasattr(CONF, 'PROBLEM_CLOSED_STATUS'):
+            file.writelines('PROBLEM_CLOSED_STATUS = 2\n')
+            print "\tCONF.PROBLEM_CLOSED_STATUS - added to configuration\n"
+
+except Exception as e:
+    print("Обновление №23 - ERROR.\n")
+    print e.message, e.args
+else:
+    print("Обновление №23 - SUCCESS.\n")
+finally:
+    file.close()
 
 
 connection.close()

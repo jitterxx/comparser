@@ -642,6 +642,7 @@ class TrainAPIRecords(Base):
     user_action = Column(sqlalchemy.Integer)
     user_answer = Column(sqlalchemy.String(45))
     train_epoch = Column(sqlalchemy.Integer)
+    problem_uuid = Column(sqlalchemy.String(256))
 
 
 def get_train_record(msg_id=None, uuid=None, for_epoch=None):
@@ -2186,7 +2187,10 @@ def get_watchers_uuid_for_email(message_id=None):
                 # print "\tUser: ", marker_dict.get(marker)
                 user_list += marker_dict.get(marker)
 
-        # print "Users: ", user_list
+        # Убираем дубликаты
+        user_list = list(set(user_list))
+
+        print "Users: ", user_list
         if not user_list:
             # Возвращаем спец список для таких случаев
             return ["uuid-initial"]
@@ -3697,6 +3701,150 @@ def create_new_clear_phone_record(call_data=None, text=None):
         raise e
     finally:
         session.close()
+
+
+class Problem(Base):
+    __tablename__ = 'problems'
+    __table_args__ = TABLE_ARGS
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    uuid = sqlalchemy.Column(sqlalchemy.String(50), default=uuid.uuid1())  # Task UUID
+    title = sqlalchemy.Column(sqlalchemy.String(256), default="")
+    responsible = sqlalchemy.Column(sqlalchemy.String(256), default="")  # User UUID
+    create_date = Column(sqlalchemy.DATETIME())  # Problem create date
+    due_date = Column(sqlalchemy.DATETIME())  # Problem due date
+    log = sqlalchemy.Column(mysql.LONGTEXT, default="")  # Actions, edits and ... log
+    status = Column(Integer, default=0)
+    last_status_change = Column(sqlalchemy.DATETIME(), default=datetime.datetime.now())
+
+    def __init__(self):
+        self.uuid = uuid.uuid1().__str__()
+        self.create_date = datetime.datetime.now()
+        self.due_date = datetime.datetime.now() + datetime.timedelta(days=30)
+        self.status = 0
+
+
+def create_problem(responsible=None, create_date=None, due_date=None, title=None, message_uuid=None):
+
+    session = Session()
+
+    if not message_uuid or not responsible or not title:
+        raise Exception(message="Сreate_problem(). Не указаны MSG_ID или RESPONSIBLE.")
+    else:
+        if not isinstance(message_uuid, list):
+            message_uuid = [message_uuid]
+
+    try:
+        problem = Problem()
+        problem.responsible = responsible
+        problem.title = title
+        if due_date:
+            problem.due_date = due_date
+        if create_date:
+            problem.create_date = create_date
+
+        session.add(problem)
+        session.commit()
+    except Exception as e:
+        print("Сreate_problem(). Ошибка записи новой проблемы. {}".format(str(e)))
+        raise e
+    else:
+        try:
+            resp = session.query(TrainAPIRecords).filter(TrainAPIRecords.uuid.in_(message_uuid)).all()
+        except Exception as e:
+            print("Сreate_problem(). Ошибка поиска сообщений в TrainAPI. {}".format(str(e)))
+            raise e
+
+        try:
+            for one in resp:
+                one.problem_uuid = problem.uuid
+                session.commit()
+        except Exception as e:
+            print("Сreate_problem(). Ошибка обновления сообщения в TrainAPI. {}".format(str(e)))
+            raise e
+        else:
+            return [True, "Проблема создана. Сообщения привязаны."]
+
+    finally:
+        session.close()
+
+
+def get_problems(status='not closed', sort='frequency'):
+    session = Session()
+
+    try:
+        resp = session.query(Problem, func.count(TrainAPIRecords)).\
+            join(TrainAPIRecords, TrainAPIRecords.problem_uuid == Problem.uuid).\
+            filter(Problem.status != PROBLEM_CLOSED_STATUS).\
+            group_by(Problem).\
+            order_by(func.count(TrainAPIRecords).desc()).\
+            all()
+    except Exception as e:
+        print("ERROR")
+        raise e
+    else:
+        return resp
+    finally:
+        session.close()
+
+
+def problem_api_check(msg_uuid=None, problem_uuid=None):
+
+    session = Session()
+    try:
+        resp = session.query(TrainAPIRecords).filter(TrainAPIRecords.uuid == msg_uuid).one_or_none()
+    except Exception as e:
+        print("CPO.problem_api_check(). Ошибка поиска сообщения MSG_UUID = {} в TrainAPI. {}".format(msg_uuid, str(e)))
+        raise e
+    else:
+        if msg_uuid and not problem_uuid:
+            if resp and resp.problem_uuid:
+                return [True, "Сообщение уже связано с проблемой. Изменение через интерфейс."]
+            else:
+                return [False, "Сообщение не связано с проблемой."]
+        elif msg_uuid and problem_uuid:
+            if resp and (resp.problem_uuid or resp.problem_uuid == problem_uuid):
+                return [True, "Сообщение уже связано с проблемой. Изменение через интерфейс."]
+            else:
+                return [False, "Сообщение не связано с проблемой."]
+        else:
+            raise Exception(message="CPO.problem_api_check(). Не указан MSG_UUID.")
+    finally:
+        session.close()
+
+
+def link_problem_to_message(msg_uuid=None, problem_uuid=None):
+    session = Session()
+
+    try:
+        problem = session.query(Problem).filter(Problem.uuid == problem_uuid).one_or_none()
+        msg = session.query(TrainAPIRecords).filter(TrainAPIRecords.uuid == msg_uuid).one_or_none()
+    except Exception as e:
+        print("CPO.link_problem_to_message(). Ошибка поиска сообщения сообщения {} "
+              "или проблемы {}. {}".format(msg_uuid, problem_uuid, str(e)))
+        raise e
+    else:
+        if problem and msg and not msg.problem_uuid:
+            try:
+                msg.problem_uuid = problem_uuid
+                session.commit()
+            except Exception as e:
+                print("ОШибка связывания сообщения {} и проблемы {}. {}".format(msg_uuid, problem_uuid, str(e)))
+                raise e
+            else:
+                return [True, "Сообщение связано с проблемой."]
+        elif not problem or not msg:
+            return [False, "Не существует сообщения или проблемы."]
+        elif msg.problem_uuid:
+            return [False, "Сообщение уже связано с проблемой. Изменение через интерфейс."]
+        else:
+            return [False, "Ошибка при связывании."]
+
+    finally:
+        session.close()
+
+
+
 
 
 

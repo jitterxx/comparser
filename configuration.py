@@ -21,7 +21,7 @@ TABLE_ARGS = {'mysql_engine': 'InnoDB',
 maildir_path = "/home/sergey/Maildir"
 
 # Сслыка для работы системы обучения
-main_link = "http://localhost:8585/api/message/"
+main_link = "http://192.168.0.104:8585/api/message/"
 
 # Параметры аккаунта откуда будут забираться сообщения для доставки в каталог.
 smtp_email = "info@conparser.ru"
@@ -58,7 +58,7 @@ CHECK_DOMAINS = ""  # из базы
 # Тип приложения которое будет прикреаляться к уведомлению и содержать пеерписку
 # в которой учавствует подозрительное письмо
 # Может быть pdf или html
-FILE_ATTACH_TYPE = "pdf"
+FILE_ATTACH_TYPE = "html"
 
 # Место положение скрипта для решения проблемы с отсутствием X сервера
 WK_HTML_TO_PDF_PATH = "/usr/bin/wkhtmltopdf"
@@ -132,3 +132,6 @@ PREDICT_SERVICE_NAME_DEFAULT = 'default'
 
 LOG_PATH = ''
 
+
+PROBLEM_STATUS = ["Новая", "В работе", "Закрыта"]
+PROBLEM_CLOSED_STATUS = 2
