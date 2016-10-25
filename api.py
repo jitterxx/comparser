@@ -54,8 +54,80 @@ class ShowNotification(object):
         return tmpl.render(error=text, url=url)
 
 
-class API_v2(object):
+class API_V2(object):
+    # WWW API
 
+    @cherrypy.expose
+    def default(self):
+        print("WWW/default - req")
+
+    @cherrypy.expose
+    def problem_create(self, msg_uuid=None, responsible=None, new_problem_title=None):
+        print("WWW/Problem/Create - req")
+        print("MSG_UUID: {}, RESP: {}, Title: {}".format(msg_uuid, responsible, new_problem_title))
+        if new_problem_title and msg_uuid and responsible:
+            try:
+                result = Problem().create(msg_uuid=msg_uuid, responsible=responsible, title=new_problem_title)
+            except Exception as e:
+                print("API.WWW.Problem_create(). Ошибка создания новой проблемы. {}".format(str(e)))
+                err_text = "API.WWW.Problem_create(). Произошла внутренняя ошибка. \nПожалуйста, сообщите о " \
+                           "ней администратору.\n {}".format(str(e))
+                return ShowNotification().error(text=err_text)
+            else:
+                if result['return_data'][0]:
+                    return ShowNotification().index(error=result['message'])
+                else:
+                    return ShowNotification().error(text=result['message'])
+
+
+    @cherrypy.expose
+    def problem_link(self, problem_uuid=None, msg_uuid=None):
+        print("WWW/Problem/Link - req")
+        print("Problem_UUID: {}, MSG_UUID: {}".format(problem_uuid, msg_uuid))
+        if problem_uuid and msg_uuid:
+            try:
+                result = Problem().link(msg_uuid=msg_uuid, problem_uuid=problem_uuid)
+            except Exception as e:
+                print("API.WWW.Problem_link(). Ошибка линковки. {}".format(str(e)))
+                err_text = "API.JS.Problem_link(). Произошла внутренняя ошибка. Пожалуйста, сообщите о " \
+                           "ней администратору. {}".format(str(e))
+                return ShowNotification().error(text=err_text)
+            else:
+                if result['return_data'][0]:
+                    return ShowNotification().index(error=result['message'])
+                else:
+                    return ShowNotification().error(text=result['message'])
+
+    @cherrypy.expose
+    def message_train(self, uuid=None, category=None):
+        print("WWW/Message/Train - req")
+        print("MSG_UUID: {}, CAT: {}".format(uuid, category))
+        if uuid and category:
+            try:
+                result = Message().train(uuid=uuid, category=category)
+            except Exception as e:
+                print("API.WWW.Message.train(). Ошибка записи проверочного ответа пользователя. {}".format(str(e)))
+                err_text = "API.WWW.Message.train(). Произошла внутренняя ошибка. \n Пожалуйста, сообщите о " \
+                           "ней администратору. \n{}".format(str(e))
+                return ShowNotification().error(text=err_text)
+            else:
+                if not result.get('status'):
+                    # Сообщение не существует или уже проверено
+                    return ShowNotification().index(error=result['message'])
+
+                if result.get('status') and category in CPO.WARNING_CATEGORY:
+                    # [cur_user, responsible_list, problem_list, uuid, user_list]
+                    print "Выводим страницу создания проблемы..."
+                    # ответ через уведомление, надо запросить к какой проблеме отнести сообщение или создать новую
+                    tmpl = lookup.get_template("warning_cat_create_problem.html")
+                    return tmpl.render(status=result['message'], cur_user=result['return_data'][0],
+                                       responsible_list=result['return_data'][1],
+                                       problem_list=result['return_data'][2],
+                                       api_uuid=result['return_data'][3], user_list=result['return_data'][4])
+                else:
+                    return ShowNotification().index(error=result['message'])
+
+    """
     @cherrypy.expose
     def problem(self, action=None, problem_uuid=None, msg_uuid=None, request_type=None, new_problem_title=None,
                 responsible=None):
@@ -195,7 +267,8 @@ class API_v2(object):
                     # Сотрудник нажавший "красную кнопку", должен в ручную привязать инцидент (сообщение) к проблеме.
                     # Выбрать из списка или создать новую.
 
-                    """
+    """
+    """
                     # создаем задачу
                     try:
                         # ответственный за закрытие задачи - проверяющий
@@ -219,7 +292,8 @@ class API_v2(object):
                     except Exception as e:
                         print "api.UserTrain(). Ошибка создания Задачи для MSG_ID = {}. {}".\
                             format(api_rec.message_id, str(e))
-                    """
+    """
+    """
 
                     # Связывание или создание проблемы
                     print "Собираем данные для связывания или создания проблемы..."
@@ -290,8 +364,469 @@ class API_v2(object):
                 return "error"
             else:
                 return ShowNotification().error(text="Указан неверный адрес. Обратитесь к администратору.")
+    """
 
 
+class Problem(object):
+
+    def create(self, msg_uuid=None, responsible=None, title=None):
+        print("Создаем новую проблему...")
+        result = {'status': True, 'message': '', 'return_data': None}
+        try:
+            # Проверяем наличие у сообщения связанной проблемы
+            check = CPO.problem_api_check(msg_uuid=msg_uuid)
+        except Exception as e:
+            err_text = "Problem().create(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору."
+            print err_text, str(e)
+            raise e
+        else:
+            if check[0]:
+                result['message'] = check[1]
+                result['return_data'] = check
+            else:
+                try:
+                    # Создаем новую проблему и линкуем с сообщением
+                    status = CPO.create_problem(responsible=responsible, title=title, message_uuid=msg_uuid)
+                except Exception as e:
+                    err_text = "Problem().create(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору."
+                    print err_text, str(e)
+                    raise e
+                else:
+                    result['message'] = status[1]
+                    result['return_data'] = status
+
+            return result
+
+    def link(self, problem_uuid=None, msg_uuid=None):
+        print("Линкуем...")
+        result = {'status': True, 'message': '', 'return_data': None}
+        try:
+            status = CPO.link_problem_to_message(problem_uuid=problem_uuid, msg_uuid=msg_uuid)
+            # status = [True, "test"]
+        except Exception as e:
+            print("Problem().link(). Ошибка при линковке проблемы и сообщения. {}".format(str(e)))
+            raise e
+        else:
+            result['message'] = status[1]
+            result['return_data'] = status
+            return result
+
+
+class Message(object):
+
+    def train(self, uuid=None, category=None):
+        print("Запись ответа для обучения...")
+        result = {'status': True, 'message': '', 'return_data': None}
+
+        # 1. записать указанный емайл и категорию в пользовательские тренировочные данные
+        # 2. Пометить в таблице train_api ответ.
+        try:
+            status = CPO.set_user_train_data(uuid, category)
+            #status = [True, "Test"]
+
+        except Exception as e:
+            err_text = "Message.Train(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору."
+            print err_text, str(e)
+            raise e
+        else:
+            print("UserTrain data result: {}. {}".format(status[0], status[1]))
+            result['message'] = status[1]
+            result['status'] = status[0]
+
+            # Сообщени уже проверено или его не существует
+            if not status[0]:
+                return result
+
+            # Если категория после проверки в WARNING_CAT и ответ новый, то создаем проблему
+            if status[0] and category in WARNING_CATEGORY:
+
+                try:
+                    api_rec = CPO.get_train_record(uuid=uuid)
+                except Exception as e:
+                    print "Message.Train(). Ошибка получения записи TrainAPI UUID = {}. {}".format(uuid, str(e))
+                    raise e
+
+                # добавляем адресатов в DialogMembers
+                try:
+                    CPO.add_msg_members(msg_id_list=api_rec.message_id)
+                except Exception as e:
+                    print "Message.Train(). Ошибка добавления адресатов DialogMembers для MSG_ID = {}.  {}".\
+                        format(api_rec.message_id, str(e))
+                    raise e
+
+                # Создание задачи автоматически не нужно. СУщность Задача выводится из использования.
+                # Оставлено в коде для совместимости.
+
+                # Все действия будут производится с новой сущностью - Проблема.
+                # Сотрудник нажавший "красную кнопку", должен в ручную привязать инцидент (сообщение) к проблеме.
+                # Выбрать из списка или создать новую.
+
+                # Связывание или создание проблемы
+                print "Собираем данные для связывания или создания проблемы..."
+                cur_user = None
+                responsible_list = list()
+                problem_list = tuple()
+                user_list = list()
+                try:
+                    if cherrypy.session.get('session_context'):
+                        cur_user = cherrypy.session['session_context'].get("user")
+                    responsible_list = CPO.get_watchers_uuid_for_email(message_id=api_rec.message_id)
+                    user_list = CPO.get_all_users_dict()
+                    problem_list = CPO.get_problems(status='not closed', sort='frequency')
+
+                except Exception as e:
+                    print "Message.Train(). Ошибка получения данных создания/связывания проблемы для MSG_ID = {}. {}".\
+                        format(api_rec.message_id, str(e))
+
+                print cur_user
+                print responsible_list
+                print problem_list
+                print user_list
+
+                result['return_data'] = [cur_user, responsible_list, problem_list, uuid, user_list]
+
+            return result
+
+    """
+    def problem(self, action=None, problem_uuid=None, msg_uuid=None, request_type=None, new_problem_title=None,
+                responsible=None):
+        print "Problem API v2 :", action, problem_uuid, msg_uuid, request_type
+        print("{} {}".format(new_problem_title, responsible))
+        if action == 'link' and problem_uuid and msg_uuid:
+            print "Линкуем"
+            try:
+                # status = CPO.link_problem_to_message(problem_uuid=problem_uuid, msg_uuid=msg_uuid)
+                status = [True, "test"]
+            except Exception as e:
+                err_text = "Api.Problem(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору."
+                print err_text, str(e)
+                if request_type == "js":
+                    cherrypy.response.status = 500
+                    cherrypy.response.body = [err_text]
+                    return err_text
+                else:
+                    return ShowNotification().error(text=err_text)
+            else:
+                if request_type == "js":
+                    if status[0]:
+                        cherrypy.response.status = 200
+                    else:
+                        cherrypy.response.status = 500
+                    cherrypy.response.body = [status[1]]
+                    return status[1]
+                else:
+                    if status[0]:
+                        return ShowNotification().index(error=status[1])
+                    else:
+                        return ShowNotification().error(text=status[1])
+
+        elif action == 'create' and new_problem_title and msg_uuid and responsible:
+            print "Создаем новую проблему"
+
+            try:
+                check = CPO.problem_api_check(msg_uuid=msg_uuid)
+
+            except Exception as e:
+                err_text = "Api.Problem(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору."
+                print err_text, str(e)
+                if request_type == "js":
+                    cherrypy.response.status = 500
+                    cherrypy.response.body = [err_text]
+                    return err_text
+                else:
+                    return ShowNotification().error(text=err_text)
+            else:
+                if check[0]:
+                    status = CPO.create_problem(responsible=responsible, title=new_problem_title, message_uuid=msg_uuid)
+
+                    if request_type == "js":
+                        if status[0]:
+                            cherrypy.response.status = 200
+                        else:
+                            cherrypy.response.status = 500
+                        cherrypy.response.body = [status[1]]
+                        return status[1]
+                    else:
+                        if status[0]:
+                            return ShowNotification().index(error=status[1])
+                        else:
+                            return ShowNotification().error(text=status[1])
+                else:
+                    if request_type == "js":
+                        cherrypy.response.status = 500
+                        cherrypy.response.body = [check[1]]
+                        return check[1]
+                    else:
+                        return ShowNotification().error(text=check[1])
+
+        else:
+            print "API_v2(). Incorrect REST URL.", cherrypy.request
+            if request_type == "js":
+                cherrypy.response.status = 500
+                cherrypy.response.body = "API_v2(). Incorrect REST URL."
+                return "error"
+            else:
+                return ShowNotification().error(text="Указан неверный адрес. Обратитесь к администратору.")
+
+    def message(self, uuid=None, category=None, request_type=None):
+        print "Message API v2 :", uuid, category, request_type
+
+        if uuid and category:
+
+            # 1. записать указанный емайл и категорию в пользовательские тренировочные данные
+            # 2. Пометить в таблице train_api ответ.
+
+            try:
+                #status = CPO.set_user_train_data(uuid, category)
+                status = [True, "Test"]
+
+            except Exception as e:
+                err_text = "Api.UserTrain(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору."
+                print err_text, str(e)
+                if request_type == "js":
+                    cherrypy.response.status = 500
+                    cherrypy.response.body = [err_text]
+                    return err_text
+                else:
+                    return ShowNotification().error(text=err_text)
+            else:
+                print("Req type: {}. {}. {}".format(request_type, status[0], status[1]))
+
+                # Сообщени уже проверено или его не существует
+                if not status[0]:
+                    if request_type == "js":
+                        cherrypy.response.status = 200
+                        cherrypy.response.body = [status[1]]
+                        return status[1]
+                    else:
+                        return ShowNotification().index(error=status[1])
+
+                # Если категория после проверки в WARNING_CAT и ответ новый, то создаем проблему
+                if status[0] and category in WARNING_CATEGORY:
+
+                    try:
+                        api_rec = CPO.get_train_record(uuid=uuid)
+                    except Exception as e:
+                        print "api.UserTrain(). Ошибка получения записи TrainAPI UUID = {}. {}".format(uuid, str(e))
+                        api_rec = None
+
+                    # добавляем адресатов в DialogMembers
+                    try:
+                        CPO.add_msg_members(msg_id_list=api_rec.message_id)
+                    except Exception as e:
+                        print "api.UserTrain(). Ошибка добавления адресатов DialogMembers для MSG_ID = {}.  {}".\
+                            format(api_rec.message_id, str(e))
+
+                    # Создание задачи автоматически не нужно. СУщность Задача выводится из использования.
+                    # Оставлено в коде для совместимости.
+
+                    # Все действия будут производится с новой сущностью - Проблема.
+                    # Сотрудник нажавший "красную кнопку", должен в ручную привязать инцидент (сообщение) к проблеме.
+                    # Выбрать из списка или создать новую.
+    """
+
+    """
+                    # создаем задачу
+                    try:
+                        # ответственный за закрытие задачи - проверяющий
+                        if cherrypy.session.get('session_context'):
+                            responsible = cherrypy.session['session_context'].get("user")
+                            task_uuid = CPO.create_task(responsible=responsible.uuid, message_id=api_rec.message_id)
+                            text = u"Создана автоматически после проверки. Пользователь: %s %s." % \
+                                   (responsible.name, responsible.surname)
+
+                        else:
+                            task_uuid = CPO.create_task(responsible=None, message_id=api_rec.message_id)
+                            text = "Создана автоматически после проверки. Пользователь неизвестен."
+
+                        # Формируем сообщение
+                        try:
+                            CPO.add_task_comment(task_uuid=task_uuid, comment=text)
+                        except Exception as e:
+                            print "api.UserTrain(). Ошибка добавления комментария TASK_UUID = {}. {}".\
+                                format(task_uuid, str(e))
+
+                    except Exception as e:
+                        print "api.UserTrain(). Ошибка создания Задачи для MSG_ID = {}. {}".\
+                            format(api_rec.message_id, str(e))
+    """
+    """
+                    # Связывание или создание проблемы
+                    print "Собираем данные для связывания или создания проблемы..."
+                    cur_user = ""
+                    responsible_list = list()
+                    problem_list = tuple()
+                    user_list = list()
+                    try:
+                        if cherrypy.session.get('session_context'):
+                            cur_user = cherrypy.session['session_context'].get("user")
+                        responsible_list = CPO.get_watchers_uuid_for_email(message_id=api_rec.message_id)
+                        user_list = CPO.get_all_users_dict()
+                        problem_list = CPO.get_problems(status='not closed', sort='frequency')
+
+                    except Exception as e:
+                        print "api.UserTrain(). Ошибка получения данных создания/связывания проблемы для MSG_ID = {}. {}".\
+                            format(api_rec.message_id, str(e))
+
+                    print cur_user
+                    print responsible_list
+                    print problem_list
+                    print user_list
+
+                    # в js надо запросить к какой проблеме отнести сообщение или создать новую
+                    if request_type == "js":
+                        cherrypy.response.status = 200
+                        cherrypy.response.body = ['ok']
+
+                        response = list()
+                        response.append(cur_user.uuid)
+                        response.append(list())
+                        for one in responsible_list:
+                            if one not in CPO.HIDDEN_USERS:
+                                response[1].append({'uuid': one, 'name': user_list.get(one).name,
+                                                    'surname': user_list.get(one).surname})
+
+                        response.append(api_rec.uuid)
+                        response.append(list())
+                        for one, count in problem_list:
+                            response[3].append({'uuid': one.uuid, 'title': one.title, 'count': count})
+
+
+                        return json.dumps(response)
+                    else:
+
+                        print "Выводим страницу создания проблемы..."
+                        # ответ через уведомление, надо запросить к какой проблеме отнести сообщение или создать новую
+                        tmpl = lookup.get_template("warning_cat_create_problem.html")
+                        return tmpl.render(status=status, cur_user=cur_user, responsible_list=responsible_list,
+                                           problem_list=problem_list, api_uuid=api_rec.uuid, user_list=user_list)
+                        # return ShowNotification().index(error=status[1])
+
+                else:
+                    if request_type == "js":
+                        cherrypy.response.status = 200
+                        cherrypy.response.body = ['ok']
+                        return 'ok'
+                    else:
+                        # tmpl = lookup.get_template("usertrain_page.html")
+                        # return tmpl.render(status=status)
+                        return ShowNotification().index(error=status[1])
+
+        else:
+            print "API_v2(). Incorrect REST URL.", cherrypy.request
+            if request_type == "js":
+                cherrypy.response.status = 500
+                cherrypy.response.body = "API_v2(). Incorrect REST URL."
+                return "error"
+            else:
+                return ShowNotification().error(text="Указан неверный адрес. Обратитесь к администратору.")
+    """
+
+class API_JS_V2(object):
+
+    @cherrypy.expose
+    def default(self):
+        print("JS/default - req")
+
+    @cherrypy.expose
+    def problem_create(self, msg_uuid=None, responsible=None, new_problem_title=None):
+        print("JS/Problem/Create - req")
+        print("MSG_UUID: {}, RESP: {}, Title: {}".format(msg_uuid, responsible, new_problem_title))
+        if new_problem_title and msg_uuid and responsible:
+            try:
+                result = Problem().create(msg_uuid=msg_uuid, responsible=responsible, title=new_problem_title)
+            except Exception as e:
+                err_text = "API.JS.Problem_create(). Произошла внутренняя ошибка. Пожалуйста, сообщите о " \
+                           "ней администратору. {}".format(str(e))
+                cherrypy.response.status = 500
+                cherrypy.response.body = [err_text]
+                return err_text
+            else:
+                cherrypy.response.status = 200
+                cherrypy.response.body = [result.get('message')]
+                return json.dumps(result.get('return_data'))
+
+    @cherrypy.expose
+    def problem_link(self, problem_uuid=None, msg_uuid=None):
+        print("JS/Problem/Link - req")
+        print("Problem_UUID: {}, MSG_UUID: {}".format(problem_uuid, msg_uuid))
+        if problem_uuid and msg_uuid:
+            try:
+                result = Problem().link(msg_uuid=msg_uuid, problem_uuid=problem_uuid)
+            except Exception as e:
+                print("API.JS.Problem_link(). Ошибка линковки. {}".format(str(e)))
+                err_text = "API.JS.Problem_link(). Произошла внутренняя ошибка. Пожалуйста, сообщите о " \
+                           "ней администратору. {}".format(str(e))
+                cherrypy.response.status = 500
+                cherrypy.response.body = [err_text]
+                return err_text
+            else:
+                cherrypy.response.status = 200
+                cherrypy.response.body = [result.get('message')]
+                return json.dumps(result.get('return_data'))
+
+    @cherrypy.expose
+    def message_train(self, uuid=None, category=None):
+        print("JS/Message/Train - req")
+        print("MSG_UUID: {}, CAT: {}".format(uuid, category))
+        if uuid and category:
+            try:
+                result = Message().train(uuid=uuid, category=category)
+            except Exception as e:
+                err_text = "API.JS.Message.train(). Произошла внутренняя ошибка. Пожалуйста, сообщите о " \
+                           "ней администратору. {}".format(str(e))
+                cherrypy.response.status = 500
+                cherrypy.response.body = [err_text]
+                return err_text
+            else:
+                if not result.get('status'):
+                    cherrypy.response.status = 200
+                    cherrypy.response.body = [result.get('message')]
+                    return result.get('message')
+
+                if result.get('status') and category in CPO.WARNING_CATEGORY:
+
+                    print("RESULT 1: {}".format(result.get('return_data')[0]))
+                    print("RESULT 2: {}".format(result.get('return_data')[1]))
+                    print("RESULT 3: {}".format(result.get('return_data')[2]))
+                    print("RESULT 4: {}".format(result.get('return_data')[3]))
+                    print("RESULT 5: {}".format(result.get('return_data')[4]))
+
+                    try:
+                        response = list()
+                        # [cur_user, responsible_list, problem_list, uuid, user_list]
+                        if result.get('return_data')[0]:
+                            response.append(result.get('return_data')[0].uuid)
+                        else:
+                            response.append(None)
+
+                        response.append(list())
+                        for one in result.get('return_data')[1]:
+                            if one not in CPO.HIDDEN_USERS:
+                                response[1].append({'uuid': one, 'name': result.get('return_data')[4].get(one).name,
+                                                    'surname': result.get('return_data')[4].get(one).surname})
+
+                        response.append(result.get('return_data')[3])
+
+                        response.append(list())
+                        for one, count in result.get('return_data')[2]:
+                            response[3].append({'uuid': one.uuid, 'title': one.title, 'count': count})
+
+                    except Exception as e:
+                        print("API.JS.Message.train(). Ошибка подготовки данных для возврата. {}".format(str(e)))
+                        err_text = "API.JS.Message.train(). Произошла внутренняя ошибка. Пожалуйста, сообщите о " \
+                                   "ней администратору. {}".format(str(e))
+                        cherrypy.response.status = 500
+                        cherrypy.response.body = [err_text]
+                        return err_text
+                    else:
+                        cherrypy.response.status = 200
+                        cherrypy.response.body = [result.get('message')]
+                        return json.dumps(response)
+                else:
+                    cherrypy.response.status = 200
+                    cherrypy.response.body = [result.get('message')]
+                    return result.get('message')
 
 
 class Settings(object):
@@ -1432,7 +1967,17 @@ class Root(object):
     """
 
     # api = API()
-    api = API_v2()
+    api = API_V2()
+    api.problem = API_V2()
+    api.problem.create = API_V2().problem_create
+    api.problem.link = API_V2().problem_link
+    api.message = API_V2().message_train
+
+    api.js = API_JS_V2()
+    api.js.problem = API_JS_V2()
+    api.js.problem.create = API_JS_V2().problem_create
+    api.js.problem.link = API_JS_V2().problem_link
+    api.js.message = API_JS_V2().message_train
 
     control_center = ControlCenter()
 

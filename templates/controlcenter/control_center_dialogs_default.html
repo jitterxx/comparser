@@ -364,20 +364,6 @@
                                             <h4 class="modal-title">связано с проблемой</h4>
                                         </div>
                                         <div class="modal-body" id="problem_list_modal">
-                                            % for problem, freq in problem_list:
-                                            <div class="row"  style="margin: 2px;">
-                                            <div class="col-md-6 col-md-offset-3">
-                                            <a class="btn btn-warning btn-lg btn-block"
-                                               onclick="problem_choice('${api_list[one.message_id].uuid}',
-                                               '${problem.uuid}', this); return false;">
-                                                ${problem.title}
-                                            </a>
-                                            </div>
-                                            </div>
-                                            % endfor
-                      </div>
-                                            </div>
-
 
                                         </div>
                                     </div><!-- /.modal-content -->

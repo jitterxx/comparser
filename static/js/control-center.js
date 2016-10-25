@@ -47,7 +47,7 @@ function LoadThread (msg_id) {
 
 function user_check_category(page, msg_id, cat_key, cat_name, main_link, msg_uuid, color) {
 
-    // console.log(page, msg_id, cat_key, cat_name, main_link, msg_uuid, color);
+    console.log(page, msg_id, cat_key, cat_name, main_link, msg_uuid, color);
 
     // Заменяем на крутящуюся иконку
     var cat_span = document.getElementById(msg_id + '_category');
@@ -56,7 +56,7 @@ function user_check_category(page, msg_id, cat_key, cat_name, main_link, msg_uui
 
     // Формирвем запрос
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', main_link + msg_uuid + '/' + cat_key + '/js', true);
+    xhr.open('POST', '/api/js/message/' + msg_uuid + '/' + cat_key, true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.onreadystatechange = function() {
 
@@ -65,15 +65,15 @@ function user_check_category(page, msg_id, cat_key, cat_name, main_link, msg_uui
         if (xhr.readyState != 4) return false;
         if (xhr.status != 200) {
             // Ошибка
-            // console.log(xhr.status + ' : ' + xhr.statusText);
+            console.log(xhr.status + ' Ошибка : ' + xhr.statusText);
             on_error(cat_span, old_cat_span);
         } else {
             // Все нормально
-            console.log(xhr.status + ' : ' + xhr.statusText);
+            console.log(xhr.status + ' Все нормально : ' + xhr.statusText);
             on_success(page, cat_span, color, cat_name, msg_id);
 
             if (page == 'True') {
-                $('#problem_modal').modal('toggle');
+
                 var modal_data = JSON.parse(xhr.responseText);
                 var modal_element = document.getElementById('problem_list_modal');
                 console.log('modal_data : ', modal_data)
@@ -88,11 +88,10 @@ function user_check_category(page, msg_id, cat_key, cat_name, main_link, msg_uui
                 text += '</div></div><div class="row"><div class="col-md-12" align="center"><br>или<br></div></div>';
                 console.log(text);
 
-                text += '<div class=\"row\"><div class=\"col-md-6 col-md-offset-3\" align=\"left\">';
-                text += '<form method=\"POST\" action=\"/api/problem/create/uuid\" style=\"margin-bottom: 3em;\">';
-                text += '<input type="hidden" name="request_type" value="js">';
-                text += '<div class=\"form-group\"><input type=\"hidden\" name=\"msg_uuid\" value=\"';
-                text += msg_uuid + '\"><textarea class="form-control" id="new_problem_title" name="new_problem_title" cols="30" rows="3"';
+                text += '<div class="row"><div class="col-md-6 col-md-offset-3" align="left">';
+                text += '<form style="margin-bottom: 3em;">';
+                text += '<div class="form-group"><input type="hidden" name="form_msg_uuid" id="form_msg_uuid" value="';
+                text += msg_uuid + '"><textarea class="form-control" id="new_problem_title" name="new_problem_title" cols="30" rows="3"';
                 text += 'placeholder="опишите новую проблему..."></textarea></div><br><p align="center">';
                 text += 'Ответственный</p><div class="form-group form-inline">';
                 for (var i=0; i<modal_data[1].length; i++) {
@@ -101,12 +100,13 @@ function user_check_category(page, msg_id, cat_key, cat_name, main_link, msg_uui
                     text += modal_data[1][i].name + ' ' + modal_data[1][i].surname;
                     text += '</label></div>';
                 }
-                 text += '</div><input class="btn btn-success btn-block" value="Создать" onclick=""></form>';
+                 text += '</div><input class="btn btn-success btn-block" value="Создать" onclick="send_new_problem();"></form>';
                  text += '</div></div>';
 
+                console.log(text);
                 modal_element.innerHTML = text;
-
-            }
+                $('#problem_modal').modal('toggle');
+            };
         };
     };
 
@@ -148,7 +148,7 @@ function problem_choice (msg_uuid, problem_uuid, modal_obj) {
 
     // Формирвем запрос
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/api/problem/link/' + problem_uuid + '/' + msg_uuid + '/js', true);
+    xhr.open('POST', '/api/js/problem/link/' + problem_uuid + '/' + msg_uuid, true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.onreadystatechange = function() {
 
@@ -158,7 +158,7 @@ function problem_choice (msg_uuid, problem_uuid, modal_obj) {
         if (xhr.status != 200) {
             // Ошибка
             console.log(xhr.status + ' : ' + xhr.statusText);
-
+            alert('Api.JS.Problem.Link(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору.');
         } else {
             // Все нормально
             console.log(xhr.status + ' : ' + xhr.statusText);
@@ -167,6 +167,43 @@ function problem_choice (msg_uuid, problem_uuid, modal_obj) {
     };
 
     xhr.send('');
+
+    return false;
+
+}
+
+function send_new_problem () {
+
+    var form_msg_uuid = document.getElementById('form_msg_uuid').value;
+    var title = document.getElementById('new_problem_title').value;
+    var resp = document.getElementById('responsible').value;
+
+    console.log("Form data: ", form_msg_uuid, title, resp);
+
+
+    // Формирвем запрос
+    var xhr = new XMLHttpRequest();
+    var body = 'new_problem_title=' + encodeURIComponent(title);
+    xhr.open('POST', '/api/js/problem/create/' + form_msg_uuid + '/' + resp, true);
+
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = function() {
+
+        // console.log(page, cat_name, color, msg_id);
+
+        if (xhr.readyState != 4) return false;
+        if (xhr.status != 200) {
+            // Ошибка
+            console.log(xhr.status + ' : ' + xhr.statusText);
+            alert('Api.JS.Problem.Create(). Произошла внутренняя ошибка. Пожалуйста, сообщите о ней администратору.');
+        } else {
+            // Все нормально
+            console.log(xhr.status + ' : ' + xhr.statusText);
+            $('#problem_modal').modal('toggle');
+        };
+    };
+
+    xhr.send(body);
 
     return false;
 

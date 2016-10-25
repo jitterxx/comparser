@@ -3789,6 +3789,9 @@ def get_problems(status='not closed', sort='frequency'):
 
 
 def problem_api_check(msg_uuid=None, problem_uuid=None):
+    # Проверяем наличие у сообщения связанной проблемы
+    if not msg_uuid:
+        raise Exception(message="CPO.problem_api_check(). Не указан MSG_UUID.")
 
     session = Session()
     try:
@@ -3807,8 +3810,6 @@ def problem_api_check(msg_uuid=None, problem_uuid=None):
                 return [True, "Сообщение уже связано с проблемой. Изменение через интерфейс."]
             else:
                 return [False, "Сообщение не связано с проблемой."]
-        else:
-            raise Exception(message="CPO.problem_api_check(). Не указан MSG_UUID.")
     finally:
         session.close()
 
@@ -3838,7 +3839,7 @@ def link_problem_to_message(msg_uuid=None, problem_uuid=None):
         elif msg.problem_uuid:
             return [False, "Сообщение уже связано с проблемой. Изменение через интерфейс."]
         else:
-            return [False, "Ошибка при связывании."]
+            return [False, "Некорректное действие. Свяжитесь с администратором."]
 
     finally:
         session.close()
