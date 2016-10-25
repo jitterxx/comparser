@@ -70,7 +70,7 @@ class Predictor():
         sname = "{}_{}".format(client_name, service_name)
         description = '{} {} service'.format(client_name, service_name)
         mllib = 'caffe'
-        sequence = 50
+        sequence = CPO.PREDICT_SERVICE_PARAMS.get(service_name).get('sequence')
 
         model = {
             'repository': model_repo
@@ -78,15 +78,15 @@ class Predictor():
 
         parameters_input = {
             'connector': 'txt',
-            'characters': True,
-            'alphabet': u'!\“#%&’*+,-./0123456789:;<=>?@^_abcdefghijklmnopqrstuvwxyz«»абвгдежзийклмнопрстуфхцчшщъыьэюяёєі“”',
+            'characters': CPO.PREDICT_SERVICE_PARAMS.get(service_name).get('characters'),
+            'alphabet': CPO.PREDICT_SERVICE_PARAMS.get(service_name).get('alphabets'),
             'sequence': sequence
         }
 
         parameters_mllib = {
-            'nclasses': 2,
-            'finetuning': True,
-            'weights': 'model_iter_50000.caffemodel'
+            'nclasses': CPO.PREDICT_SERVICE_PARAMS.get(service_name).get('nclasses'),
+            'finetuning': CPO.PREDICT_SERVICE_PARAMS.get(service_name).get('finetuning'),
+            'weights': CPO.PREDICT_SERVICE_PARAMS.get(service_name).get('weights')
         }
 
         parameters_output = {}
