@@ -152,20 +152,24 @@ class Predictor():
             short = None
             full = ''
 
-            try:
-                for one in result['body']['predictions'][0]['classes']:
-                    if not short:
-                        short = one['cat']
-                    if one.get('last'):
-                        full += '{}-{}'.format(one['cat'], one['prob'])
-                    else:
-                        full += '{}-{}:'.format(one['cat'], one['prob'])
-            except Exception as e:
-                logging.error("Ошибка обработки результата классификации. {}".format(str(e)))
-                # Нужно делать уведомления на почту разработчика о таких ошибках
-                raise e
+            if result['status']['msg'] == 'OK':
+                try:
+                    for one in result['body']['predictions'][0]['classes']:
+                        if not short:
+                            short = one['cat']
+                        if one.get('last'):
+                            full += '{}-{}'.format(one['cat'], one['prob'])
+                        else:
+                            full += '{}-{}:'.format(one['cat'], one['prob'])
+                except Exception as e:
+                    logging.error("Ошибка обработки результата классификации. {}".format(str(e)))
+                    # Нужно делать уведомления на почту разработчика о таких ошибках
+                    raise e
 
-            return short, full
+                return 'OK', short, full
+
+            else:
+                return result['status']['msg'], result, ""
 
 
 predictor = Predictor()
@@ -196,49 +200,63 @@ else:
         # классификация
         try:
             a1 = list()
+            short_answer = None
+            status = None
             data = row.message_title + row.message_text  # готовим данные из row
             for service_name in CPO.PREDICT_SERVICE_NAME:
                 sname = "{}_{}".format(CPO.CLIENT_NAME, service_name)
-                a, b = predictor.classify(data=data, sname=sname)
-                logging.debug("### Service:{}, R_ID:{}, Answer:{}, FullAnswer:{}".format(sname, row.id, a, b))
-                a1.append(b)
+                status, a, b = predictor.classify(data=data, sname=sname)
+                if status == 'OK':
+                    logging.debug("### Service:{}, R_ID:{}, Answer:{}, FullAnswer:{}".format(sname, row.id, a, b))
+                    a1.append(b)
 
-                if service_name == CPO.PREDICT_SERVICE_NAME_DEFAULT:
-                    short_answer = a
+                    if service_name == CPO.PREDICT_SERVICE_NAME_DEFAULT:
+                        short_answer = a
+                else:
+                    logging.error("### Service:{}. Ошибка классификации. {}".format(sname, a))
 
         except Exception as e:
-            logging.error("Ошибка классфикации для записи. MSGID: {}, ID: {}. \n {}".format(row.message_id,
+            logging.error("Ошибка классификации для записи. MSGID: {}, ID: {}. \n {}".format(row.message_id,
                                                                                             row.id, str(e)))
 
         else:
-            answer = ":".join(a1)
-            logging.debug("Категория: {}".format(answer))
-            logging.debug('{}'.format('*'*100))
-
-
-            # Обновляем запись в clearDB
-            try:
-                row.isclassified = 1
-                row.category = answer
-                session.commit()
-            except Exception as e:
-                logging.error("Ошибка обновления записи в ClearDB. MSGID: {}, ID: {}".format(row.message_id, row.id))
-            else:
-                # Добавлем запись в таблицу train_api для работы API и функции переобучения
+            if not short_answer and not a1:
+                # Помечаем запись как ошибочную
                 try:
-                    new = CPO.TrainAPIRecords()
-                    new.uuid = uuid.uuid4().__str__()
-                    new.message_id = row.message_id
-                    new.auto_cat = short_answer
-                    new.category = answer
-                    new.date = datetime.datetime.now()
-                    new.user_action = 0
-                    new.user_answer = ""
-                    new.train_epoch = CPO.CURRENT_TRAIN_EPOCH
-                    session.add(new)
+                    row.isclassified = 99
+                    row.category = status
                     session.commit()
                 except Exception as e:
-                    logging.error("Ошибка записи в TRAIN_API. {}".format(str(e)))
+                    logging.error("Ошибка обновления записи в ClearDB. MSGID: {}, ID: {}".format(row.message_id, row.id))
+
+            else:
+                answer = ":".join(a1)
+                logging.debug("Категория: {}".format(answer))
+                logging.debug('{}'.format('*'*100))
+
+                # Обновляем запись в clearDB
+                try:
+                    row.isclassified = 1
+                    row.category = answer
+                    session.commit()
+                except Exception as e:
+                    logging.error("Ошибка обновления записи в ClearDB. MSGID: {}, ID: {}".format(row.message_id, row.id))
+                else:
+                    # Добавлем запись в таблицу train_api для работы API и функции переобучения
+                    try:
+                        new = CPO.TrainAPIRecords()
+                        new.uuid = uuid.uuid4().__str__()
+                        new.message_id = row.message_id
+                        new.auto_cat = short_answer
+                        new.category = answer
+                        new.date = datetime.datetime.now()
+                        new.user_action = 0
+                        new.user_answer = ""
+                        new.train_epoch = CPO.CURRENT_TRAIN_EPOCH
+                        session.add(new)
+                        session.commit()
+                    except Exception as e:
+                        logging.error("Ошибка записи в TRAIN_API. {}".format(str(e)))
 
     # обновляем статистику после классификации
     if clear and CPO.PRODUCTION_MODE:
