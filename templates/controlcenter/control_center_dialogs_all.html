@@ -284,6 +284,7 @@
                                             <a href="#"
                                                class="btn btn-${category_color_style.get(key)}"
                                                onclick="user_check_category('True',
+                                               '${key in warn_cat}',
                                                '${one.message_id[1:-1]}', '${key}',
                                                '${category[key].category}', '${main_link}',
                                                '${api_list[one.message_id].uuid}',
@@ -330,6 +331,19 @@
                                     </td>
                                 </tr>
                             </table>
+                            <div class="modal fade" tabindex="-1" role="dialog" id="problem_modal">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title">связано с проблемой</h4>
+                                        </div>
+                                        <div class="modal-body" id="problem_list_modal">
+
+                                        </div>
+                                    </div><!-- /.modal-content -->
+                                </div><!-- /.modal-dialog -->
+                            </div><!-- /.modal -->
+
                         </div>
                     </div>
                 </div>

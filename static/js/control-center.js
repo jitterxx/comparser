@@ -45,9 +45,9 @@ function LoadThread (msg_id) {
 };
 
 
-function user_check_category(page, msg_id, cat_key, cat_name, main_link, msg_uuid, color) {
+function user_check_category(page, ask_problem, msg_id, cat_key, cat_name, main_link, msg_uuid, color) {
 
-    console.log(page, msg_id, cat_key, cat_name, main_link, msg_uuid, color);
+    console.log(page, ask_problem, msg_id, cat_key, cat_name, main_link, msg_uuid, color);
 
     // Заменяем на крутящуюся иконку
     var cat_span = document.getElementById(msg_id + '_category');
@@ -72,7 +72,7 @@ function user_check_category(page, msg_id, cat_key, cat_name, main_link, msg_uui
             console.log(xhr.status + ' Все нормально : ' + xhr.statusText);
             on_success(page, cat_span, color, cat_name, msg_id);
 
-            if (page == 'True') {
+            if (ask_problem == 'True') {
 
                 var modal_data = JSON.parse(xhr.responseText);
                 var modal_element = document.getElementById('problem_list_modal');
