@@ -380,6 +380,45 @@ else:
 finally:
     file.close()
 
+print("Обновление №24.\n\tНовые переменные в конфигурации.")
+try:
+    with open('configuration.py', 'a') as file:
+        if not hasattr(CONF, 'HIDDEN_USERS'):
+            file.writelines('# Пользователи не выводящиеся при взаимодействии с пользователями. '
+                            'Технические пользователи.')
+            file.writelines('HIDDEN_USERS = ["admin-uuid"]\n')
+            print "\tCONF.HIDDEN_USERS - added to configuration\n"
+
+            PREDICT_SERVICE_PARAMS_UPDATE = {
+                'default':
+                    {'sequence': 50,
+                     'alphabet': u'!\“#%&’*+,-./0123456789:;<=>?@^_abcdefghijklmnopqrstuvwxyz«»'
+                                 u'абвгдежзийклмнопрстуфхцчшщъыьэюяёєі“”',
+                     'characters': True,
+                     'nclasses': 2,
+                     'finetuning': True,
+                     'weights': 'model_iter_50000.caffemodel'}
+            }
+
+        if not hasattr(CONF, 'PREDICT_SERVICE_PARAMS'):
+            file.writelines('# Параметры для создания сервисов классификации. '
+                            'Ключ - название сервиса, далее настройки.\n')
+            file.writelines('PREDICT_SERVICE_PARAMS = {}\n\n'.format(PREDICT_SERVICE_PARAMS_UPDATE))
+            print "\tCONF.PREDICT_SERVICE_PARAMS - added to configuration\n"
+
+        if not hasattr(CONF, 'LOG_PATH'):
+            file.writelines('# LOG_PATH - каталог расположения логов. По умолчанию в каталоге пользователя. \n')
+            file.writelines('LOG_PATH = ""\n\n')
+            print "\tCONF.LOG_PATH - added to configuration\n"
+
+except Exception as e:
+    print("Обновление №24 - ERROR.\n")
+    print e.message, e.args
+else:
+    print("Обновление №24 - SUCCESS.\n")
+finally:
+    file.close()
+
 
 connection.close()
 
