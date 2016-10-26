@@ -309,7 +309,7 @@
                                         % for key in category.keys():
                                             <a href="#"
                                                class="btn btn-${category_color_style.get(key)}"
-                                               onclick="user_check_category('${key != api_list[one.message_id].auto_cat}',
+                                               onclick="user_check_category('${key == api_list[one.message_id].auto_cat}',
                                                '${key in warn_cat}',
                                                '${one.message_id[1:-1]}', '${key}',
                                                '${category[key].category}', '${main_link}',

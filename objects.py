@@ -778,11 +778,17 @@ def get_dialogs(for_day=None, cat=None, client_access_list=None, empl_access_lis
             resp = session.query(Msg).\
                 filter(and_(Msg.create_date >= start, Msg.create_date <= end), Msg.isclassified == 1).\
                 order_by(Msg.create_date.desc()).all()
-            """
 
             resp = session.query(Msg).\
                 filter(and_(Msg.create_date >= start, Msg.create_date <= end), Msg.isclassified == 1,
                        or_(*[Msg.category.like(c + "%") for c in cat])).\
+                order_by(Msg.create_date.desc()).all()
+            """
+            resp = session.query(Msg).\
+                join(TrainAPIRecords, TrainAPIRecords.message_id == Msg.message_id).\
+                filter(and_(Msg.create_date >= start, Msg.create_date <= end), Msg.isclassified == 1,
+                       or_(and_(TrainAPIRecords.user_action == 1, TrainAPIRecords.user_answer.in_(cat)),
+                           and_(TrainAPIRecords.user_action == 0, TrainAPIRecords.auto_cat.in_(cat)))).\
                 order_by(Msg.create_date.desc()).all()
 
         except Exception as e:
