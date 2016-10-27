@@ -1,0 +1,231 @@
+<%inherit file="control_center_base_new.html"/>
+
+<%block name="title">
+  <title>Панель управления - Проблемы</title>
+</%block>
+
+
+<%block name="navigation_side">
+<%
+    day = cur_day.strftime("%d-%m-%Y")
+%>
+
+<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
+    <ul class="nav menu">
+        <li role="presentation"><br></li>
+        <li>
+            <a href="/control_center/statistics/management">
+                <svg class="glyph stroked dashboard dial"><use xlink:href="#stroked-dashboard-dial"/></svg>
+                Оперативный центр
+            </a>
+        </li>
+        <li class="parent ">
+            <a href="/control_center/dialogs/warning?day=${day}">
+                <span data-toggle="collapse" href="#sub-item-1">
+                    <svg class="glyph stroked two messages"><use xlink:href="#stroked-two-messages"/></svg>
+                </span>
+                Диалоги
+            </a>
+            <ul class="children collapse" id="sub-item-1">
+                <li>
+                    <a class="" href="/control_center/dialogs/warning?day=${day}">
+                        <svg class="glyph stroked flag"><use xlink:href="#stroked-flag"/></svg>
+                        Обратить внимание
+                    </a>
+                </li>
+                <li>
+                    <a class="" href="/control_center/dialogs/all?day=${day}">
+                        <svg class="glyph stroked chevron-right"><use xlink:href="#stroked-chevron-right"></use></svg>
+                        Смотреть все
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="/control_center/tasks">
+                <svg class="glyph stroked clipboard with paper"><use xlink:href="#stroked-clipboard-with-paper"/></svg>
+                Задачи
+            </a>
+        </li>
+        <li class="active">
+            <a href="/control_center/problems">
+                <svg class="glyph stroked clipboard with paper"><use xlink:href="#stroked-clipboard-with-paper"/></svg>
+                Проблемы
+            </a>
+        </li>
+
+        <li>
+            <a href="/control_center/settings">
+                <svg class="glyph stroked gear"><use xlink:href="#stroked-gear"/></svg>
+                Настройки
+            </a>
+        </li>
+    </ul>
+</div><!--/.sidebar-->
+</%block>
+
+<%block name="base">
+    <%
+        status_color_style = ["danger", "warning", "success"]
+    %>
+
+    <div class="row">
+        <div class="col-sm-12 col-md-12" align="left" style="margin-top: 3em;margin-bottom: 3em;">
+            %if message:
+            <div class="alert bg-warning" role="alert">
+                ${message}
+            </div>
+            %endif
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 col-md-12" align="left">
+            %for i in range(len(problem_status)):
+            <a href="#id_${i}" class="btn btn-${status_color_style[i]}" type="button">
+                ${problem_status[i]}
+                %if problem_list.get(i):
+                <span class="badge">${len(problem_list.get(i))}</span>
+                %else:
+                <span class="badge">0</span>
+                %endif
+            </a>
+            %endfor
+
+        </div>
+    </div>
+
+%for i in range(0, len(problem_status)):
+    %if problem_list.get(i):
+    <div class="row">
+        <div class="col-sm-12 col-md-12" align="center">
+            <a id="id_${i}"></a>
+            <div style="margin-bottom: 3.5em;"></div>
+        </div>
+    </div>
+        %for problem in problem_list.get(i):
+
+        <div class="row">
+            <div class="col-sm-12 col-md-12" align="left">
+                <div class="panel panel-${status_color_style[i]}">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-md-6">
+                                ${problem.title}
+                            </div>
+                            <div class="col-md-6" align="right">
+                                <a href="problem?uuid=${problem.uuid}">
+                                    <i class="fa fa-tasks"></i>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="panel-body">
+
+                        <div class="row">
+                            <div class="col-md-12 col-lg-12" align="left">
+                                <table class="">
+                                    <tr>
+                                        <td style="padding: 5px;" width="5%" align="right"><strong>Статус</strong></td>
+                                        <td width="95%" align="left">
+                                            ${problem_status[problem.status]}
+                                            <span style="margin-left: 0.5em;"></span>
+                                            <a data-toggle="collapse" href="#collapse_1_${problem.uuid}"
+                                               aria-expanded="false" aria-controls="collapse_1_${problem.uuid}">
+                                                <i class="fa fa-exchange"></i>
+                                            </a>
+                                            </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px;" width="5%" align="right"></td>
+                                        <td width="95%" align="left">
+                                            <div class="collapse" id="collapse_1_${problem.uuid}">
+                                                %for one in range(0, len(problem_status)):
+                                                %if one != problem.status:
+                                                <a role="button" class="btn btn-default"
+                                                   href="/control_center/problems/change_problem_status?problem_uuid=${problem.uuid}&status=${one}&from_url=/control_center/problems">
+                                                    ${problem_status[one]}
+                                                </a>
+                                                %endif
+                                                %endfor
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px;" width="5%" align="right"><strong>Ответственный</strong></td>
+                                        <td width="95%" align="left">
+                                            ${users.get(problem.responsible).name} ${users.get(problem.responsible).surname}
+                                            <span style="margin-left: 0.5em;"></span>
+                                            <a data-toggle="collapse" href="#collapse_2_${problem.uuid}"
+                                               aria-expanded="false" aria-controls="collapse_2_${problem.uuid}">
+                                                <i class="fa fa-exchange"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px;" width="5%" align="right"></td>
+                                        <td width="95%" align="left">
+                                            <div class="collapse" id="collapse_2_${problem.uuid}">
+                                                %for one in users.values():
+                                                %if one.uuid != problem.responsible:
+                                                <a role="button" class="btn btn-default"
+                                                   href="/control_center/problems/change_problem_responsible?problem_uuid=${problem.uuid}&responsible=${one.uuid}&from_url=/control_center/problems">
+                                                    ${one.name} ${one.surname}
+                                                </a>
+                                                %endif
+                                                %endfor
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="padding: 5px;" width="5%" align="right"><strong>Создана</strong></td>
+                                        <td width="95%" align="left">${problem.create_date.strftime('%d-%m-%Y')}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px;" width="5%" align="right"><strong>Срок</strong></td>
+                                        <td width="95%" align="left">${problem.due_date.strftime('%d-%m-%Y')}</td>
+                                    </tr>
+                                    <tr>
+
+                                        <td colspan="2" style="border-bottom: 1px solid #ccc; padding: 5px;" width="5%"
+                                            align="left" valign="top">
+                                            <div style="margin-top: 3em;"></div>
+                                            <strong>Связанные диалоги</strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" width="95%" align="left" style="padding: 5px;">
+                                            %if msg_list.get(problem.uuid):
+                                            %for msg in msg_list.get(problem.uuid):
+                                            %if msg:
+                                            <a href="/control_center/show_full_thread?msg_id=${msg.message_id}" target="_blank">
+                                            ${msg.message_title} <br>
+                                            </a>
+                                            %endif
+                                            %endfor
+                                            %endif
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        %endfor
+    %endif
+%endfor
+
+
+
+</%block>
+
+
+
+
+<%block name="footer"/>
