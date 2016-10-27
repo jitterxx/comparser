@@ -306,7 +306,7 @@ class API_V2(object):
                             cur_user = cherrypy.session['session_context'].get("user")
                         responsible_list = CPO.get_watchers_uuid_for_email(message_id=api_rec.message_id)
                         user_list = CPO.get_all_users_dict()
-                        problem_list = CPO.get_problems(status='not closed', sort='frequency')
+                        problem_list = CPO.get_problems_api(status='not closed', sort='frequency')
 
                     except Exception as e:
                         print "api.UserTrain(). Ошибка получения данных создания/связывания проблемы для MSG_ID = {}. {}".\
@@ -472,7 +472,7 @@ class Message(object):
                         cur_user = cherrypy.session['session_context'].get("user")
                     responsible_list = CPO.get_watchers_uuid_for_email(message_id=api_rec.message_id)
                     user_list = CPO.get_all_users_dict()
-                    problem_list = CPO.get_problems(status='not closed', sort='frequency')
+                    problem_list = CPO.get_problems_api(status='not closed', sort='frequency')
 
                 except Exception as e:
                     print "Message.Train(). Ошибка получения данных создания/связывания проблемы для MSG_ID = {}. {}".\
@@ -662,7 +662,7 @@ class Message(object):
                             cur_user = cherrypy.session['session_context'].get("user")
                         responsible_list = CPO.get_watchers_uuid_for_email(message_id=api_rec.message_id)
                         user_list = CPO.get_all_users_dict()
-                        problem_list = CPO.get_problems(status='not closed', sort='frequency')
+                        problem_list = CPO.get_problems_api(status='not closed', sort='frequency')
 
                     except Exception as e:
                         print "api.UserTrain(). Ошибка получения данных создания/связывания проблемы для MSG_ID = {}. {}".\
@@ -1326,7 +1326,7 @@ class Dialogs(object):
         text = "Проверенные и не проверенные сообщения на которые надо обратить внимание."
 
         try:
-            problem_list = CPO.get_problems()
+            problem_list = CPO.get_problems_api()
         except Exception as e:
             print("Dialogs().warning(). Ошибка получения списка проблем. {}".format(str(e)))
             problem_list = []
@@ -1528,6 +1528,200 @@ class Tasks(object):
             raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks")
 
 
+
+class Problems(object):
+
+    lookup = TemplateLookup(directories=["./templates/controlcenter"], output_encoding="utf-8",
+                            input_encoding="utf-8", encoding_errors="replace")
+
+    """
+    @cherrypy.expose
+    @require(member_of("users"))
+    def create_problem(self, msg_id=None):
+
+        if msg_id:
+            try:
+                session_context = cherrypy.session['session_context']
+                task_uuid = CPO.create_task(responsible=session_context["user"].login,
+                                            message_id=msg_id, comment="", status=0)
+            except Exception as e:
+                print "ControlCenter.create_task(). Ошибка: %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+            else:
+                raise cherrypy.HTTPRedirect("/control_center/task?uuid=%s" % task_uuid)
+        else:
+            print "ControlCenter.create_task(). Ошибка: не указан MSG_ID сообщения."
+            return ShowNotification().index("Произошла внутренняя ошибка. Не указан ID сообщения.")
+    """
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def index(self, message=None):
+
+        users = dict()
+        tasks = dict()
+        problem_msgid_list = list()
+        msg_list = list()
+
+        is_admin = member_of("admin")()
+        #is_admin = True
+
+        try:
+
+            users = CPO.get_all_users_dict(disabled=True)
+            session_context = cherrypy.session['session_context']
+
+            if is_admin:
+                user_uuid = None
+            else:
+                user_uuid = session_context["user"].uuid
+
+            print user_uuid
+            print session_context
+
+            problems, msg_list = CPO.get_problems_messages_grouped(grouped="status", sort="create_time",
+                                                                   user_uuid=user_uuid)
+
+        except Exception as e:
+            print "ControlCenter.problems(). Ошибка: %s." % str(e)
+            # return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+
+            print "Users: %s" % users
+            print "problems: %s" % problems
+            print "MSG list: %s" % msg_list
+
+            tmpl = self.lookup.get_template("control_center_problems_all.html")
+            return tmpl.render(session_context=session_context, problem_list=problems,
+                               problem_status=CPO.PROBLEM_STATUS, problem_closed_status=CPO.PROBLEM_CLOSED_STATUS,
+                               users=users, msg_list=msg_list, cur_day=datetime.datetime.now(), message=message)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def problem(self, uuid=None, message=None):
+        """
+        Функция показа problem.
+        :param uuid:
+        :return:
+        """
+
+        if uuid:
+            try:
+                # получаем задачу и сообщение
+                task = CPO.get_task_by_uuid(task_uuid=uuid)
+                msg = CPO.get_clear_message(msg_id=task.message_id)
+                api_data = CPO.get_train_record(msg_id=task.message_id)
+                responsible = CPO.get_user_by_uuid(user_uuid=task.responsible)
+                users = CPO.get_all_users_dict(disabled=True)
+                task_cause = CPO.get_task_cause(task_uuid=uuid)
+                cause_tags = CPO.get_tags()
+                session_context=cherrypy.session['session_context']
+                is_admin = member_of("admin")()
+            except Exception as e:
+                print "ControlCenter.task(). Ошибка: %s." % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+            else:
+                # Если запрошен доступ к задаче других пользователей и текущий пользователь не администратор
+                if responsible.uuid != session_context["user"].uuid and not is_admin:
+                    print "ControlCenter.task(). Пользователь не имеет доступа к этой задаче. " \
+                          "Ответственный - %s. Текущий пользователь: %s" % (responsible.uuid, session_context["user"].uuid)
+                    return self.index(message="У вас нет доступа задачам других пользователей.")
+
+                tmpl = self.lookup.get_template("control_center_task_show.html")
+                return tmpl.render(task=task, message=message, responsible=responsible, msg=msg,
+                                   session_context=cherrypy.session['session_context'],
+                                   close_task_status=CPO.TASK_CLOSED_STATUS,
+                                   task_status=CPO.TASK_STATUS, api_data=api_data, category=CPO.GetCategory(),
+                                   users=users, task_cause=task_cause, cause_tags=cause_tags)
+
+        else:
+            print "ControlCenter.task(). Ошибка: не указан UUID задачи."
+            return ShowNotification().index("Произошла внутренняя ошибка. Не указан UUID задачи.")
+
+    @cherrypy.expose
+    def change_problem_status(self, problem_uuid=None, status=None, from_url=None):
+        if problem_uuid:
+            try:
+                CPO.change_task_status(task_uuid=problem_uuid, status=status)
+            except Exception as e:
+                print "change_problem_status(). Ошибка при смене статуса. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center")
+        raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % problem_uuid)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def change_problem_responsible(self, problem_uuid=None, responsible=None, from_url=None):
+        if problem_uuid:
+            try:
+                CPO.change_task_responsible(task_uuid=problem_uuid, responsible=responsible)
+            except Exception as e:
+                print "change_task_responsible(). Ошибка при смене ответственного. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks")
+        raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % problem_uuid)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def add_problem_comment(self, problem_uuid=None, comment=None, from_url=None):
+        if problem_uuid:
+            try:
+                CPO.add_task_comment(task_uuid=problem_uuid, comment=comment)
+            except Exception as e:
+                print "add_task_comment(). Ошибка при добавлении комментария. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks")
+        raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % problem_uuid)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def add_tag(self, task_uuid=None, tag_id=None, from_url=None):
+        if task_uuid and tag_id:
+            try:
+                CPO.add_cause_to_task(task_uuid=task_uuid, tags_id=tag_id)
+            except Exception as e:
+                print "Tasks().add_tag(). Ошибка при добавлении тега. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks")
+        raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % task_uuid)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def remove_tag(self, task_uuid=None, tag_id=None, from_url=None):
+        if task_uuid and tag_id:
+            try:
+                CPO.remove_cause_from_task(task_uuid=task_uuid, tags_id=tag_id)
+            except Exception as e:
+                print "Tasks().remove_tag(). Ошибка при удалении тега. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks")
+        raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % task_uuid)
+
+    @cherrypy.expose
+    @require(member_of("users"))
+    def new_tag(self, task_uuid=None, tag="", from_url=None):
+        if task_uuid and tag:
+            try:
+                tag_id = CPO.create_tag(tag=tag)
+            except Exception as e:
+                print "Tasks().new_tag(). Ошибка при создании тега. %s" % str(e)
+                return ShowNotification().index("Произошла внутренняя ошибка.")
+            else:
+                try:
+                    CPO.add_cause_to_task(task_uuid=task_uuid, tags_id=tag_id)
+                except Exception as e:
+                    print "Tasks().new_tag(). Ошибка при добавлении тега. %s" % str(e)
+                    return ShowNotification().index("Произошла внутренняя ошибка.")
+                else:
+                    raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks/task?uuid=%s" % task_uuid)
+
+        else:
+            raise cherrypy.HTTPRedirect(from_url or "/control_center/tasks")
 
 
 class Statistics(object):
@@ -1780,6 +1974,7 @@ class ControlCenter(object):
     dialogs = Dialogs()
     tasks = Tasks()
     statistics = Statistics()
+    problems = Problems()
 
     @cherrypy.expose
     @require(member_of("users"))

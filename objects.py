@@ -3775,7 +3775,7 @@ def create_problem(responsible=None, create_date=None, due_date=None, title=None
         session.close()
 
 
-def get_problems(status='not closed', sort='frequency'):
+def get_problems_api(status='not closed', sort='frequency'):
     session = Session()
 
     try:
@@ -3850,6 +3850,47 @@ def link_problem_to_message(msg_uuid=None, problem_uuid=None):
     finally:
         session.close()
 
+
+def get_problems_messages_grouped(user_uuid=None, grouped="status", sort="time"):
+
+    session = Session()
+
+    try:
+        if user_uuid:
+            resp = session.query(Problem, Msg).filter(Problem.responsible == user_uuid).\
+                outerjoin(TrainAPIRecords, TrainAPIRecords.problem_uuid == Problem.uuid).\
+                outerjoin(Msg, Msg.message_id == TrainAPIRecords.message_id).\
+                order_by(Problem.create_date.desc()).all()
+        else:
+            resp = session.query(Problem, Msg).\
+                outerjoin(TrainAPIRecords, TrainAPIRecords.problem_uuid == Problem.uuid).\
+                outerjoin(Msg, Msg.message_id == TrainAPIRecords.message_id).\
+                order_by(Problem.create_date.desc()).all()
+
+    except Exception as e:
+        print "Objects.get_problems_grouped(). Ошибка получения Problems. %s" % str(e)
+        raise e
+    else:
+        result = dict()
+        msg_list = dict()
+        for one, two in resp:
+
+            if result.get(one.status):
+                if one.uuid not in msg_list.keys():
+                    result[one.status].append(one)
+            else:
+                result[one.status] = list()
+                result[one.status].append(one)
+
+            if msg_list.get(one.uuid):
+                msg_list[one.uuid].append(two)
+            else:
+                msg_list[one.uuid] = list()
+                msg_list[one.uuid].append(two)
+
+        return result, msg_list
+    finally:
+        session.close()
 
 
 
