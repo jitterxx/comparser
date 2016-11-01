@@ -62,8 +62,8 @@ for current_cat in cats:
         for one in resp:
             filename = uuid.uuid4().__str__()
             f = file("{}/{}".format(CAT_PATH, filename), "w")
-            f.write(one.message_text)
-            f.write(one.message_title)
+            f.write(one.message_text[:200])
+            # f.write(one.message_title)
             f.close()
 
         print("Записываем информация о категории в class.nfo")
