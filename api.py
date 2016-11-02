@@ -17,7 +17,7 @@ from user_agents import parse
 import datetime
 import json
 from auth import AuthController, require, member_of, name_is, all_of, any_of
-
+from sklearn.externals import joblib
 
 __author__ = 'sergey'
 
@@ -2156,6 +2156,147 @@ class ControlCenter(object):
         return json.dumps(data)
 
 
+
+SERVICES = dict()
+service_root_dir = './detect_service'
+from deep_learning.mod_classifier_test import specfeatures_new2, mytoken, features_extractor2
+
+class Predict(object):
+
+    exposed = True
+
+    def POST(self, service=None, data=None):
+
+        print service
+        print data
+
+        if not service:
+            cherrypy.response.status = 500
+            cherrypy.response.body = 'error'
+            return json.dumps({'status': 500, 'message': 'Service name MUST be in request.'})
+
+        if not data:
+            cherrypy.response.status = 500
+            cherrypy.response.body = 'error'
+            return json.dumps({'status': 500, 'message': 'Data MUST be send in request.'})
+
+        if not SERVICES.get(service) and not SERVICES.get(service):
+            print("Predict(). Service: {}. Service NOT created.".format(service))
+            cherrypy.response.status = 404
+            cherrypy.response.body = 'error'
+            return json.dumps({'status': 404, 'message': "Service NOT created."})
+
+
+        # готовим данные
+        class msg_data(object):
+            message_text = ''
+            message_title = ''
+            category = ''
+            in_reply_to = ''
+            references = ''
+            recipients = ''
+            cc_recipients = ''
+
+        data = json.loads(data)
+
+        new = msg_data()
+        new.message_text = data['message_text']
+        new.message_title = data['message_title']
+        new.category = data['category']
+        new.in_reply_to = data['in_reply_to']
+        new.references = data['references']
+        new.recipients = data['recipients']
+        new.cc_recipients = data['cc_recipients']
+
+        X_test = SERVICES.get(service)[0].transform([new])
+        pred = SERVICES.get(service)[1].predict_proba(X_test)
+        result = [SERVICES.get(service)[1].classes_, pred]
+
+        try:
+            pass
+        except Exception as e:
+            print("2216. Predict(). Service: {}. Error. {}".format(service, str(e)))
+            cherrypy.response.status = 500
+            cherrypy.response.body = 'error'
+            return json.dumps({'status': 500, 'message': str(e)})
+        else:
+            cherrypy.response.status = 200
+            cherrypy.response.body = ''
+            return json.dumps({'status': 200, 'message': '{}'.format(result)})
+
+
+class Create(object):
+
+    exposed = True
+
+    def POST(self, service=None):
+
+        if not service:
+            cherrypy.response.status = 500
+            cherrypy.response.body = 'error'
+            return json.dumps({'status': 500, 'message': 'Service name MUST be in request.'})
+
+        if service in SERVICES.keys():
+            cherrypy.response.status = 200
+            cherrypy.response.body = ''
+            return json.dumps({'status': 200, 'message': 'Service with this name exists.'})
+
+        # ищем и загружаем сохраненный сервис
+        service_dir = service_root_dir + '/' + service + '/'
+        try:
+            print '{}{}_vectorizer.pkl'.format(service_dir, service)
+            print joblib.load('{}{}_vectorizer.pkl'.format(service_dir, service))
+            vectorizer = joblib.load('{}{}_vectorizer.pkl'.format(service_dir, service))
+        except Exception as e:
+            print("Create(). Service: {}. Vectorizer oad error. {}".format(service, str(e)))
+            cherrypy.response.status = 500
+            cherrypy.response.body = 'error'
+            return json.dumps({'status': 500, 'message': str(e)})
+
+        try:
+            print '{}{}_clf.pkl'.format(service_dir, service)
+            print joblib.load('{}{}_clf.pkl'.format(service_dir, service))
+            clf = joblib.load('{}{}_clf.pkl'.format(service_dir, service))
+        except Exception as e:
+            print("Create(). Service: {}. Clf load error. {}".format(service, str(e)))
+            cherrypy.response.status = 500
+            cherrypy.response.body = 'error'
+            return json.dumps({'status': 500, 'message': str(e)})
+        else:
+            SERVICES[service] = [vectorizer, clf]
+            cherrypy.response.status = 200
+            cherrypy.response.body = ''
+            return json.dumps({'status': 200, 'message': 'Service {} created'.format(service)})
+
+
+class Info(object):
+
+    exposed = True
+
+    def GET(self, service=None):
+
+        if not service:
+            resp = list()
+            for one in SERVICES.keys():
+                resp.append({'name': one, 'status': 'ok'})
+
+            cherrypy.response.status = 200
+            cherrypy.response.body = ''
+            return json.dumps({'status': 200, 'message': 'Service list.', 'services': resp})
+
+        # ищем и загружаем сохраненный сервис
+        if not SERVICES.get(service) and not SERVICES.get(service):
+            print("Predict(). Service: {}. Service NOT created.".format(service))
+            cherrypy.response.status = 404
+            cherrypy.response.body = 'error'
+            return json.dumps({'status': 404, 'message': "Service NOT created."})
+        else:
+            print("Predict(). Service: {}. Service created.".format(service))
+            cherrypy.response.status = 200
+            cherrypy.response.body = ''
+            return json.dumps({'status': 200, 'message': "Service {} created.".format(service)})
+
+
 class Root(object):
     """
         Основой сервис для запуска API и центров управления
@@ -2175,6 +2316,11 @@ class Root(object):
     api.js.message = API_JS_V2().message_train
 
     control_center = ControlCenter()
+
+    api.detect = API_V2()
+    api.detect.predict = Predict()
+    api.detect.create = Create()
+    api.detect.info = Info()
 
     @cherrypy.expose
     @require(member_of("users"))

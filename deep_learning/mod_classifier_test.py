@@ -31,6 +31,7 @@ from sklearn import svm
 from sklearn.model_selection import GridSearchCV
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
+from sklearn.externals import joblib
 
 
 import pymorphy2
@@ -277,13 +278,13 @@ class ClassifierNew(object):
         if use_hashing:
             #vectorizer = HashingVectorizer(stop_words=STOP_WORDS, analyzer='word', non_negative=True, n_features=60000,
             #                               tokenizer=mytoken, preprocessor=specfeatures_new)
-            vectorizer = HashingVectorizer(stop_words=CPO.STOP_WORDS, analyzer='word', non_negative=True, n_features=5000,
+            vectorizer = HashingVectorizer(stop_words=CPO.STOP_WORDS, analyzer='word', non_negative=True, n_features=10000,
                                            tokenizer=mytoken, preprocessor=specfeatures_new2)
 
             X_train = vectorizer.transform(train)
         else:
             vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=1, stop_words=CPO.STOP_WORDS, analyzer='word',
-                                         tokenizer=mytoken, preprocessor=features_extractor2)
+                                         tokenizer=mytoken, preprocessor=CPO.features_extractor2)
 
             X_train = vectorizer.fit_transform(train)
 
@@ -303,6 +304,7 @@ class ClassifierNew(object):
         # Создаем классификаторы
         self.clf = list()
 
+        """
         self.clf.append(MLPClassifier(solver='sgd', verbose=False, max_iter=500))
 
 
@@ -315,12 +317,15 @@ class ClassifierNew(object):
                                      'max_iter': [1000, 2000],
                                      'solver': ['lbfgs', 'sgd']})
         )
+        """
         # use_hashing = False
-        # best param: {'alpha': 0.0001, 'activation': 'tanh', 'hidden_layer_sizes': (1000, 500)} = score: 0.617486338798
+        # {'alpha': 0.0001, 'activation': 'tanh', 'hidden_layer_sizes': (1000, 500)} = score: 0.617486338798
         # {'alpha': 0.001, 'activation': 'relu', 'hidden_layer_sizes': (500, 500)} = 0.612021857923
 
         # use_hashing = True
         # {'alpha': 0.001, 'activation': 'tanh', 'max_iter': 500, 'solver': 'lbfgs', 'hidden_layer_sizes': (100,)} = 0.672131147541
+        # {'alpha': 0.0005, 'activation': 'relu', 'max_iter': 2000, 'solver': 'lbfgs', 'hidden_layer_sizes': (100,)} = 0.672131147541
+
 
 
         """
@@ -332,9 +337,28 @@ class ClassifierNew(object):
         )
         """
 
-        self.clf.append(MLPClassifier(solver='lbfgs', verbose=False))
+        #self.clf.append(MLPClassifier(alpha=0.001, activation='tanh', max_iter=500, solver='lbfgs', hidden_layer_sizes=(100,)))
+        self.clf.append(MLPClassifier(alpha=0.0001, activation='tanh', max_iter=2000, solver='lbfgs', hidden_layer_sizes=(1000, 500)))
         self.clf.append(MultinomialNB(alpha=0.1))
-        self.clf.append(BernoulliNB(alpha=0.1, binarize=0.0))
+
+        # self.clf.append(BernoulliNB(alpha=0.1, binarize=0.0))
+        self.clf.append(
+            GridSearchCV(
+                MultinomialNB(),
+                param_grid={'alpha': [0.0, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001]}
+            )
+        )
+        # hashing = True, scaling = True
+        # {'alpha': 0.1} = 0.644808743169
+
+        self.clf.append(
+            GridSearchCV(
+                BernoulliNB(binarize=0.0),
+                param_grid={'alpha': [0.0, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001]}
+            )
+        )
+        # hashing = True, scaling = True
+        # {'alpha': 1e-05} = 0.606557377049
 
         t0 = time()
         # Тренируем классификатор
@@ -399,6 +423,11 @@ class ClassifierNew(object):
             if isinstance(one, MLPClassifier):
                 print [coef.shape for coef in one.coefs_]
 
+    def dump(self, dir='.'):
+        joblib.dump(self.vectorizer, '{}/vectorizer.pkl'.format(dir))
+        joblib.dump(self.scaler, '{}/scaler.pkl'.format(dir))
+        for i in range(len(self.clf)):
+            joblib.dump(self.clf[i], '{}/{}_clf.pkl'.format(dir, i))
 
 
 def features_extractor(entry):
@@ -790,6 +819,49 @@ def mytoken(entry):
 
 if __name__ == '__main__':
 
+
+    session = CPO.Session()
+    import requests
+
+    # Инициализация переменных и констант
+    try:
+        CPO.initial_configuration()
+    except Exception as e:
+        print "Ошибка чтения настроек CPO.initial_configuration(). %s" % str(e)
+        raise e
+
+    # Загружаем тестовые данные
+    try:
+        resp = session.query(CPO.Msg, CPO.TrainData).\
+            join(CPO.TrainData, CPO.Msg.message_id == CPO.TrainData.message_id).\
+            filter(CPO.TrainData.train_epoch == 0).limit(100)
+    except Exception as e:
+        print "Error. Mod_classifier_new. Ошибка загрузки данных для тренировки. %s" % str(e)
+        raise e
+    else:
+        test_x = list()
+        test_y = list()
+        for one, two in resp:
+            test_x.append(one)
+            test_y.append(two.category)
+            print "\n {} - {}".format(one.message_id,  two.category)
+            data = dict()
+            data['message_text'] = one.message_text
+            data['message_title'] = one.message_title
+            data['category'] = one.category
+            data['in_reply_to'] = one.in_reply_to
+            data['references'] = one.references
+            data['recipients'] = one.recipients
+            data['cc_recipients'] = one.cc_recipients
+            data = json.dumps(data)
+            req = requests.post('http://192.168.0.104:8585/api/detect/predict', data={'service': 'test', 'data': data})
+            print "{} \n".format(req.text)
+            raw_input()
+
+    finally:
+        session.close()
+
+    """
     session = CPO.Session()
 
     # Инициализация переменных и констант
@@ -820,9 +892,9 @@ if __name__ == '__main__':
             print "{} \n".format(predictor.classify_new2(data=one))
 
         predictor.score(test_x, test_y)
-
+        predictor.dump()
     finally:
         session.close()
-
+    """
 
 
