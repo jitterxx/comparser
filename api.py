@@ -2210,7 +2210,8 @@ class Predict(object):
 
         X_test = SERVICES.get(service)[0].transform([new])
         pred = SERVICES.get(service)[1].predict_proba(X_test)
-        result = [SERVICES.get(service)[1].classes_, pred]
+        print SERVICES.get(service)[1].predict(X_test)
+        result = [SERVICES.get(service)[1].classes_.tolist(), pred.tolist()[0]]
 
         try:
             pass
