@@ -14,7 +14,6 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 import argparse
-import mod_classifier_new as clf
 import datetime
 import objects as CPO
 import sqlalchemy
@@ -22,19 +21,6 @@ import logging
 import os
 from dd_client import DD
 
-from sqlalchemy import func
-
-import numpy as np
-from time import time
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_extraction.text import HashingVectorizer
-from sklearn.linear_model import Perceptron
-from sklearn.naive_bayes import BernoulliNB, MultinomialNB, GaussianNB
-from sklearn import svm
-from sklearn.model_selection import GridSearchCV
-from sklearn.neural_network import MLPClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.externals import joblib
 import requests
 import json
 
@@ -277,17 +263,20 @@ class PredictorNew(object):
 
             if result['status'] == 200:
                 try:
-                    for one in result['message']:
-                        print one
-                        """
-                        if not short:
-                            short = one['cat']
-                        if one.get('last'):
-                            full += '{}-{}'.format(one['cat'], one['prob'])
-                        else:
-                            full += '{}-{}:'.format(one['cat'], one['prob'])
 
-                        """
+                    result_dict = dict(zip(result['message'][1], result['message'][0]))
+                    prob = sorted(result['message'][1], reverse=True)
+                    # print prob, result_dict
+                    for i in prob:
+                        # print i
+                        # print result_dict[i]
+                        if not short:
+                            short = result_dict[i]
+                        full += '{}-{}:'.format(result_dict[i], i)
+
+                    # отрезаем последний знак - :
+                    full = full[:-1]
+
                 except Exception as e:
                     logging.error("Ошибка обработки результата классификации. {}".format(str(e)))
                     # Нужно делать уведомления на почту разработчика о таких ошибках
@@ -349,7 +338,6 @@ else:
                                                                                             row.id, str(e)))
 
         else:
-            exit()
 
             if not short_answer and not a1:
                 # Помечаем запись как ошибочную
@@ -388,6 +376,8 @@ else:
                         session.commit()
                     except Exception as e:
                         logging.error("Ошибка записи в TRAIN_API. {}".format(str(e)))
+
+        raw_input()
 
     # обновляем статистику после классификации
     if clear and CPO.PRODUCTION_MODE:

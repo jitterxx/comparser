@@ -2223,7 +2223,7 @@ class Predict(object):
             print("Predict(). Service: {}. Answer. {}".format(service, result))
             cherrypy.response.status = 200
             cherrypy.response.body = ''
-            return json.dumps({'status': 200, 'message': '{}'.format(result)})
+            return json.dumps({'status': 200, 'message': result})
 
 
 class Create(object):
