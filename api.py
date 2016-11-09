@@ -2158,7 +2158,7 @@ class ControlCenter(object):
 
 
 SERVICES = dict()
-service_root_dir = './detect_service'
+service_root_dir = CPO.PREDICT_SERVICE_MODEL_REPO
 from deep_learning.mod_classifier_test import specfeatures_new2, mytoken, features_extractor2
 
 class Predict(object):
@@ -2197,30 +2197,30 @@ class Predict(object):
             recipients = ''
             cc_recipients = ''
 
-        data = json.loads(data)
-
-        new = msg_data()
-        new.message_text = data['message_text']
-        new.message_title = data['message_title']
-        new.category = data['category']
-        new.in_reply_to = data['in_reply_to']
-        new.references = data['references']
-        new.recipients = data['recipients']
-        new.cc_recipients = data['cc_recipients']
-
-        X_test = SERVICES.get(service)[0].transform([new])
-        pred = SERVICES.get(service)[1].predict_proba(X_test)
-        print SERVICES.get(service)[1].predict(X_test)
-        result = [SERVICES.get(service)[1].classes_.tolist(), pred.tolist()[0]]
-
         try:
-            pass
+            data = json.loads(data)
+
+            new = msg_data()
+            new.message_text = data['message_text']
+            new.message_title = data['message_title']
+            new.category = data['category']
+            new.in_reply_to = data['in_reply_to']
+            new.references = data['references']
+            new.recipients = data['recipients']
+            new.cc_recipients = data['cc_recipients']
+
+            X_test = SERVICES.get(service)[0].transform([new])
+            pred = SERVICES.get(service)[1].predict_proba(X_test)
+            # print SERVICES.get(service)[1].predict(X_test)
+            result = [SERVICES.get(service)[1].classes_.tolist(), pred.tolist()[0]]
+
         except Exception as e:
-            print("2216. Predict(). Service: {}. Error. {}".format(service, str(e)))
+            print("2218. Predict(). Service: {}. Error. {}".format(service, str(e)))
             cherrypy.response.status = 500
             cherrypy.response.body = 'error'
             return json.dumps({'status': 500, 'message': str(e)})
         else:
+            print("Predict(). Service: {}. Answer. {}".format(service, result))
             cherrypy.response.status = 200
             cherrypy.response.body = ''
             return json.dumps({'status': 200, 'message': '{}'.format(result)})
@@ -2245,18 +2245,18 @@ class Create(object):
         # ищем и загружаем сохраненный сервис
         service_dir = service_root_dir + '/' + service + '/'
         try:
-            print '{}{}_vectorizer.pkl'.format(service_dir, service)
-            print joblib.load('{}{}_vectorizer.pkl'.format(service_dir, service))
+            print 'Loading {}{}_vectorizer.pkl'.format(service_dir, service)
+            # print joblib.load('{}{}_vectorizer.pkl'.format(service_dir, service))
             vectorizer = joblib.load('{}{}_vectorizer.pkl'.format(service_dir, service))
         except Exception as e:
-            print("Create(). Service: {}. Vectorizer oad error. {}".format(service, str(e)))
+            print("Create(). Service: {}. Vectorizer load error. {}".format(service, str(e)))
             cherrypy.response.status = 500
             cherrypy.response.body = 'error'
             return json.dumps({'status': 500, 'message': str(e)})
 
         try:
-            print '{}{}_clf.pkl'.format(service_dir, service)
-            print joblib.load('{}{}_clf.pkl'.format(service_dir, service))
+            print 'Loading {}{}_clf.pkl'.format(service_dir, service)
+            # print joblib.load('{}{}_clf.pkl'.format(service_dir, service))
             clf = joblib.load('{}{}_clf.pkl'.format(service_dir, service))
         except Exception as e:
             print("Create(). Service: {}. Clf load error. {}".format(service, str(e)))
@@ -2264,6 +2264,7 @@ class Create(object):
             cherrypy.response.body = 'error'
             return json.dumps({'status': 500, 'message': str(e)})
         else:
+            print("Create(). Service: {}. All loaded successfully.".format(service))
             SERVICES[service] = [vectorizer, clf]
             cherrypy.response.status = 200
             cherrypy.response.body = ''
