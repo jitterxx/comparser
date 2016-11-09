@@ -38,6 +38,15 @@ import pymorphy2
 
 morph = pymorphy2.MorphAnalyzer()
 
+def specfeatures_t2(entry):
+
+    tt = ""
+
+    tt += entry.message_title + "\n"
+    tt += entry.message_text + "\n"
+
+    return tt
+
 
 class ClassifierNew(object):
     clf = None
@@ -279,17 +288,30 @@ class ClassifierNew(object):
             #vectorizer = HashingVectorizer(stop_words=STOP_WORDS, analyzer='word', non_negative=True, n_features=60000,
             #                               tokenizer=mytoken, preprocessor=specfeatures_new)
             vectorizer = HashingVectorizer(stop_words=CPO.STOP_WORDS, analyzer='word', non_negative=True, n_features=10000,
-                                           tokenizer=mytoken, preprocessor=specfeatures_new2)
+                                           tokenizer=CPO.mytoken, preprocessor=CPO.specfeatures_new2,
+                                           norm='l1')
+            vectorizer = HashingVectorizer(analyzer='word', n_features=10000, non_negative=True, norm='l1',
+                                           tokenizer=CPO.mytoken, preprocessor=CPO.specfeatures_new2)
+
+            vectorizer = HashingVectorizer(analyzer='char', n_features=10000, non_negative=True, norm='l1',
+                                           preprocessor=specfeatures_t2)
+
 
             X_train = vectorizer.transform(train)
         else:
             vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=1, stop_words=CPO.STOP_WORDS, analyzer='word',
-                                         tokenizer=mytoken, preprocessor=CPO.features_extractor2)
+                                         tokenizer=CPO.mytoken, preprocessor=CPO.features_extractor2)
+
+            vectorizer = TfidfVectorizer(sublinear_tf=True, stop_words=CPO.STOP_WORDS, analyzer='word',
+                                         preprocessor=specfeatures_t2, lowercase=True, norm='l2')
+
+            vectorizer = TfidfVectorizer(analyzer='char',
+                                         preprocessor=specfeatures_t2, ngram_range=(3, 5), max_features=10000)
 
             X_train = vectorizer.fit_transform(train)
 
         scaler = StandardScaler(with_mean=False).fit(X_train)
-        X_train = scaler.transform(X_train)
+        #X_train = scaler.transform(X_train)
 
         self.scaler = scaler
         self.vectorizer = vectorizer
@@ -340,6 +362,7 @@ class ClassifierNew(object):
         #self.clf.append(MLPClassifier(alpha=0.001, activation='tanh', max_iter=500, solver='lbfgs', hidden_layer_sizes=(100,)))
         self.clf.append(MLPClassifier(alpha=0.0001, activation='tanh', max_iter=2000, solver='lbfgs', hidden_layer_sizes=(1000, 500)))
         self.clf.append(MultinomialNB(alpha=0.1))
+        self.clf.append(BernoulliNB(binarize=0.0, alpha=0.1))
 
         # self.clf.append(BernoulliNB(alpha=0.1, binarize=0.0))
         self.clf.append(
@@ -386,8 +409,8 @@ class ClassifierNew(object):
         """
 
         test = [data]
-        #X_test = self.vectorizer.transform(test)
-        X_test = self.scaler.transform(self.vectorizer.transform(test))
+        X_test = self.vectorizer.transform(test)
+        #X_test = self.scaler.transform(self.vectorizer.transform(test))
 
         pred = list()
         complex_pred = dict()
@@ -430,399 +453,13 @@ class ClassifierNew(object):
             joblib.dump(self.clf[i], '{}/{}_clf.pkl'.format(dir, i))
 
 
-def features_extractor(entry):
-    """ Функция для получения признаков(features) из текста
-    Выделяет следующие признаки:
-    1. email отправителя
-    2. email получателей
-    3. Слова из темы сообщения
-    4. Все пары слов из темы сообщения
-    5. Определенные сочетания из темы сообщения
-    6. Слова из текста
-    7. Все пары слов из текста
-    8. Определенные пары слов из текста (specwords)
-    9. Оригинальное время создания сообщения, только HH:MM\
-
-    """
-    splitter = re.compile('\\W*', re.UNICODE)
-    f = {}
-
-    # Извлечь слова из резюме
-    summarywords = list()
-    for s in splitter.split(entry.message_text + entry.message_title):
-        if (2 < len(s) < 20 and s not in STOP_WORDS) or (s not in STOP_WORDS and s in [u"не", u"ни"]):
-            summarywords.append(s)
-
-    # print 'sum words: ',summarywords
-
-    # Подсчитать количество слов, написанных заглавными буквами
-    uc = 0
-    for i in range(len(summarywords)):
-        word = morph.parse(summarywords[i])[0]  # Берем первый вариант разбора
-        if "Abbr" in word.tag or "Name" in word.tag or "Surn" in word.tag or "Patr" in word.tag:
-            # print "Не используем", word.normal_form
-            pass
-        else:
-            # print "Используем", word.normal_form
-            w = word.normal_form
-            f[w] = 1
-            if w.isupper():
-                uc += 1
-            # Выделить в качестве признаков пары слов из резюме
-            if i < len(summarywords)-1:
-                j = i + 1
-                word = morph.parse(summarywords[j])[0]  # Берем первый вариант разбора
-                if "Abbr" in word.tag or "Name" in word.tag or "Surn" in word.tag or "Patr" in word.tag:
-                    # print "Не используем", word.normal_form
-                    pass
-                else:
-                    twowords = ' '.join([w, word.normal_form])
-                    # print 'Two words: ',twowords,'\n'
-                    f[twowords] = 1
-
-    # UPPERCASE – специальный признак, описывающий степень "крикливости"
-    if (len(summarywords)) and (float(uc)/len(summarywords) > 0.3):
-        f['UPPERCASE'] = 1
-
-    #for one in f:
-    #    print one
-    # raw_input()
-
-    return f
-
-def features_extractor2(entry):
-    """ Функция для получения признаков(features) из текста
-    Выделяет следующие признаки:
-    1. email отправителя
-    2. email получателей
-    3. Слова из темы сообщения
-    4. Все пары слов из темы сообщения
-    5. Определенные сочетания из темы сообщения
-    6. Слова из текста
-    7. Все пары слов из текста
-    8. Определенные пары слов из текста (specwords)
-    9. Оригинальное время создания сообщения, только HH:MM\
-
-    """
-    splitter = re.compile('\\W*', re.UNICODE)
-    f = {}
-
-    # Извлечь слова из резюме
-    summarywords = list()
-    for s in splitter.split(entry.message_text + entry.message_title):
-        if (2 < len(s) < 20 and s not in STOP_WORDS) or (s not in STOP_WORDS and s in [u"не", u"ни"]):
-            summarywords.append(s)
-
-    # print 'sum words: ',summarywords
-
-    uc = 0
-    for i in range(len(summarywords)):
-        w = summarywords[i]
-        if f.get(w):
-            f[w] += 1
-        else:
-            f[w] = 1
-
-        # Подсчитать количество слов, написанных заглавными буквами
-        if w.isupper():
-            uc += 1
-
-        # Выделить в качестве признаков пары слов из резюме
-        if i < len(summarywords)-1:
-            j = i + 1
-            word = summarywords[j]
-            two_words = ' '.join([w, word])
-            # print 'Two words: ',twowords,'\n'
-            if f.get(two_words):
-                f[two_words] += 1
-            else:
-                f[two_words] = 1
-
-
-    return f
-
-
-def specfeatures_new(entry):
-    """ Функция для получения признаков(features) из текста
-    Выделяет следующие признаки:
-    1. email отправителя
-    2. email получателей
-    3. Слова из темы сообщения
-    4. Все пары слов из темы сообщения
-    5. Определенные сочетания из темы сообщения
-    6. Слова из текста
-    7. Все пары слов из текста
-    8. Определенные пары слов из текста (specwords)
-    9. Оригинальное время создания сообщения, только HH:MM\
-
-    """
-    splitter = re.compile('\\W*', re.UNICODE)
-    find_n = re.compile('\d+', re.UNICODE)
-    find_questions = re.compile('\?{1,5}', re.UNICODE)
-    f = dict()
-    results = list()
-    # print entry.message_text
-
-    # Ищем вопросительные знаки
-    quest = find_questions.findall(entry.message_text)
-    f['QUESTION'] = len(quest)
-
-    # Извлечь и аннотировать слова из заголовка
-    titlewords = list()
-    for s in splitter.split(entry.message_title):
-        if 2 <= len(s) < 20 and s not in STOP_WORDS:
-            titlewords.append(s)
-
-    uc = 0
-    for i in range(len(titlewords)):
-        word = morph.parse(titlewords[i])[0]  # Берем первый вариант разбора
-        if "Abbr" in word.tag or "Name" in word.tag or "Surn" in word.tag or "Patr" in word.tag:
-            # print "Не используем", word.normal_form
-            pass
-        else:
-            # print "Используем", word.normal_form
-            w = word.normal_form
-            results.append(w)
-            if f.get(w):
-                f["title:" + w] += 1
-            else:
-                f["title:" + w] = 1
-            if w.isupper():
-                uc += 1
-
-    # UPPERCASE – специальный признак, описывающий степень "крикливости"
-    if (len(titlewords)) and (float(uc)/len(titlewords) > 0.1):
-        f["title:UPPERCASE"] = 1
-
-    # Извлечь слова из резюме
-    summarywords = list()
-    for s in splitter.split(entry.message_text):
-        if (2 < len(s) < 20 and s not in STOP_WORDS) or (s not in STOP_WORDS and s in [u"не", u"ни"]):
-            summarywords.append(s)
-
-    # print 'sum words: ',summarywords
-
-    # Подсчитать количество слов, написанных заглавными буквами
-    uc = 0
-    for i in range(len(summarywords)):
-        word = morph.parse(summarywords[i])[0]  # Берем первый вариант разбора
-        if "Abbr" in word.tag or "Name" in word.tag or "Surn" in word.tag or "Patr" in word.tag:
-            # print "Не используем", word.normal_form
-            pass
-        else:
-            # print "Используем", word.normal_form
-            w = word.normal_form
-            number = find_n.search(w)
-            if number:
-                # print "NUMBER : ", number.string
-                if f.get("NUMBER"):
-                    f['NUMBER'] += 1
-                else:
-                    f['NUMBER'] = 1
-            else:
-                results.append(w)
-                if f.get(w):
-                    f[w] += 1
-                else:
-                    f[w] = 1
-                if w.isupper():
-                    uc += 1
-
-    # Выделить в качестве признаков пары слов из резюме
-    for i in range(len(results) - 1):
-        twowords = ' '.join([results[i], results[i + 1]])
-        # print 'Two words: ',twowords,'\n'
-        if f.get(twowords):
-            f[twowords] += 1
-        else:
-            f[twowords] = 1
-
-    # UPPERCASE – специальный признак, описывающий степень "крикливости"
-    if (len(summarywords)) and (float(uc)/len(summarywords) > 0.3):
-        f['UPPERCASE'] = 1
-
-    # Несколько адресатов или один
-    count = 0
-    if entry.recipients != "empty" and entry.recipients:
-        s = re.split(":", entry.recipients)
-        count = len(s)
-
-    if entry.cc_recipients != "empty" and entry.cc_recipients:
-        s = re.split(":", entry.cc_recipients)
-        count += len(s)
-
-    if count > 1:
-        f["MANYRECIPIENTS"] = 1
-    else:
-        f["MANYRECIPIENTS"] = 0
-
-    # Сколкьо сообщений в цепочке
-    count = 0
-    if entry.references:
-        s = re.split(" ", entry.references)
-        count = len(s)
-
-    if count > 3:
-        f["MANYREPLY"] = 1
-    else:
-        f["MANYREPLY"] = 0
-
-    #for one in f.keys():
-    #    print one, " : ", f[one]
-
-    #print "*" * 30
-    #raw_input()
-
-    return f
-
-def specfeatures_new2(entry):
-    """ Функция для получения признаков(features) из текста
-    Выделяет следующие признаки:
-    1. email отправителя
-    2. email получателей
-    3. Слова из темы сообщения
-    4. Все пары слов из темы сообщения
-    5. Определенные сочетания из темы сообщения
-    6. Слова из текста
-    7. Все пары слов из текста
-    8. Определенные пары слов из текста (specwords)
-    9. Оригинальное время создания сообщения, только HH:MM\
-
-    """
-    splitter = re.compile('\\W*', re.UNICODE)
-    find_n = re.compile('\d+', re.UNICODE)
-    find_questions = re.compile('\?{2,5}', re.UNICODE)
-    f = dict()
-    results = list()
-    # print entry.message_text
-
-    # Ищем вопросительные знаки
-    quest = find_questions.findall(entry.message_text)
-    f['QUESTION'] = len(quest)
-
-    # Извлечь и аннотировать слова из заголовка
-    titlewords = list()
-    for s in splitter.split(entry.message_title):
-        if 2 <= len(s) < 20 and s not in STOP_WORDS:
-            titlewords.append(s)
-
-    uc = 0
-    for i in range(len(titlewords)):
-
-        word = morph.parse(titlewords[i])[0]  # Берем первый вариант разбора
-        if "Abbr" in word.tag or "Name" in word.tag or "Surn" in word.tag or "Patr" in word.tag:
-            # print "Не используем", word.normal_form
-            pass
-        else:
-            # print "Используем", word.normal_form
-            w = word.normal_form
-            w = titlewords[i]
-            results.append(w)
-            if f.get(w):
-                f["title:" + w] += 1
-            else:
-                f["title:" + w] = 1
-            if w.isupper():
-                uc += 1
-
-    # UPPERCASE – специальный признак, описывающий степень "крикливости"
-    if (len(titlewords)) and (float(uc)/len(titlewords) > 0.1):
-        f["title:UPPERCASE"] = 1
-
-    # Извлечь слова из резюме
-    summarywords = list()
-    for s in splitter.split(entry.message_text):
-        if (2 < len(s) < 20 and s not in STOP_WORDS) or (s not in STOP_WORDS and s in [u"не", u"ни"]):
-            summarywords.append(s)
-
-    # print 'sum words: ',summarywords
-
-    # Подсчитать количество слов, написанных заглавными буквами
-    uc = 0
-    for i in range(len(summarywords)):
-        word = morph.parse(summarywords[i])[0]  # Берем первый вариант разбора
-        if "Abbr" in word.tag or "Name" in word.tag or "Surn" in word.tag or "Patr" in word.tag:
-            # print "Не используем", word.normal_form
-            pass
-        else:
-            # print "Используем", word.normal_form
-            w = word.normal_form
-            w = summarywords[i]
-            number = find_n.search(w)
-            if number:
-                # print "NUMBER : ", number.string
-                if f.get("NUMBER"):
-                    f['NUMBER'] += 1
-                else:
-                    f['NUMBER'] = 1
-            else:
-                results.append(w)
-                if f.get(w):
-                    f[w] += 1
-                else:
-                    f[w] = 1
-                if w.isupper():
-                    uc += 1
-
-    # Выделить в качестве признаков пары слов из резюме
-    for i in range(len(results) - 1):
-        twowords = ' '.join([results[i], results[i + 1]])
-        # print 'Two words: ',twowords,'\n'
-        if f.get(twowords):
-            f[twowords] += 1
-        else:
-            f[twowords] = 1
-
-    # UPPERCASE – специальный признак, описывающий степень "крикливости"
-    if (len(summarywords)) and (float(uc)/len(summarywords) > 0.3):
-        f['UPPERCASE'] = 1
-
-    # Несколько адресатов или один
-    count = 0
-    if entry.recipients != "empty" and entry.recipients:
-        s = re.split(":", entry.recipients)
-        count = len(s)
-
-    if entry.cc_recipients != "empty" and entry.cc_recipients:
-        s = re.split(":", entry.cc_recipients)
-        count += len(s)
-
-    if count > 1:
-        f["MANYRECIPIENTS"] = 1
-    else:
-        f["MANYRECIPIENTS"] = 0
-
-    # Сколкьо сообщений в цепочке
-    count = 0
-    if entry.references:
-        s = re.split(" ", entry.references)
-        count = len(s)
-
-    if count > 3:
-        f["MANYREPLY"] = 1
-    else:
-        f["MANYREPLY"] = 0
-
-    #for one in f.keys():
-    #    print one, " : ", f[one]
-
-    #print "*" * 30
-    #raw_input()
-
-    return f
-
-
-def mytoken(entry):
-
-    return entry
-
 
 if __name__ == '__main__':
-
 
     session = CPO.Session()
     import requests
 
+    """
     # Инициализация переменных и констант
     try:
         CPO.initial_configuration()
@@ -892,9 +529,9 @@ if __name__ == '__main__':
             print "{} \n".format(predictor.classify_new2(data=one))
 
         predictor.score(test_x, test_y)
-        predictor.dump()
+        # predictor.dump()
     finally:
         session.close()
-    """
+
 
 
