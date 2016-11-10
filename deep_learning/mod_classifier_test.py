@@ -48,6 +48,45 @@ def specfeatures_t2(entry):
     return tt
 
 
+def tokenizer_t2(entry):
+
+    # print entry
+
+    splitter = re.compile('\\W*', re.UNICODE)
+    find_n = re.compile('\d+', re.UNICODE)
+    f = dict()
+
+    result = splitter.split(entry)
+
+    for i in range(0, len(result) - 1):
+        one = result[i].lower()
+
+        #number = find_n.search(one)
+
+        #if number:
+        #    break
+
+        # print one
+        if f.get(one):
+            f[one] += 1
+        else:
+            f[one] = 1
+
+        pair = '{} {}'.format(result[i].lower(), result[i + 1].lower())
+        # print pair
+        if f.get(pair):
+            f[pair] += 1
+        else:
+            f[pair] = 1
+
+    # for a, b in f.iteritems():
+    #   print a, " - ", b
+
+    # raw_input()
+
+    return f
+
+
 class ClassifierNew(object):
     clf = None
     outlier = None
@@ -280,7 +319,7 @@ class ClassifierNew(object):
         print "Count Train: %s" % len(train)
 
         # Готовим векторизатор
-        use_hashing = True
+        use_hashing = False
         t0 = time()
 
 
@@ -303,12 +342,22 @@ class ClassifierNew(object):
                                          tokenizer=CPO.mytoken, preprocessor=CPO.features_extractor2)
 
             vectorizer = TfidfVectorizer(sublinear_tf=True, stop_words=CPO.STOP_WORDS, analyzer='word',
-                                         preprocessor=specfeatures_t2, lowercase=True, norm='l2')
+                                         preprocessor=specfeatures_t2, lowercase=True, norm='l1',
+                                         max_df=0.5, min_df=0.02)
 
-            vectorizer = TfidfVectorizer(analyzer='char',
-                                         preprocessor=specfeatures_t2, ngram_range=(3, 5), max_features=10000)
+            vectorizer = TfidfVectorizer(sublinear_tf=True, stop_words=CPO.STOP_WORDS, analyzer='word',
+                                         preprocessor=specfeatures_t2, lowercase=True, norm='l1',
+                                         max_df=0.5, min_df=0.01,
+                                         tokenizer=tokenizer_t2)
+
+            #vectorizer = TfidfVectorizer(analyzer='char',
+            #                             preprocessor=specfeatures_t2, ngram_range=(3, 5), max_features=10000)
 
             X_train = vectorizer.fit_transform(train)
+
+            for one in vectorizer.get_feature_names():
+                # print one
+                pass
 
         scaler = StandardScaler(with_mean=False).fit(X_train)
         #X_train = scaler.transform(X_train)
@@ -329,20 +378,23 @@ class ClassifierNew(object):
         """
         self.clf.append(MLPClassifier(solver='sgd', verbose=False, max_iter=500))
 
-
+        """
         self.clf.append(
             GridSearchCV(MLPClassifier(verbose=False),
-                         param_grid={'alpha': [0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000001],
-                                     'hidden_layer_sizes': [(1000, 500), (500, 500), (500, 300), (500, 100), (500,),
-                                                            (300,), (100,)],
+                         param_grid={'alpha': [0.01, 0.001, 0.0001],
+                                     'hidden_layer_sizes': [
+                                         (1000, 500, 100),
+                                         (1000, 500), (1000, 1000),
+                                         (500, 500), (500, 300), (500, 100) ],
                                      'activation': ['tanh', 'relu'],
-                                     'max_iter': [1000, 2000],
-                                     'solver': ['lbfgs', 'sgd']})
+                                     'max_iter': [5000, 10000, 15000],
+                                     'solver': ['lbfgs']})
         )
-        """
+
         # use_hashing = False
         # {'alpha': 0.0001, 'activation': 'tanh', 'hidden_layer_sizes': (1000, 500)} = score: 0.617486338798
         # {'alpha': 0.001, 'activation': 'relu', 'hidden_layer_sizes': (500, 500)} = 0.612021857923
+        # {'alpha': 0.001, 'activation': 'tanh', 'hidden_layer_sizes': (1000, 500), 'max_iter': 5000, 'solver': 'lbfgs'} = 0.73
 
         # use_hashing = True
         # {'alpha': 0.001, 'activation': 'tanh', 'max_iter': 500, 'solver': 'lbfgs', 'hidden_layer_sizes': (100,)} = 0.672131147541
@@ -359,8 +411,9 @@ class ClassifierNew(object):
         )
         """
 
-        #self.clf.append(MLPClassifier(alpha=0.001, activation='tanh', max_iter=500, solver='lbfgs', hidden_layer_sizes=(100,)))
-        self.clf.append(MLPClassifier(alpha=0.0001, activation='tanh', max_iter=2000, solver='lbfgs', hidden_layer_sizes=(1000, 500)))
+        # self.clf.append(MLPClassifier(alpha=0.001, activation='tanh', max_iter=500, solver='lbfgs', hidden_layer_sizes=(100,)))
+        # self.clf.append(MLPClassifier(alpha=0.0001, activation='tanh', max_iter=2000, solver='lbfgs', hidden_layer_sizes=(1000, 500)))
+        # self.clf.append(MLPClassifier(alpha=0.001, activation='tanh', max_iter=5000, solver='lbfgs', hidden_layer_sizes=(1000, 500)))
         self.clf.append(MultinomialNB(alpha=0.1))
         self.clf.append(BernoulliNB(binarize=0.0, alpha=0.1))
 
