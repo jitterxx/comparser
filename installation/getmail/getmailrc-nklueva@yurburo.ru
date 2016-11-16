@@ -19,5 +19,6 @@ path = ~/Maildir/
 [options]
 read_all = false
 read_new = true
+max_messages_per_session = 1
 message_log = ~/yurburo_getmail.log
 
