@@ -2159,7 +2159,7 @@ class ControlCenter(object):
 
 SERVICES = dict()
 service_root_dir = CPO.PREDICT_SERVICE_MODEL_REPO
-from deep_learning.mod_classifier_test import specfeatures_new2, mytoken, features_extractor2
+# from deep_learning.mod_classifier_test import specfeatures_new2, mytoken, features_extractor2
 
 class Predict(object):
 
