@@ -196,18 +196,24 @@ def exception(data):
     
     #Адрес отправителя содержит
     #Адрес получателя содержит
-    str = data['sender'] + ':' + data['recipients'] + ':' + data['cc']
-    email = re.compile(emails,re.I|re.U)
-    email_re = email.search(str)
     if debug:
         print "**** Проверка наличия исключений EXCEPTION_EMAILS в полях TO, FROM, CC ****"
-        print "Exception emails: ", emails
-        print "Message address fields:", str
-        print "Check result:", email_re
-        print "EXCEPTION: ", isexception
 
-    if email_re:
-        isexception = True
+    if emails:
+        str = data['sender'] + ':' + data['recipients'] + ':' + data['cc']
+        email = re.compile(emails,re.I|re.U)
+        email_re = email.search(str)
+        if debug:
+            print "Exception emails: ", emails
+            print "Message address fields:", str
+            print "Check result:", email_re
+            print "EXCEPTION: ", isexception
+
+        if email_re:
+            isexception = True
+    else:
+        if debug:
+            print "Отключено. Список исключений пуст."
 
     # Не обрабатываем сообщения, если адрес отправителя это адрес аккаунта используещегося системой.
     # Т.е. письмо или отправлено само себе или переслано по правилам пересылки от кого-то.
@@ -246,6 +252,10 @@ def exception(data):
             print "Domains for check: ", re.split("|", CPO.CHECK_DOMAINS)
             print "Check result: ", not no_check
             print "EXCEPTION: ", isexception
+    else:
+        if debug:
+            print "Список доменов пуст. Обрабатываем все домены."
+
 
     # Исключаем переписку между внутренними ящиками указанных доменов
     # Сообщение исключается, если в полях ОТ, Кому, Копия, присутствуют только адреса из указанных доменов. Если
@@ -273,6 +283,10 @@ def exception(data):
                 print("Domain for check: {}".format(domain))
                 print("Check result: {}".format(not bool(address_list)))
                 print("EXCEPTION: {}".format(isexception))
+    else:
+        if debug:
+            print "Отключено. Внутренняя переписка обрабатывается."
+
 
     # Исключаем переписку между 2 указанными адресами
     # Сообщение исключается, если в полях ОТ, Кому, Копия, присутствуют только указанные адреса
