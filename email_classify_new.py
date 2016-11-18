@@ -72,7 +72,7 @@ else:
         # классификация
         try:
             # answer = predictor.classify(data=row)
-            short_answer, answer = predictor.classify_new(data=row, debug=args.debug)
+            short_answer, answer = predictor.classify_new2(data=row, debug=args.debug)
         except Exception as e:
             if args.debug:
                 print "email_classify_new(). Ошибка классфикации для записи. MSGID: %s, ID: %s" % \
