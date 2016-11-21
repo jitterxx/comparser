@@ -1239,7 +1239,8 @@ class Dialogs(object):
                            category=CPO.GetCategory(), task_status=CPO.TASK_STATUS,
                            task_list=task_list, message_list=message_list, unchecked=unchecked,
                            api_list=api_list, checked_with_task=task_list2, message_id_list=message_id_list,
-                           unchecked_warn=unchecked_warn, checked_warn=checked_warn)
+                           unchecked_warn=unchecked_warn, checked_warn=checked_warn,
+                           production_mode=CPO.PRODUCTION_MODE)
     """
             elif cat in cats.keys():
                 # Выводим диалоги указанной категории за указанные день. Если день не указан, то за текущий
@@ -1337,7 +1338,8 @@ class Dialogs(object):
                            category=cat_dict, task_status=CPO.TASK_STATUS, warn_cat=CPO.WARNING_CATEGORY,
                            task_list=task_list, message_list=message_list, unchecked=unchecked,
                            api_list=api_list, checked_with_task=task_list2, message_id_list=message_id_list,
-                           problem_list=problem_list)
+                           problem_list=problem_list,
+                           production_mode=CPO.PRODUCTION_MODE)
 
 
 class Tasks(object):
