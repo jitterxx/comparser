@@ -789,7 +789,7 @@ def get_dialogs(for_day=None, cat=None, client_access_list=None, empl_access_lis
                 filter(and_(Msg.create_date >= start, Msg.create_date <= end), Msg.isclassified == 1,
                        or_(and_(TrainAPIRecords.user_action == 1, TrainAPIRecords.user_answer.in_(cat)),
                            and_(TrainAPIRecords.user_action == 0, TrainAPIRecords.auto_cat.in_(cat)))).\
-                order_by(Msg.create_date.desc()).all()
+                order_by(Msg.orig_date.desc()).all()
 
         except Exception as e:
             print "Get_dialogs(). Ошибка получения сообщений за день: %s. %s" % (for_day, str(e))
