@@ -330,7 +330,8 @@ session = CPO.Session()
 try:
     raw_data = session.query(CPO.MsgRaw).filter(CPO.MsgRaw.iscleared == 0).limit(int(limit))
 except Exception as e:
-    pass
+    print("Ошибка чтения сообщений из MsgRaw. {}".format(str(e)))
+    raise e
 
 for row in raw_data:
     # row = dict(zip(dirty_con.column_names, data))

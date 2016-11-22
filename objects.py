@@ -122,7 +122,7 @@ class MsgRaw(Base):
     __table_args__ = TABLE_ARGS
 
     id = Column(sqlalchemy.Integer, primary_key=True)
-    message_id = Column(sqlalchemy.String(256))
+    message_id = Column(sqlalchemy.String(256), unique=True)
     sender = Column(sqlalchemy.String(256))
     recipient = Column(sqlalchemy.TEXT())
     cc_recipient = Column(sqlalchemy.TEXT())
