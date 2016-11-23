@@ -426,32 +426,34 @@ for row in raw_data:
             session.commit()
         except exc.IntegrityError as e:
             # Сообщение уже было обработано, помечяем его как обработанное
-            if "Duplicate entry" in e.message:
-                print("Сообщение уже было обработано, но не отмечено как обработанное. Отмечаем...")
-                session.rollback()
+            print('Ошибка. Сообщение с таким MSG_ID уже существует в очищенных. {}'.format(str(e.message)))
 
-                # Все ок, обновляем запись в email_raw_data
-                try:
-                    row.iscleared = 1
-                    session.commit()
-                except Exception as e:
-                    pass
-                else:
-                    if debug:
-                        print('Сообщение отмечено как обработанное. Добавлено в базу чистых сообщений.')
+            # if "Duplicate entry" in e.message:
+            print("Сообщение уже было обработано, но не отмечено как обработанное. Отмечаем...")
+            session.rollback()
 
-                # Добавляем сообщение в тред
-                try:
-                    CPO.add_message_to_thread(msg=row)
-                except Exception as e:
-                    if debug:
-                        print "email_parse. Ошибка добавления сообщения в тред. Ошибка: ", str(e)
+            # Все ок, обновляем запись в email_raw_data
+            try:
+                row.iscleared = 1
+                session.commit()
+            except Exception as e:
+                pass
+            else:
+                if debug:
+                    print('Сообщение отмечено как обработанное. Добавлено в базу чистых сообщений.')
 
-                else:
-                    if debug:
-                        print("Сообщение добавлено в тред.")
+            # Добавляем сообщение в тред
+            try:
+                CPO.add_message_to_thread(msg=row)
+            except Exception as e:
+                if debug:
+                    print "email_parse. Ошибка добавления сообщения в тред. Ошибка: ", str(e)
 
-                print("*"*30)
+            else:
+                if debug:
+                    print("Сообщение добавлено в тред.")
+
+            print("*"*30)
 
         except Exception as e:
             print("**** Ошибка записи очищенного сообщения! {}".format(str(e)))
