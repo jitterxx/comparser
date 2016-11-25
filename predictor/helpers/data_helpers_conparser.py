@@ -26,27 +26,22 @@ def clean_str_new(string):
     STOP_WORDS_RUS = nltk.corpus.stopwords.words('russian')
     STOP_WORDS_ENG = nltk.corpus.stopwords.words('english')
 
-    print('Raw sting: ', string)
-    print(type(string), len(string))
+    # print('Raw sting: ', string)
+    # print(type(string), len(string))
 
     string = string.lower()
 
-    # string = re.sub('[^абвгджзёеыйиклмнуопрстфчхшщцэюяьъqwertyuiopasdfghjklzxcvbnm ]+', ' ', string)
     string = f1.sub(' ', string)
-
-    # string = re.sub("\s{2,}", " ", string)
     string = f2.sub(' ', string)
-    # string = re.sub(' не ', ' не_', string)
     string = f3.sub(' не_', string)
-    # string = re.sub(' ни ', ' ни_', string)
     string = f4.sub(' ни_', string)
 
     string = " ".join([one for one in string.split(' ') if len(one) >= 2 and
                        one not in STOP_WORDS_CUSTOM + STOP_WORDS_RUS + STOP_WORDS_ENG])
 
-    print('\nClear sting: {}'.format(string))
-    print(type(string), len(string))
-    input('\n\t Дальше \n\n')
+    # print('\nClear sting: {}'.format(string))
+    # print(type(string), len(string))
+    # input('\n\t Дальше \n\n')
 
     return string
 

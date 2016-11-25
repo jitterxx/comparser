@@ -62,7 +62,7 @@ else:
     else:
         print('************** Не найдена текущая эпоха в базе. *****************')
         session.close()
-        os._exit()
+        sys.exit()
 
 try:
     clear = session.query(Msg).filter(Msg.isclassified == 0).limit(args.limit)

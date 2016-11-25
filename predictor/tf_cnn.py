@@ -126,7 +126,7 @@ class ClassifierNew():
             "checkpoint_dir": "./predictor_data/checkpoints",
             "allow_soft_placement": True,
             "log_device_placement": False,
-            'category_labels': {0: 'conflict', 1: 'normal'}
+            'category_labels': {1: 'conflict', 0: 'normal'}
         }
         print("Инициализация классфикатора...")
         print("\nParameters:")
@@ -172,8 +172,7 @@ class ClassifierNew():
 
         prediction = self.sess.run(self.predictions, {self.input_x: x_test, self.dropout_keep_prob: 1.0})
 
-
         print('Predicted answers: ', self.FLAGS.get('category_labels')[prediction[0]], prediction[0])
 
-        return self.FLAGS.get('category_labels')[prediction[0]], '{}-{}'.format(self.FLAGS.get('category_labels')[prediction[0]], str(prediction[0]))
+        return self.FLAGS.get('category_labels')[prediction[0]], '{}-1'.format(self.FLAGS.get('category_labels')[prediction[0]])
 
