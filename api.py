@@ -2321,10 +2321,10 @@ class Root(object):
 
     control_center = ControlCenter()
 
-    api.detect = API_V2()
-    api.detect.predict = Predict()
-    api.detect.create = Create()
-    api.detect.info = Info()
+    # api.detect = API_V2()
+    # api.detect.predict = Predict()
+    # api.detect.create = Create()
+    # api.detect.info = Info()
 
     @cherrypy.expose
     @require(member_of("users"))
