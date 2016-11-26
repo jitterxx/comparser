@@ -79,6 +79,11 @@ else:
     # predictor.init_and_fit(debug=args.debug)
     predictor.init_and_fit()
 
+    try:
+        print('Сообщений для классификации: {}'.format(len(clear)))
+    except Exception as e:
+        pass
+
     for row in clear:
         if args.debug:
             print('*'*100,'\n')

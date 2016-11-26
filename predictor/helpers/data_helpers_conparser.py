@@ -52,8 +52,8 @@ def clean_str_orig(string):
     Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
     """
 
-    print('Raw sting: ', string)
-    print(type(string), len(string))
+    # print('Raw sting: ', string)
+    # print(type(string), len(string))
 
     string = re.sub(r"[^А-Яа-яA-Za-z0-9(),!?\'\`]", " ", string)
     string = re.sub(r"\'s", " \'s", string)
@@ -70,9 +70,9 @@ def clean_str_orig(string):
     string = re.sub(r"\s{2,}", " ", string)
 
 
-    print('\nClear sting: {}'.format(string))
-    print(type(string), len(string))
-    input()
+    # print('\nClear sting: {}'.format(string))
+    # print(type(string), len(string))
+    # input()
 
     return string.strip().lower()
 

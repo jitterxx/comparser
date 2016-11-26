@@ -181,6 +181,7 @@ def send_email(category=None, orig_msg=None, msg_uuid=None, notify_list=None):
 
     # Генерация приложения
     try:
+        logging.debug("*** Создаем приложение с тредом переписки... ***")
         attach_in_html = CPO.create_full_thread_html_document(msg_id=orig_msg.message_id)
 
         if CPO.FILE_ATTACH_TYPE == "html" and attach_in_html:
